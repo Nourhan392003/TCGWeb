@@ -2,35 +2,90 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useMemo } from "react";
 import {
-    Package,
     DollarSign,
-    Clock,
-    Users,
+    ShoppingBag,
+    Package,
     Loader2
 } from "lucide-react";
 
 export default function AdminDashboard() {
     // Fetch all products
-    const products = useQuery(api.cards.getAll) || [];
+    const products = useQuery(api.cards.getAll);
 
     // Fetch all orders
-    const orders = useQuery(api.orders.getAllOrders) || [];
+    const orders = useQuery(api.orders.getAllOrders);
 
-    // Calculate stats
-    const totalProducts = products.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const pendingOrders = orders.filter(order => order.status === "pending").length;
-    const activeUsers = orders.length; // Using orders as proxy for active users
+    // Memoized calculations
+    const totalRevenue = orders?.reduce((acc, order) => {
+        // احسب بس الطلبات اللي حالتها مش 'cancelled'
+        if (order.status !== 'cancelled') {
+            return acc + order.totalAmount;
+        }
+        return acc;
+    }, 0) || 0;
+
+    const totalOrders = useMemo(() => {
+        if (!orders) return 0;
+        return orders.length;
+    }, [orders]);
+
+    const totalProducts = useMemo(() => {
+        if (!products) return 0;
+        return products.length;
+    }, [products]);
+
+    // Loading state
+    const isLoading = products === undefined || orders === undefined;
+
+    // Loading skeleton
+    if (isLoading) {
+        return (
+            <div className="p-6">
+                <h1 className="text-3xl font-bold text-white mb-8">Dashboard Overview</h1>
+
+                {/* Stats Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {[1, 2, 3].map((i) => (
+                        <div
+                            key={i}
+                            className="bg-[#1a1a24] border border-gray-800 rounded-xl p-6 animate-pulse"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                    <div className="h-4 bg-gray-700 rounded w-24 mb-3"></div>
+                                    <div className="h-8 bg-gray-700 rounded w-32"></div>
+                                </div>
+                                <div className="h-12 w-12 bg-gray-700 rounded-lg"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Recent Orders Skeleton */}
+                <div className="mt-8">
+                    <div className="h-6 bg-gray-700 rounded w-40 mb-4"></div>
+                    <div className="bg-[#1a1a24] border border-gray-800 rounded-xl overflow-hidden">
+                        <div className="animate-pulse">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="px-6 py-4 border-b border-gray-800">
+                                    <div className="flex gap-4">
+                                        <div className="h-4 bg-gray-700 rounded w-24"></div>
+                                        <div className="h-4 bg-gray-700 rounded w-32"></div>
+                                        <div className="h-4 bg-gray-700 rounded w-20"></div>
+                                        <div className="h-4 bg-gray-700 rounded w-16"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const stats = [
-        {
-            label: "Total Products",
-            value: totalProducts,
-            icon: Package,
-            color: "text-blue-400",
-            bgColor: "bg-blue-400/10",
-        },
         {
             label: "Total Revenue",
             value: `SAR ${totalRevenue.toLocaleString()}`,
@@ -39,16 +94,16 @@ export default function AdminDashboard() {
             bgColor: "bg-green-400/10",
         },
         {
-            label: "Pending Orders",
-            value: pendingOrders,
-            icon: Clock,
-            color: "text-yellow-400",
-            bgColor: "bg-yellow-400/10",
+            label: "Total Orders",
+            value: totalOrders,
+            icon: ShoppingBag,
+            color: "text-blue-400",
+            bgColor: "bg-blue-400/10",
         },
         {
-            label: "Active Users",
-            value: activeUsers,
-            icon: Users,
+            label: "Total Products",
+            value: totalProducts,
+            icon: Package,
             color: "text-purple-400",
             bgColor: "bg-purple-400/10",
         },
@@ -59,13 +114,13 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-white mb-8">Dashboard Overview</h1>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
                         <div
                             key={index}
-                            className="bg-[#1a1a2e] rounded-xl p-6 border border-[#2a2a4e]"
+                            className="bg-[#1a1a24] border border-gray-800 rounded-xl p-6"
                         >
                             <div className="flex items-center justify-between">
                                 <div>
@@ -84,7 +139,7 @@ export default function AdminDashboard() {
             {/* Recent Orders Section */}
             <div className="mt-8">
                 <h2 className="text-xl font-semibold text-white mb-4">Recent Orders</h2>
-                <div className="bg-[#1a1a2e] rounded-xl border border-[#2a2a4e] overflow-hidden">
+                <div className="bg-[#1a1a24] border border-gray-800 rounded-xl overflow-hidden">
                     {orders.length === 0 ? (
                         <div className="p-6 text-center text-gray-400">
                             No orders yet
@@ -106,33 +161,29 @@ export default function AdminDashboard() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                            Date
-                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#2a2a4e]">
-                                    {orders.slice(0, 5).map((order: any) => (
-                                        <tr key={order._id} className="hover:bg-[#2a2a4e]/30">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                <tbody className="divide-y divide-gray-800">
+                                    {orders.slice(0, 5).map((order) => (
+                                        <tr key={order._id} className="hover:bg-[#252530] transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                                                 {order._id.slice(0, 8)}...
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                                {order.customerName || "Guest"}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                                {order.shippingAddress?.fullName || "—"}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                                SAR {order.totalAmount?.toLocaleString() || 0}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                                SAR {order.totalAmount?.toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-xs rounded-full ${order.status === "completed" ? "bg-green-400/20 text-green-400" :
-                                                        order.status === "pending" ? "bg-yellow-400/20 text-yellow-400" :
-                                                            "bg-gray-400/20 text-gray-400"
+                                                <span className={`px-2 py-1 text-xs rounded-full ${order.status === "paid"
+                                                    ? "bg-green-400/20 text-green-400"
+                                                    : order.status === "pending"
+                                                        ? "bg-yellow-400/20 text-yellow-400"
+                                                        : "bg-red-400/20 text-red-400"
                                                     }`}>
                                                     {order.status}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                                {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
                                             </td>
                                         </tr>
                                     ))}
