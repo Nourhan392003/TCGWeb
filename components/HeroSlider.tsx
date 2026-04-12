@@ -1,0 +1,393 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pause, Play, ChevronRight } from 'lucide-react';
+
+/* ═══════════════════════════════ CONSTANTS & DATA ═══════════════════════════════ */
+
+const AUTOPLAY_INTERVAL = 6000; // 6 seconds per slide
+const PROGRESS_UPDATE = 50; // Update progress bar every 50ms
+
+const SLIDES = [
+    {
+        id: 1,
+        title: "CARRYING ON HIS WILL",
+        subtitle: "3 Brothers to celebrate 3 Years!",
+        description: "New powers keep joining the OPCG. Don't miss the special anniversary products.",
+        date: "AVAILABLE NOV. 7, 2025",
+        bgColor: "from-red-800 to-black",
+        characterImg: "/slider/charImage.png",
+        floatingPackImg: "/slider/card1.png",
+    },
+    {
+        id: 2,
+        title: "NEW EXPANSION AWAKENS",
+        subtitle: "The Pirate King's Journey",
+        description: "Discover powerful new leaders, devastating events, and legendary characters.",
+        date: "AVAILABLE JAN. 22, 2026",
+        bgColor: "from-emerald-900 to-black",
+        characterImg: "/slider/charIImage2.png",
+        floatingPackImg: "/slider/card2.jpg",
+    },
+    {
+        id: 3,
+        title: "GEAR 5 UNLEASHED",
+        subtitle: "The Warrior of Liberation",
+        description: "Experience the peak of power with the new ultimate rare collection. Pre-order your booster boxes now.",
+        date: "AVAILABLE MAR. 15, 2026",
+        bgColor: "from-blue-900 to-black",
+        characterImg: "/slider/luffy-gea.png",
+        floatingPackImg: "/slider/OP-05.png",
+    },
+    {
+        id: 4,
+        title: "EMPERORS OF THE SEA",
+        subtitle: "Clash of the Titans",
+        description: "Dominate the meta with cards featuring the most feared pirates in the New World.",
+        date: "AVAILABLE MAY. 10, 2026",
+        bgColor: "from-purple-900 to-black",
+        characterImg: "/slider/charImage4.png",
+        floatingPackImg: "/slider/card1.png",
+    }
+];
+
+/* ═══════════════════════════════ ANIMATION VARIANTS ═══════════════════════════════ */
+
+const textStagger = {
+    enter: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+    exit: { transition: { staggerChildren: 0.03, staggerDirection: -1 } },
+};
+
+const textItem = {
+    enter: { opacity: 0, y: 40, filter: 'blur(6px)' },
+    center: {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+    },
+    exit: {
+        opacity: 0,
+        y: -20,
+        filter: 'blur(3px)',
+        transition: { duration: 0.25 },
+    },
+};
+
+/* ═══════════════════════════════ COMPONENT ═══════════════════════════════ */
+export default function HeroSlider() {
+    const [current, setCurrent] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    // Correct Typescript references for intervals
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const progressRef = useRef<NodeJS.Timeout | null>(null);
+
+    const slide = SLIDES[current];
+
+    const goTo = useCallback((index: number) => {
+        setCurrent((index + SLIDES.length) % SLIDES.length);
+        setProgress(0);
+    }, []);
+
+    const next = useCallback(() => goTo(current + 1), [current, goTo]);
+    const prev = useCallback(() => goTo(current - 1), [current, goTo]);
+
+    /* ── Autoplay timer ── */
+    useEffect(() => {
+        if (isPaused) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            if (progressRef.current) clearInterval(progressRef.current);
+            return;
+        }
+
+        setProgress(0);
+
+        progressRef.current = setInterval(() => {
+            setProgress((p) => Math.min(p + (PROGRESS_UPDATE / AUTOPLAY_INTERVAL) * 100, 100));
+        }, PROGRESS_UPDATE);
+
+        timerRef.current = setInterval(next, AUTOPLAY_INTERVAL);
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+            if (progressRef.current) clearInterval(progressRef.current);
+        };
+    }, [current, isPaused, next]);
+
+    /* ── Keyboard nav ── */
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight') next();
+            if (e.key === 'ArrowLeft') prev();
+            if (e.key === ' ') {
+                e.preventDefault();
+                setIsPaused((p) => !p);
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [next, prev]);
+
+    return (
+        <section className="relative w-full h-[90vh] min-h-[700px] overflow-hidden select-none">
+
+            {/* ══════════════ BACKGROUND ══════════════ */}
+            <AnimatePresence mode="sync">
+                <motion.div
+                    key={`bg-${slide.id}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                    className={`absolute inset-0 z-0 bg-gradient-to-br ${slide.bgColor}`}
+                />
+            </AnimatePresence>
+
+            {/* ══════════════ TEXTURE OVERLAY ══════════════ */}
+            <div className="absolute inset-0 z-[1] pointer-events-none">
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        opacity: 0.04,
+                        backgroundImage: `
+                            repeating-linear-gradient(
+                                120deg,
+                                transparent,
+                                transparent 98px,
+                                rgba(255,255,255,0.15) 98px,
+                                rgba(255,255,255,0.15) 100px
+                            )
+                        `,
+                    }}
+                />
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        opacity: 0.06,
+                        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)',
+                        backgroundSize: '32px 32px',
+                    }}
+                />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_20%_50%,_rgba(255,200,50,0.12),_transparent)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_80%_55%,_rgba(0,0,0,0.25),_transparent)]" />
+            </div>
+
+            {/* ══════════════ VIGNETTE ══════════════ */}
+            <div className="absolute inset-0 z-[2] pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35)_0%,_transparent_30%,_transparent_65%,_rgba(0,0,0,0.55)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.15)_0%,_transparent_30%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(270deg,rgba(0,0,0,0.2)_0%,_transparent_15%)]" />
+            </div>
+
+            {/* ══════════════ PARTICLES ══════════════ */}
+            <div className="absolute inset-0 z-[3] pointer-events-none overflow-hidden">
+                {[...Array(14)].map((_, i) => (
+                    <motion.div
+                        key={`particle-${i}`}
+                        className="absolute w-1 h-1 rounded-full bg-white/30"
+                        style={{
+                            left: `${6 + (i * 7) % 88}%`,
+                            top: `${10 + (i * 13) % 75}%`,
+                        }}
+                        animate={{
+                            y: [0, -50 - i * 8, 0],
+                            x: [0, (i % 2 === 0 ? 15 : -15), 0],
+                            opacity: [0.1, 0.5, 0.1],
+                            scale: [0.5, 1.3, 0.5],
+                        }}
+                        transition={{
+                            duration: 4 + i * 0.6,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                            delay: i * 0.25,
+                        }}
+                    />
+                ))}
+            </div>
+
+            {/* ══════════════ FLOATING CARD (z-0, BEHIND CHARACTER) ══════════════ */}
+            <AnimatePresence mode="wait">
+                <motion.img
+                    key={`pack-${slide.id}`}
+                    src={slide.floatingPackImg}
+                    alt="Card"
+                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none hidden md:block"
+                    initial={{ y: 50, opacity: 0, rotate: -15 }}
+                    animate={{ y: [-10, 10, -10], opacity: 1, rotate: -15 }}
+                    transition={{
+                        opacity: { duration: 0.5 },
+                        y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                    }}
+                />
+            </AnimatePresence>
+
+            {/* ══════════════ MASSIVE CHARACTER (z-10, RIGHT, BOTTOM-ANCHORED) ══════════════ */}
+            <AnimatePresence mode="wait">
+                <motion.img
+                    key={`char-${slide.id}`}
+                    src={slide.characterImg}
+                    alt="Character"
+                    className="absolute bottom-0 right-0 lg:right-10 w-[80%] lg:w-[50%] max-h-[90vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none hidden md:block"
+                    initial={{ x: 200, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1, y: [0, -15, 0] }}
+                    exit={{ x: 200, opacity: 0, transition: { duration: 0.4 } }}
+                    transition={{
+                        x: { type: 'spring', stiffness: 100, damping: 20 },
+                        opacity: { duration: 0.5 },
+                        y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+                    }}
+                />
+            </AnimatePresence>
+
+            {/* ══════════════ LEFT SIDE — TEXT & CTA (50%) ══════════════ */}
+            {/* ══════════════ LEFT SIDE — TEXT & CTA (50%) ══════════════ */}
+            <div className="absolute inset-y-0 left-0 w-1/2 z-[20] flex items-center px-6 sm:px-10 lg:px-16">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`text-${slide.id}`}
+                        className="w-full max-w-xl"
+                        variants={textStagger}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                    >
+                        {/* Subtitle badge */}
+                        <motion.div variants={textItem} className="mb-6">
+                            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-sm font-bold tracking-[0.15em] uppercase">
+                                {slide.subtitle}
+                            </span>
+                        </motion.div>
+
+                        {/* Main title — bold outline anime style */}
+                        <motion.h1
+                            variants={textItem}
+                            className="text-5xl sm:text-6xl md:text-7xl lg:text-[6rem] xl:text-[7.5rem] font-black leading-[0.85] tracking-tighter mb-6"
+                            style={{
+                                fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
+                                color: '#fff',
+                                WebkitTextStroke: '4px rgba(0,0,0,0.5)',
+                                paintOrder: 'stroke fill',
+                                textShadow: '6px 6px 0 rgba(0,0,0,0.35), 0 0 60px rgba(0,0,0,0.2), 0 0 120px rgba(0,0,0,0.1)',
+                            }}
+                        >
+                            {slide.title}
+                        </motion.h1>
+
+                        {/* Description */}
+                        <motion.p
+                            variants={textItem}
+                            className="text-base sm:text-lg text-white/70 leading-relaxed max-w-md mb-8"
+                        >
+                            {slide.description}
+                        </motion.p>
+
+                        {/* Release date — LARGE, BOLD, GOLD */}
+                        <motion.div variants={textItem} className="mb-10">
+                            <span
+                                className="text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.15em] uppercase"
+                                style={{
+                                    color: '#ffd700',
+                                    textShadow: '0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(255,215,0,0.3)',
+                                }}
+                            >
+                                {slide.date}
+                            </span>
+                        </motion.div>
+
+                        {/* ركزي هنا: دي القفلات اللي كانت ممسوحة ورجعناها */}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+            {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
+            <div className="absolute bottom-10 left-10 z-[25] flex items-center gap-4">
+                <motion.button
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsPaused((p) => !p)}
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                    aria-label={isPaused ? 'Play' : 'Pause'}
+                >
+                    {isPaused ? <Play className="w-4 h-4 ml-0.5" /> : <Pause className="w-4 h-4" />}
+                </motion.button>
+
+                <div className="flex items-center gap-2.5">
+                    {SLIDES.map((s, i) => (
+                        <button
+                            key={s.id}
+                            onClick={() => goTo(i)}
+                            className="group relative flex items-center"
+                            aria-label={`Go to slide ${i + 1}`}
+                        >
+                            <div
+                                className="h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 group-hover:bg-white/30"
+                                style={{ width: i === current ? 72 : 28 }}
+                            >
+                                {i === current && (
+                                    <motion.div
+                                        className="h-full bg-yellow-400 rounded-full"
+                                        style={{ width: `${progress}%` }}
+                                        transition={{ duration: 0.05 }}
+                                    />
+                                )}
+                                {i !== current && i < current && (
+                                    <div className="h-full w-full bg-white/50 rounded-full" />
+                                )}
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                <span className="text-white/50 text-xs font-bold tracking-widest ml-2">
+                    {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+                </span>
+            </div>
+
+            {/* ══════════════ NAV ARROWS ══════════════ */}
+            <button
+                onClick={prev}
+                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-[25] w-12 h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
+                aria-label="Previous slide"
+            >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button
+                onClick={next}
+                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-[25] w-12 h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
+                aria-label="Next slide"
+            >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            {/* ══════════════ DIAGONAL DIVIDER (BOTTOM) ══════════════ */}
+            <div className="absolute bottom-0 left-0 right-0 z-[30] pointer-events-none">
+                <svg
+                    viewBox="0 0 1440 80"
+                    className="w-full h-auto block"
+                    preserveAspectRatio="none"
+                >
+                    <polygon fill="#06060c" points="0,80 1440,20 1440,80" />
+                    <polygon fill="rgba(255,255,255,0.03)" points="0,80 1440,35 1440,80" />
+                </svg>
+            </div>
+
+            {/* ══════════════ CORNER ACCENTS ══════════════ */}
+            <div className="absolute top-0 left-0 right-0 z-[20] pointer-events-none">
+                <div className="h-1 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent" />
+            </div>
+            <div className="absolute top-6 left-6 z-[20] pointer-events-none hidden sm:block">
+                <div className="w-16 h-16 border-t-2 border-l-2 border-yellow-500/20 rounded-tl-lg" />
+            </div>
+            <div className="absolute top-6 right-6 z-[20] pointer-events-none hidden sm:block">
+                <div className="w-16 h-16 border-t-2 border-r-2 border-yellow-500/20 rounded-tr-lg" />
+            </div>
+        </section>
+    );
+}

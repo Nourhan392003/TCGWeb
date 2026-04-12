@@ -1,0 +1,530 @@
+/**
+ * TCG Vault - Premium Gaming Theme
+ * 
+ * A luxurious, dark-themed color palette designed for trading card game collectors.
+ * Features neon accents for card rarity tiers and a premium gaming aesthetic.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap');
+
+/* ========================================
+   TAILWIND CSS VARIABLES - BASE CONFIGURATION
+   ======================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   CSS CUSTOM PROPERTIES - COLOR PALETTE
+   ======================================== */
+
+:root {
+    /* ----------------------------------------
+     BASE COLORS - Dark Gaming Theme
+     ---------------------------------------- */
+
+    /* Primary backgrounds - Deep dark tones */
+    --color-bg-primary: #0a0a0f;
+    --color-bg-secondary: #12121a;
+    --color-bg-tertiary: #1a1a24;
+    --color-bg-elevated: #22222e;
+    --color-bg-card: #16161e;
+    --color-bg-card-hover: #1e1e28;
+
+    /* Surface colors for layering */
+    --color-surface: #0d0d12;
+    --color-surface-raised: #18181f;
+    --color-surface-overlay: rgba(0, 0, 0, 0.75);
+
+    /* Border colors */
+    --color-border: #2a2a38;
+    --color-border-subtle: #1f1f28;
+    --color-border-hover: #3a3a4a;
+
+    /* ----------------------------------------
+     TEXT COLORS
+     ---------------------------------------- */
+
+    /* Primary text */
+    --color-text-primary: #f0f0f5;
+    --color-text-secondary: #a0a0b0;
+    --color-text-tertiary: #6a6a7a;
+    --color-text-muted: #4a4a5a;
+
+    /* Accent text */
+    --color-text-accent: #00d4ff;
+
+    /* ----------------------------------------
+     RARITY COLORS - Neon Gaming Accents
+     ---------------------------------------- */
+
+    /* Mythic/Rare Gold - Highest rarity */
+    --color-mythic: #ffd700;
+    --color-mythic-glow: #ffaa00;
+    --color-mythic-light: #fff4cc;
+    --color-mythic-dark: #b8960b;
+    --color-mythic-glow-opacity: rgba(255, 215, 0, 0.4);
+
+    /* Epic/Legendary Purple */
+    --color-epic: #a855f7;
+    --color-epic-glow: #9333ea;
+    --color-epic-light: #e9d5ff;
+    --color-epic-dark: #7c3aed;
+    --color-epic-glow-opacity: rgba(168, 85, 247, 0.4);
+
+    /* Rare/Super Rare Blue */
+    --color-rare: #3b82f6;
+    --color-rare-glow: #2563eb;
+    --color-rare-light: #dbeafe;
+    --color-rare-dark: #1d4ed8;
+    --color-rare-glow-opacity: rgba(59, 130, 246, 0.4);
+
+    /* Uncommon Green */
+    --color-uncommon: #22c55e;
+    --color-uncommon-glow: #16a34a;
+    --color-uncommon-light: #dcfce7;
+    --color-uncommon-dark: #15803d;
+    --color-uncommon-glow-opacity: rgba(34, 197, 94, 0.4);
+
+    /* Common - White/Gray */
+    --color-common: #e5e5e5;
+    --color-common-glow: #d4d4d4;
+    --color-common-dark: #a3a3a3;
+    --color-common-glow-opacity: rgba(229, 229, 229, 0.3);
+
+    /* ----------------------------------------
+     ACTION COLORS - Interactive Elements
+     ---------------------------------------- */
+
+    /* Primary action - Cyan/Blue glow */
+    --color-primary: #00d4ff;
+    --color-primary-hover: #00b8e0;
+    --color-primary-dark: #0099cc;
+    --color-primary-glow: rgba(0, 212, 255, 0.3);
+
+    /* Secondary action */
+    --color-secondary: #6366f1;
+    --color-secondary-hover: #4f46e5;
+
+    /* Success */
+    --color-success: #10b981;
+    --color-success-glow: #059669;
+
+    /* Warning */
+    --color-warning: #f59e0b;
+    --color-warning-glow: #d97706;
+
+    /* Error */
+    --color-error: #ef4444;
+    --color-error-glow: #dc2626;
+
+    /* ----------------------------------------
+     GRADIENTS - Premium Effects
+     ---------------------------------------- */
+
+    /* Card shine effects */
+    --gradient-card-shine: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.05) 100%);
+
+    /* Premium overlay */
+    --gradient-premium: linear-gradient(180deg,
+            rgba(255, 215, 0, 0.1) 0%,
+            transparent 50%);
+
+    /* Epic glow */
+    --gradient-epic-glow: linear-gradient(135deg,
+            rgba(168, 85, 247, 0.2) 0%,
+            transparent 60%);
+
+    /* Background mesh */
+    --gradient-mesh: radial-gradient(ellipse at 20% 0%,
+            rgba(0, 212, 255, 0.08) 0%,
+            transparent 50%),
+        radial-gradient(ellipse at 80% 100%,
+            rgba(168, 85, 247, 0.06) 0%,
+            transparent 50%);
+
+    /* ----------------------------------------
+     SHADOWS - Glow Effects
+     ---------------------------------------- */
+
+    --shadow-glow-mythic: 0 0 20px var(--color-mythic-glow-opacity);
+    --shadow-glow-epic: 0 0 20px var(--color-epic-glow-opacity);
+    --shadow-glow-rare: 0 0 15px var(--color-rare-glow-opacity);
+    --shadow-glow-primary: 0 0 20px var(--color-primary-glow);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
+
+    /* ----------------------------------------
+     SPACING & SIZING
+     ---------------------------------------- */
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* ----------------------------------------
+     TRANSITIONS
+     ---------------------------------------- */
+
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+
+    /* ----------------------------------------
+     Z-INDEX LAYERS
+     ---------------------------------------- */
+
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal: 300;
+    --z-tooltip: 400;
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR
+   ======================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-hover);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-bg-secondary);
+}
+
+/* ========================================
+   SELECTION STYLES
+   ======================================== */
+
+::selection {
+    background: var(--color-primary);
+    color: var(--color-bg-primary);
+}
+
+/* ========================================
+   FOCUS STYLES
+   ======================================== */
+
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   UTILITY CLASSES - RARITY GLOW EFFECTS
+   ======================================== */
+
+@layer utilities {
+
+    /* Mythic glow effects */
+    .glow-mythic {
+        box-shadow: var(--shadow-glow-mythic);
+    }
+
+    .glow-mythic-text {
+        text-shadow: 0 0 10px var(--color-mythic-glow-opacity);
+    }
+
+    /* Epic glow effects */
+    .glow-epic {
+        box-shadow: var(--shadow-glow-epic);
+    }
+
+    .glow-epic-text {
+        text-shadow: 0 0 10px var(--color-epic-glow-opacity);
+    }
+
+    /* Rare glow effects */
+    .glow-rare {
+        box-shadow: var(--shadow-glow-rare);
+    }
+
+    /* Primary glow */
+    .glow-primary {
+        box-shadow: var(--shadow-glow-primary);
+    }
+
+    /* Text rarity colors */
+    .text-mythic {
+        color: var(--color-mythic);
+    }
+
+    .text-epic {
+        color: var(--color-epic);
+    }
+
+    .text-rare {
+        color: var(--color-rare);
+    }
+
+    .text-uncommon {
+        color: var(--color-uncommon);
+    }
+
+    .text-common {
+        color: var(--color-common);
+    }
+
+    /* Background rarity colors */
+    .bg-mythic {
+        background-color: var(--color-mythic);
+    }
+
+    .bg-epic {
+        background-color: var(--color-epic);
+    }
+
+    .bg-rare {
+        background-color: var(--color-rare);
+    }
+
+    .bg-uncommon {
+        background-color: var(--color-uncommon);
+    }
+
+    .bg-common {
+        background-color: var(--color-common);
+    }
+
+    /* Border rarity colors */
+    .border-mythic {
+        border-color: var(--color-mythic);
+    }
+
+    .border-epic {
+        border-color: var(--color-epic);
+    }
+
+    .border-rare {
+        border-color: var(--color-rare);
+    }
+
+    /* Gradient backgrounds */
+    .bg-mesh {
+        background-image: var(--gradient-mesh);
+    }
+
+    .bg-card-shine {
+        background-image: var(--gradient-card-shine);
+    }
+
+    .bg-premium {
+        background-image: var(--gradient-premium);
+    }
+
+    /* Glass effect */
+    .glass {
+        background: rgba(22, 22, 30, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Card styles */
+    .card-base {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .card-base:hover {
+        background: var(--color-bg-card-hover);
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-card-hover);
+        transform: translateY(-2px);
+    }
+
+    /* Rounded rarity badge */
+    .rarity-badge {
+        @apply px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-full;
+    }
+
+    .rarity-badge-mythic {
+        @apply bg-mythic/20 text-mythic border border-mythic/30;
+    }
+
+    .rarity-badge-epic {
+        @apply bg-epic/20 text-epic border border-epic/30;
+    }
+
+    .rarity-badge-rare {
+        @apply bg-rare/20 text-rare border border-rare/30;
+    }
+
+    .rarity-badge-uncommon {
+        @apply bg-uncommon/20 text-uncommon border border-uncommon/30;
+    }
+
+    .rarity-badge-common {
+        @apply bg-common/20 text-common border border-common/30;
+    }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@layer utilities {
+
+    /* Subtle pulse for rarity glows */
+    @keyframes rarity-pulse-mythic {
+
+        0%,
+        100% {
+            box-shadow: 0 0 15px var(--color-mythic-glow-opacity);
+        }
+
+        50% {
+            box-shadow: 0 0 25px var(--color-mythic-glow-opacity), 0 0 40px var(--color-mythic-glow-opacity);
+        }
+    }
+
+    @keyframes rarity-pulse-epic {
+
+        0%,
+        100% {
+            box-shadow: 0 0 15px var(--color-epic-glow-opacity);
+        }
+
+        50% {
+            box-shadow: 0 0 25px var(--color-epic-glow-opacity), 0 0 35px var(--color-epic-glow-opacity);
+        }
+    }
+
+    .animate-rarity-pulse-mythic {
+        animation: rarity-pulse-mythic 3s ease-in-out infinite;
+    }
+
+    .animate-rarity-pulse-epic {
+        animation: rarity-pulse-epic 3s ease-in-out infinite;
+    }
+
+    /* Shimmer effect for premium cards */
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .animate-shimmer {
+        animation: shimmer 2s infinite;
+    }
+
+    /* Fade in animation */
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+    }
+}
+
+/* ========================================
+   TAILWIND CONFIGURATION EXTENSION
+   ======================================== */
+
+/* 
+ * These CSS variables work with Tailwind's arbitrary value syntax.
+ * Example usage in components:
+ * - bg-[var(--color-bg-primary)]
+ * - text-[var(--color-mythic)]
+ * - shadow-[var(--shadow-glow-primary)]
+ */
+
+/* ========================================
+   SAUDI RIYAL CURRENCY STYLES
+   ======================================== */
+
+@layer utilities {
+    /* Price display with Riyal */
+    .price-riyal {
+        font-family: 'Noto Sans Arabic', 'JetBrains Mono', sans-serif;
+        font-weight: 700;
+        direction: ltr;
+        unicode-bidi: embed;
+    }
+
+    /* Riyal symbol styling */
+    .riyal-symbol {
+        font-family: 'Noto Sans Arabic', sans-serif;
+        font-weight: 600;
+        color: #22c55e;
+    }
+
+    /* Large price display for product pages */
+    .price-large {
+        @apply text-4xl md:text-5xl font-black;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* RTL price number for Arabic */
+    .price-ar {
+        direction: rtl;
+        unicode-bidi: embed;
+    }
+}
