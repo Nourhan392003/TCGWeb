@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 
-// Status type and configuration
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: typeof Clock }> = {
@@ -77,7 +76,6 @@ export default function OrdersPage() {
     };
 
     const shortenOrderId = (id: string) => {
-        // Extract the last 8 characters of the ID
         return id.slice(-8).toUpperCase();
     };
 
@@ -162,13 +160,13 @@ export default function OrdersPage() {
                                                     <div className="flex items-center gap-2">
                                                         <User className="w-4 h-4 text-gray-500" />
                                                         <span className="text-white font-medium">
-                                                            {order.customerFirstName} {order.customerLastName}
+                                                            {order.shippingAddress?.fullName || "Unknown"}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <Mail className="w-3 h-3 text-gray-500" />
                                                         <span className="text-gray-400 text-sm">
-                                                            {order.customerEmail}
+                                                            {order.shippingAddress?.email || order.shippingAddress?.address || "N/A"}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -244,24 +242,20 @@ export default function OrdersPage() {
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Name:</span>
                                                                 <span className="text-white">
-                                                                    {order.customerFirstName} {order.customerLastName}
+                                                                    {order.shippingAddress?.fullName || "N/A"}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Email:</span>
-                                                                <span className="text-white">{order.customerEmail}</span>
+                                                                <span className="text-white">{order.shippingAddress?.address || "N/A"}</span>
                                                             </div>
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Phone:</span>
-                                                                <span className="text-white">{order.customerPhone}</span>
+                                                                <span className="text-white">{order.shippingAddress?.phone || "N/A"}</span>
                                                             </div>
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Address:</span>
-                                                                <span className="text-white">{order.customerAddress}</span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-400">City:</span>
-                                                                <span className="text-white">{order.customerCity}</span>
+                                                                <span className="text-white">{order.shippingAddress?.city || "N/A"}</span>
                                                             </div>
                                                         </div>
                                                     </div>

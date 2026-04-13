@@ -3,14 +3,21 @@
 import { useState } from "react";
 
 interface ProductGalleryProps {
-  images: (string | undefined)[];
-  productName: string;
+  product: {
+    _id: string;
+    name: string;
+    imageUrl?: string;
+    image?: string;
+  };
 }
 
 const PLACEHOLDER_IMAGE = "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg";
 
-export default function ProductGallery({ images, productName }: ProductGalleryProps) {
+export default function ProductGallery({ product }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const images = [product.imageUrl || product.image].filter((img): img is string => !!img);
+  const productName = product.name;
 
   const validImages = images.filter((img): img is string => !!img);
   

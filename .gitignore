@@ -9,3 +9,6 @@ dist/
 .cache/
 *.log
 .DS_Store
+.vercel
+*.tsbuildinfo
+nul
