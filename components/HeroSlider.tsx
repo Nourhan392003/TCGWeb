@@ -133,7 +133,7 @@ export default function HeroSlider() {
     }, [next, prev]);
 
     return (
-        <section className="relative w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] min-h-[400px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px] overflow-hidden select-none">
+        <section className="relative w-full h-[70vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] min-h-[400px] sm:min-h-[500px] md:min-h-[500px] lg:min-h-[700px] overflow-hidden select-none">
 
             {/* ══════════════ BACKGROUND ══════════════ */}
             <AnimatePresence mode="sync">
@@ -215,9 +215,9 @@ export default function HeroSlider() {
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
-                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-32 sm:w-40 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none"
+                    className="absolute top-[14%] right-[10%] sm:right-[20%] md:right-[40%] w-20 sm:w-32 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none block"
                     initial={{ y: 50, opacity: 0, rotate: -15 }}
-                    animate={{ y: [-10, 10, -10], opacity: 1, rotate: -15 }}
+                    animate={{ y: [-8, 8, -8], opacity: 1, rotate: -15 }}
                     transition={{
                         opacity: { duration: 0.5 },
                         y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
@@ -231,9 +231,10 @@ export default function HeroSlider() {
                     key={`char-${slide.id}`}
                     src={slide.characterImg}
                     alt="Character"
-                    className="absolute bottom-0 right-0 w-[55%] sm:w-[65%] md:w-[70%] lg:w-[50%] max-h-[75vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none block" initial={{ x: 200, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1, y: [0, -15, 0] }}
-                    exit={{ x: 200, opacity: 0, transition: { duration: 0.4 } }}
+                    className="absolute bottom-0 right-0 w-[78%] sm:w-[68%] md:w-[70%] lg:w-[50%] max-h-[42vh] sm:max-h-[60vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none block"
+                    initial={{ x: 120, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1, y: [0, -10, 0] }}
+                    exit={{ x: 120, opacity: 0, transition: { duration: 0.4 } }}
                     transition={{
                         x: { type: 'spring', stiffness: 100, damping: 20 },
                         opacity: { duration: 0.5 },
@@ -265,7 +266,7 @@ export default function HeroSlider() {
                             style={{
                                 fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
                                 color: '#fff',
-                                WebkitTextStroke: '2px sm:3px md:4px rgba(0,0,0,0.5)',
+                                WebkitTextStroke: '3px rgba(0,0,0,0.5)',
                                 paintOrder: 'stroke fill',
                                 textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
                             }}
@@ -323,8 +324,7 @@ export default function HeroSlider() {
                             aria-label={`Go to slide ${i + 1}`}
                         >
                             <div
-                                className="h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 group-hover:bg-white/30"
-                                style={{ width: i === current ? (window.innerWidth < 640 ? 40 : 72) : 20 }}
+                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-18' : 'w-5'}`} style={{ width: i === current ? (window.innerWidth < 640 ? 40 : 72) : 20 }}
                             >
                                 {i === current && (
                                     <motion.div
