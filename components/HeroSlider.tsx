@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Link from 'next/link';
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pause, Play, ChevronRight } from 'lucide-react';
+import { Pause, Play } from 'lucide-react';
 
 /* ═══════════════════════════════ CONSTANTS & DATA ═══════════════════════════════ */
 
@@ -324,7 +324,7 @@ export default function HeroSlider() {
                             aria-label={`Go to slide ${i + 1}`}
                         >
                             <div
-                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-18' : 'w-5'}`} style={{ width: i === current ? (window.innerWidth < 640 ? 40 : 72) : 20 }}
+                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-18' : 'w-5'}`}
                             >
                                 {i === current && (
                                     <motion.div
