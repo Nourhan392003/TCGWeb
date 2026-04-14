@@ -215,6 +215,7 @@ export default function HeroSlider() {
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
+
                     className="absolute top-[18%] sm:top-[12%] right-[8%] sm:right-[18%] md:right-[40%] w-16 sm:w-24 md:w-48 lg:w-64 rounded-xl shadow-2xl z-[8] pointer-events-none block opacity-90" animate={{ y: [-8, 8, -8], opacity: 1, rotate: -15 }}
                     transition={{
                         opacity: { duration: 0.5 },

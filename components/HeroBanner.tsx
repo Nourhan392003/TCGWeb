@@ -15,11 +15,11 @@ interface FloatingCard {
 
 /* ────────────────────────────── Data ────────────────────────────── */
 const FLOATING_CARDS: FloatingCard[] = [
-    { src: 'https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg', rotate: -20, depth: 'bg',  pos: { top: '6%',  left: '3%' } },
-    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh08-268.jpg', rotate: 25, depth: 'mid',  pos: { top: '12%', right: '6%' } },
-    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh04-188.jpg', rotate: -10, depth: 'fg',  pos: { bottom: '22%', left: '8%' } },
-    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh07-215.jpg', rotate: 30, depth: 'bg',  pos: { top: '45%', right: '12%' } },
-    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh04-188.jpg', rotate: -28, depth: 'fg',  pos: { bottom: '15%', right: '3%' } },
+    { src: 'https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg', rotate: -20, depth: 'bg', pos: { top: '6%', left: '3%' } },
+    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh08-268.jpg', rotate: 25, depth: 'mid', pos: { top: '12%', right: '6%' } },
+    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh04-188.jpg', rotate: -10, depth: 'fg', pos: { bottom: '22%', left: '8%' } },
+    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh07-215.jpg', rotate: 30, depth: 'bg', pos: { top: '45%', right: '12%' } },
+    { src: 'https://tcg.pokemon.com/img/tcg-swsh-swsh04-188.jpg', rotate: -28, depth: 'fg', pos: { bottom: '15%', right: '3%' } },
 ];
 
 /* ────────────────────────────── Spring ────────────────────────────── */
@@ -36,12 +36,12 @@ export default function HeroBanner() {
     const sy = useSpring(my, springCfg);
 
     /* ── Parallax transforms per depth ── */
-    const bgX  = useTransform(sx, [-0.5, 0.5], [-8, 8]);
-    const bgY  = useTransform(sy, [-0.5, 0.5], [-5, 5]);
+    const bgX = useTransform(sx, [-0.5, 0.5], [-8, 8]);
+    const bgY = useTransform(sy, [-0.5, 0.5], [-5, 5]);
     const midX = useTransform(sx, [-0.5, 0.5], [-20, 20]);
     const midY = useTransform(sy, [-0.5, 0.5], [-12, 12]);
-    const fgX  = useTransform(sx, [-0.5, 0.5], [-40, 40]);
-    const fgY  = useTransform(sy, [-0.5, 0.5], [-25, 25]);
+    const fgX = useTransform(sx, [-0.5, 0.5], [-40, 40]);
+    const fgY = useTransform(sy, [-0.5, 0.5], [-25, 25]);
 
     /* ── Texture parallax (subtle) ── */
     const texX = useTransform(sx, [-0.5, 0.5], [-6, 6]);
@@ -61,10 +61,10 @@ export default function HeroBanner() {
 
     const parallaxMap = (depth: string) => {
         switch (depth) {
-            case 'bg':  return { x: bgX,  y: bgY };
+            case 'bg': return { x: bgX, y: bgY };
             case 'mid': return { x: midX, y: midY };
-            case 'fg':  return { x: fgX,  y: fgY };
-            default:    return { x: midX, y: midY };
+            case 'fg': return { x: fgX, y: fgY };
+            default: return { x: midX, y: midY };
         }
     };
 
@@ -83,15 +83,14 @@ export default function HeroBanner() {
             className="relative h-[100vh] min-h-[700px] overflow-hidden selection:bg-yellow-400/40"
         >
             {/* ══════════════ LAYER 0 — Vibrant Red Background ══════════════ */}
-            <div className="absolute inset-0 z-0" style={{ background: '#c62828' }} />
+            <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(180deg, #2a160d 0%, #120a06 100%)' }} />
 
             {/* ══════════════ LAYER 1 — Texture Overlay (treasure-map feel) ══════════════ */}
             <motion.div style={{ x: texX, y: texY }} className="absolute inset-0 z-[1] pointer-events-none">
                 <div
                     className="absolute inset-[-20px]"
                     style={{
-                        opacity: 0.1,
-                        backgroundImage: `
+                        opacity: 0.04, backgroundImage: `
                             radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 1px, transparent 1px),
                             radial-gradient(circle at 70% 60%, rgba(255,255,255,0.06) 1px, transparent 1px),
                             repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0,0,0,0.03) 50px),
@@ -121,6 +120,7 @@ export default function HeroBanner() {
                         key={`fc-${i}`}
                         style={{ ...p, position: 'absolute', ...card.pos, zIndex: zIdx }}
                         className="hidden md:block"
+
                         initial={{ opacity: 0, y: 60, rotateZ: card.rotate + 10 }}
                         animate={{
                             opacity: card.depth === 'fg' ? 0.8 : card.depth === 'mid' ? 0.5 : 0.25,
@@ -195,7 +195,7 @@ export default function HeroBanner() {
                     {/* ── Main Title with text-stroke ── */}
                     <motion.h1
                         {...stagger(1, 0.25)}
-                        className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tight select-none mb-2"
+                        className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tight select-none mb-2 font-black leading-[0.88] tracking-tight select-none mb-2"
                         style={{
                             fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
                             color: '#fff',
@@ -233,8 +233,7 @@ export default function HeroBanner() {
                             className="inline-block"
                         >
                             <div
-                                className="relative w-40 sm:w-48 md:w-56 aspect-[3/4] rounded-xl overflow-hidden border-2 border-yellow-500/40"
-                                style={{
+                                className="relative w-32 sm:w-40 md:w-56 aspect-[3/4] rounded-xl overflow-hidden border-2 border-yellow-500/40" style={{
                                     boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,215,0,0.15)',
                                 }}
                             >
