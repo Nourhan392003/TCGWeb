@@ -118,7 +118,7 @@ export default function HeroBanner() {
                     <motion.div
                         key={`fc-${i}`}
                         style={{ ...p, position: 'absolute', ...card.pos, zIndex: zIdx }}
-                        className="hidden md:block"
+                        className="w-28 sm:w-36 md:w-56"
 
                         initial={{ opacity: 0, y: 60, rotateZ: card.rotate + 10 }}
                         animate={{
