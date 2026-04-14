@@ -294,14 +294,14 @@ export default function HeroSlider() {
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
-            <motion.div variants={textItem} className="mt-4 sm:hidden ml-4">
+            <div className="absolute left-6 bottom-24 sm:hidden z-[26]">
                 <Link
                     href="/products"
                     className="inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-black font-bold text-sm rounded-full shadow-lg"
                 >
                     Shop Now
                 </Link>
-            </motion.div>
+            </div>
             {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
             <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
                 <motion.button
