@@ -294,7 +294,7 @@ export default function HeroSlider() {
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
-            <div className="absolute left-6 bottom-28 sm:hidden z-[26]">
+            <div className="absolute bottom-20 left-6 sm:hidden z-[40]">
                 <Link
                     href="/products"
                     className="inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-black font-bold text-sm rounded-full shadow-lg"
