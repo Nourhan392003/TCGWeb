@@ -1,4 +1,5 @@
-'use client';
+'use client'
+import dynamic from "next/dynamic";
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -8,10 +9,21 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import toast from "react-hot-toast";
 import { ShoppingCart, Heart } from "lucide-react";
-import HeroSlider from "@/components/HeroSlider";
-import FloatingCardsCTA from "@/components/FloatingCardsCTA";
-import VideoSection from '@/components/VideoSection';
-import VideosSection from "@/components/VideosSection"; // أو المسار الصح حسب مشروعك
+const HeroSlider = dynamic(() => import("@/components/HeroSlider"), {
+    ssr: false,
+});
+
+const FloatingCardsCTA = dynamic(() => import("@/components/FloatingCardsCTA"), {
+    ssr: false,
+});
+
+const VideoSection = dynamic(() => import("@/components/VideoSection"), {
+    ssr: false,
+});
+
+const VideosSection = dynamic(() => import("@/components/VideosSection"), {
+    ssr: false,
+});
 import { formatPrice } from "@/utils/currency";
 export default function Home() {
     const featuredCards = useQuery(api.products.getFeaturedCards);

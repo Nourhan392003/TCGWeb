@@ -215,8 +215,7 @@ export default function HeroSlider() {
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
-                    className="absolute top-[14%] right-[10%] sm:right-[20%] md:right-[40%] w-20 sm:w-32 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none block"
-                    initial={{ y: 50, opacity: 0, rotate: -15 }}
+                    className="absolute top-[12%] right-[8%] sm:right-[18%] md:right-[40%] w-16 sm:w-24 md:w-48 lg:w-64 rounded-xl shadow-2xl z-[8] pointer-events-none block opacity-90" initial={{ y: 50, opacity: 0, rotate: -15 }}
                     animate={{ y: [-8, 8, -8], opacity: 1, rotate: -15 }}
                     transition={{
                         opacity: { duration: 0.5 },
@@ -231,69 +230,67 @@ export default function HeroSlider() {
                     key={`char-${slide.id}`}
                     src={slide.characterImg}
                     alt="Character"
-                    className="absolute bottom-0 right-0 w-[78%] sm:w-[68%] md:w-[70%] lg:w-[50%] max-h-[42vh] sm:max-h-[60vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none block"
-                    initial={{ x: 120, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1, y: [0, -10, 0] }}
-                    exit={{ x: 120, opacity: 0, transition: { duration: 0.4 } }}
+                    className="absolute bottom-0 right-[-8%] sm:right-0 md:right-0 w-[58%] sm:w-[52%] md:w-[70%] lg:w-[50%] max-h-[38vh] sm:max-h-[48vh] md:max-h-[60vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none block opacity-90 sm:opacity-100"
+                    initial={{ x: 80, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
+                    exit={{ x: 80, opacity: 0, transition: { duration: 0.35 } }}
                     transition={{
-                        x: { type: 'spring', stiffness: 100, damping: 20 },
-                        opacity: { duration: 0.5 },
+                        x: { type: 'spring', stiffness: 90, damping: 18 },
+                        opacity: { duration: 0.45 },
                         y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
                     }}
                 />
             </AnimatePresence>
 
             {/* ══════════════ LEFT SIDE — TEXT & CTA ══════════════ */}
-            <div className="absolute inset-y-0 left-0 z-[20] flex items-center px-4 sm:px-8 md:px-10 lg:px-16 w-full md:w-1/2">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={`text-${slide.id}`}
-                        className="w-full max-w-xl"
-                        variants={textStagger}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                    >
-                        <motion.div variants={textItem} className="mb-3 sm:mb-6">
-                            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase">
-                                {slide.subtitle}
-                            </span>
-                        </motion.div>
+            <div className="absolute inset-0 z-[20] flex items-start md:items-center px-4 sm:px-8 md:px-10 lg:px-16 pt-20 sm:pt-24 md:pt-0 w-full md:w-1/2">                <AnimatePresence mode="wait">
+                <motion.div
+                    key={`text-${slide.id}`}
+                    className="w-full max-w-[68%] sm:max-w-[60%] md:max-w-xl"
+                    variants={textStagger}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                >
+                    <motion.div variants={textItem} className="mb-3 sm:mb-6">
+                        <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase">
+                            {slide.subtitle}
+                        </span>
+                    </motion.div>
 
-                        <motion.h1
-                            variants={textItem}
-                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[7.5rem] font-black leading-[0.85] tracking-tighter mb-3 sm:mb-6"
+                    <motion.h1
+                        variants={textItem}
+                        className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[7.5rem] font-black leading-[0.9] tracking-tight mb-3 sm:mb-6 max-w-[11ch]" style={{
+                            fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
+                            color: '#fff',
+                            WebkitTextStroke: '3px rgba(0,0,0,0.5)',
+                            paintOrder: 'stroke fill',
+                            textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
+                        }}
+                    >
+                        {slide.title}
+                    </motion.h1>
+
+                    <motion.p
+                        variants={textItem}
+                        className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xs sm:max-w-md mb-4 sm:mb-8 hidden sm:block"
+                    >
+                        {slide.description}
+                    </motion.p>
+
+                    <motion.div variants={textItem} className="mb-6 sm:mb-10">
+                        <span
+                            className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-[0.15em] uppercase"
                             style={{
-                                fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-                                color: '#fff',
-                                WebkitTextStroke: '3px rgba(0,0,0,0.5)',
-                                paintOrder: 'stroke fill',
-                                textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
+                                color: '#ffd700',
+                                textShadow: '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)',
                             }}
                         >
-                            {slide.title}
-                        </motion.h1>
-
-                        <motion.p
-                            variants={textItem}
-                            className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xs sm:max-w-md mb-4 sm:mb-8 hidden sm:block"
-                        >
-                            {slide.description}
-                        </motion.p>
-
-                        <motion.div variants={textItem} className="mb-6 sm:mb-10">
-                            <span
-                                className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-[0.15em] uppercase"
-                                style={{
-                                    color: '#ffd700',
-                                    textShadow: '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)',
-                                }}
-                            >
-                                {slide.date}
-                            </span>
-                        </motion.div>
+                            {slide.date}
+                        </span>
                     </motion.div>
-                </AnimatePresence>
+                </motion.div>
+            </AnimatePresence>
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}

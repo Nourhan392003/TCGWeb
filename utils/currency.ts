@@ -8,6 +8,8 @@
  * يُرجع قيمة مثل: "1,234.56 ر.س"
  */
 export function formatPriceSAR(price: number): string {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+
     return new Intl.NumberFormat("ar-SA", {
         style: "currency",
         currency: "SAR",
