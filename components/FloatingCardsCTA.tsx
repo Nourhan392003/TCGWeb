@@ -8,7 +8,7 @@ const cardImages = [
   "/cards/card3.png",
   "/cards/card4.png",
   "/cards/card5.png",
-  "/cards/card6.png",
+  //"/cards/card6.png",
   "/cards/card7.png",
   "/cards/card9.png",
   "/cards/card10.png",
@@ -19,22 +19,18 @@ const cardImages = [
 ];
 
 const cardConfigs = [
-  { src: cardImages[0], left: "5%", duration: 15, delay: 0, rotate: 15, opacity: 0.8, blur: false, width: 120 },
-  { src: cardImages[1], left: "20%", duration: 18, delay: 3, rotate: -10, opacity: 0.5, blur: true, width: 100 },
-  { src: cardImages[2], left: "75%", duration: 12, delay: 1, rotate: 20, opacity: 0.9, blur: false, width: 140 },
-  { src: cardImages[3], left: "85%", duration: 20, delay: 5, rotate: -15, opacity: 0.4, blur: true, width: 90 },
-  { src: cardImages[4], left: "12%", duration: 16, delay: 7, rotate: 25, opacity: 0.7, blur: false, width: 110 },
-  { src: cardImages[5], left: "80%", duration: 14, delay: 2, rotate: -5, opacity: 0.85, blur: false, width: 160 },
-  { src: cardImages[0], left: "28%", duration: 19, delay: 8, rotate: 12, opacity: 0.3, blur: true, width: 80 },
-  { src: cardImages[3], left: "65%", duration: 17, delay: 4, rotate: -18, opacity: 0.6, blur: false, width: 100 },
-];
+  { src: cardImages[0], left: "5%", duration: 15, delay: 0, rotate: 15, opacity: 0.8, blur: false, width: 90 },
+  { src: cardImages[1], left: "20%", duration: 18, delay: 3, rotate: -10, opacity: 0.5, blur: true, width: 78 },
+  { src: cardImages[2], left: "75%", duration: 12, delay: 1, rotate: 20, opacity: 0.9, blur: false, width: 100 },
+  { src: cardImages[3], left: "85%", duration: 20, delay: 5, rotate: -15, opacity: 0.4, blur: true, width: 74 },
+]
 
 const FloatingCardsCTA: React.FC = () => {
   return (
-    <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] overflow-hidden bg-black">
+    <section className="relative min-h-[75vh] sm:min-h-[70vh] md:min-h-[80vh] overflow-hidden bg-black">
 
       <div
-        className="absolute inset-0 z-0 opacity-20 sm:opacity-25 md:opacity-35 pointer-events-none bg-center bg-cover bg-no-repeat bg-fixed"
+        className="absolute inset-0 z-0 opacity-20 sm:opacity-25 md:opacity-35 pointer-events-none bg-center bg-cover bg-no-repeat"
         style={{ backgroundImage: "url('/map-bg.jpg')" }}
       />
 
@@ -46,35 +42,34 @@ const FloatingCardsCTA: React.FC = () => {
         <div className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-[radial-gradient(circle,rgba(255,200,50,0.06)_0%,rgba(0,0,0,0)_70%)]" />
       </div>
 
-      <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden hidden sm:block">
-        {cardConfigs.map((card, index) => (
-          <motion.img
-            key={index}
-            src={card.src}
-            alt={`Floating card ${index + 1}`}
-            style={{
-              position: 'absolute',
-              left: card.left,
-              width: card.width,
-              opacity: card.opacity,
-              zIndex: 1,
-              willChange: "transform",
-            }}
-            className="select-none drop-shadow-[0_0_20px_rgba(255,180,50,0.2)]"
-            draggable={false}
-            initial={{ top: "110%", rotate: card.rotate }}
-            animate={{
-              top: "-50%",
-              rotate: card.rotate + (index % 2 === 0 ? 15 : -15)
-            }}
-            transition={{
-              duration: card.duration,
-              delay: card.delay,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        ))}
+      <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden opacity-0 sm:opacity-100">        {cardConfigs.map((card, index) => (
+        <motion.img
+          key={index}
+          src={card.src}
+          alt={`Floating card ${index + 1}`}
+          style={{
+            position: 'absolute',
+            left: card.left,
+            width: card.width,
+            opacity: card.opacity,
+            zIndex: 1,
+            willChange: "transform",
+          }}
+          className="select-none drop-shadow-[0_0_20px_rgba(255,180,50,0.2)]"
+          draggable={false}
+          initial={{ top: "110%", rotate: card.rotate }}
+          animate={{
+            top: "-50%",
+            rotate: card.rotate + (index % 2 === 0 ? 15 : -15)
+          }}
+          transition={{
+            duration: card.duration,
+            delay: card.delay,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      ))}
       </div>
 
       <div className="relative z-20 flex flex-col items-center text-center max-w-4xl mx-auto px-4 py-16 sm:py-24 md:py-32 min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] justify-center">
@@ -93,8 +88,7 @@ const FloatingCardsCTA: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 leading-relaxed max-w-xl md:max-w-2xl mb-6 sm:mb-8 md:mb-12 tracking-wide drop-shadow-md"
-        >
+          className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 leading-relaxed max-w-md md:max-w-2xl mb-6 sm:mb-8 md:mb-12 tracking-wide drop-shadow-md"        >
           TCG Vault is a trading card game platform built for collectors and champions.
         </motion.p>
 
@@ -103,8 +97,7 @@ const FloatingCardsCTA: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl md:text-7xl lg:text-8xl font-black uppercase text-white tracking-tight leading-[1.1] mb-8 sm:mb-10 md:mb-14 drop-shadow-lg"
-        >
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase text-white tracking-tight leading-[1.1] mb-8 sm:mb-10 md:mb-14 drop-shadow-lg"        >
           Experience it.
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
