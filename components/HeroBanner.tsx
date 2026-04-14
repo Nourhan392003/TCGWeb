@@ -80,7 +80,8 @@ export default function HeroBanner() {
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="relative min-h-[100svh] md:min-h-[700px] overflow-hidden selection:bg-yellow-400/40"        >
+            className="relative overflow-hidden selection:bg-yellow-400/40 min-h-[540px] sm:min-h-[620px] md:min-h-[700px]"
+        >
             {/* ══════════════ LAYER 0 — Vibrant Red Background ══════════════ */}
             <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(180deg, #2a160d 0%, #120a06 100%)' }} />
 
