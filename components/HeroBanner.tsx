@@ -80,8 +80,7 @@ export default function HeroBanner() {
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="relative h-[100vh] min-h-[700px] overflow-hidden selection:bg-yellow-400/40"
-        >
+            className="relative min-h-[620px] md:min-h-[700px] h-[100svh] overflow-hidden selection:bg-yellow-400/40"        >
             {/* ══════════════ LAYER 0 — Vibrant Red Background ══════════════ */}
             <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(180deg, #2a160d 0%, #120a06 100%)' }} />
 
@@ -179,8 +178,8 @@ export default function HeroBanner() {
             </motion.div>
 
             {/* ══════════════ LAYER 5 — Left Content (Title + Product + Date) ══════════════ */}
-            <div className="relative z-[15] flex items-center h-full px-6 sm:px-10 lg:px-16">
-                <div className="max-w-lg lg:max-w-xl">
+            <div className="relative z-[15] flex items-center h-full px-4 sm:px-8 lg:px-16">
+                <div className="max-w-[300px] sm:max-w-lg lg:max-w-xl">
                     {/* ── Subtitle badge ── */}
                     <motion.div {...stagger(0, 0.15)} className="mb-4">
                         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/25 backdrop-blur-sm border border-white/15 text-white/90 text-xs font-bold tracking-[0.2em] uppercase">
@@ -195,8 +194,7 @@ export default function HeroBanner() {
                     {/* ── Main Title with text-stroke ── */}
                     <motion.h1
                         {...stagger(1, 0.25)}
-                        className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tight select-none mb-2 font-black leading-[0.88] tracking-tight select-none mb-2"
-                        style={{
+                        className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tight select-none mb-2" style={{
                             fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
                             color: '#fff',
                             WebkitTextStroke: '3px #1a472a',
@@ -233,7 +231,7 @@ export default function HeroBanner() {
                             className="inline-block"
                         >
                             <div
-                                className="relative w-32 sm:w-40 md:w-56 aspect-[3/4] rounded-xl overflow-hidden border-2 border-yellow-500/40" style={{
+                                className="relative w-28 sm:w-36 md:w-56 aspect-[3/4] rounded-xl overflow-hidden border-2 border-yellow-500/40" style={{
                                     boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,215,0,0.15)',
                                 }}
                             >
@@ -297,8 +295,7 @@ export default function HeroBanner() {
                 initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
                 animate={{ opacity: 1, scale: 1, rotate: 2 }}
                 transition={{ duration: 0.7, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-24 right-6 sm:right-12 lg:bottom-28 lg:right-20 z-[16]"
-            >
+                className="absolute bottom-20 right-3 sm:right-10 lg:bottom-28 lg:right-20 z-[16] scale-90 sm:scale-100"            >
                 <motion.div
                     animate={{ rotate: [2, -1, 2] }}
                     transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
