@@ -133,7 +133,7 @@ export default function HeroSlider() {
     }, [next, prev]);
 
     return (
-        <section className="relative w-full h-[90vh] min-h-[700px] overflow-hidden select-none">
+        <section className="relative w-full h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-[90vh] min-h-[400px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px] overflow-hidden select-none">
 
             {/* ══════════════ BACKGROUND ══════════════ */}
             <AnimatePresence mode="sync">
@@ -215,7 +215,7 @@ export default function HeroSlider() {
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
-                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none hidden md:block"
+                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-32 sm:w-40 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none hidden md:block"
                     initial={{ y: 50, opacity: 0, rotate: -15 }}
                     animate={{ y: [-10, 10, -10], opacity: 1, rotate: -15 }}
                     transition={{
@@ -231,7 +231,7 @@ export default function HeroSlider() {
                     key={`char-${slide.id}`}
                     src={slide.characterImg}
                     alt="Character"
-                    className="absolute bottom-0 right-0 lg:right-10 w-[80%] lg:w-[50%] max-h-[90vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none hidden md:block"
+                    className="absolute bottom-0 right-0 lg:right-10 w-[85%] md:w-[70%] lg:w-[50%] max-h-[90vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none hidden md:block"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1, y: [0, -15, 0] }}
                     exit={{ x: 200, opacity: 0, transition: { duration: 0.4 } }}
@@ -243,9 +243,8 @@ export default function HeroSlider() {
                 />
             </AnimatePresence>
 
-            {/* ══════════════ LEFT SIDE — TEXT & CTA (50%) ══════════════ */}
-            {/* ══════════════ LEFT SIDE — TEXT & CTA (50%) ══════════════ */}
-            <div className="absolute inset-y-0 left-0 w-1/2 z-[20] flex items-center px-6 sm:px-10 lg:px-16">
+            {/* ══════════════ LEFT SIDE — TEXT & CTA ══════════════ */}
+            <div className="absolute inset-y-0 left-0 z-[20] flex items-center px-4 sm:px-8 md:px-10 lg:px-16 w-full md:w-1/2">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={`text-${slide.id}`}
@@ -255,66 +254,68 @@ export default function HeroSlider() {
                         animate="center"
                         exit="exit"
                     >
-                        {/* Subtitle badge */}
-                        <motion.div variants={textItem} className="mb-6">
-                            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-sm font-bold tracking-[0.15em] uppercase">
+                        <motion.div variants={textItem} className="mb-3 sm:mb-6">
+                            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase">
                                 {slide.subtitle}
                             </span>
                         </motion.div>
 
-                        {/* Main title — bold outline anime style */}
                         <motion.h1
                             variants={textItem}
-                            className="text-5xl sm:text-6xl md:text-7xl lg:text-[6rem] xl:text-[7.5rem] font-black leading-[0.85] tracking-tighter mb-6"
+                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[7.5rem] font-black leading-[0.85] tracking-tighter mb-3 sm:mb-6"
                             style={{
                                 fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
                                 color: '#fff',
-                                WebkitTextStroke: '4px rgba(0,0,0,0.5)',
+                                WebkitTextStroke: '2px sm:3px md:4px rgba(0,0,0,0.5)',
                                 paintOrder: 'stroke fill',
-                                textShadow: '6px 6px 0 rgba(0,0,0,0.35), 0 0 60px rgba(0,0,0,0.2), 0 0 120px rgba(0,0,0,0.1)',
+                                textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
                             }}
                         >
                             {slide.title}
                         </motion.h1>
 
-                        {/* Description */}
                         <motion.p
                             variants={textItem}
-                            className="text-base sm:text-lg text-white/70 leading-relaxed max-w-md mb-8"
+                            className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xs sm:max-w-md mb-4 sm:mb-8 hidden sm:block"
                         >
                             {slide.description}
                         </motion.p>
 
-                        {/* Release date — LARGE, BOLD, GOLD */}
-                        <motion.div variants={textItem} className="mb-10">
+                        <motion.div variants={textItem} className="mb-6 sm:mb-10">
                             <span
-                                className="text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.15em] uppercase"
+                                className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-[0.15em] uppercase"
                                 style={{
                                     color: '#ffd700',
-                                    textShadow: '0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(255,215,0,0.3)',
+                                    textShadow: '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)',
                                 }}
                             >
                                 {slide.date}
                             </span>
                         </motion.div>
-
-                        {/* ركزي هنا: دي القفلات اللي كانت ممسوحة ورجعناها */}
                     </motion.div>
                 </AnimatePresence>
             </div>
+
+            {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
+            <div className="absolute bottom-20 sm:hidden left-1/2 -translate-x-1/2 z-[25]">
+                <button className="px-6 py-2 bg-yellow-500 text-black font-bold text-sm rounded-full">
+                    Shop Now
+                </button>
+            </div>
+
             {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
-            <div className="absolute bottom-10 left-10 z-[25] flex items-center gap-4">
+            <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
                 <motion.button
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setIsPaused((p) => !p)}
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
                     aria-label={isPaused ? 'Play' : 'Pause'}
                 >
-                    {isPaused ? <Play className="w-4 h-4 ml-0.5" /> : <Pause className="w-4 h-4" />}
+                    {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
                 </motion.button>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 sm:gap-2.5">
                     {SLIDES.map((s, i) => (
                         <button
                             key={s.id}
@@ -324,7 +325,7 @@ export default function HeroSlider() {
                         >
                             <div
                                 className="h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 group-hover:bg-white/30"
-                                style={{ width: i === current ? 72 : 28 }}
+                                style={{ width: i === current ? (window.innerWidth < 640 ? 40 : 72) : 20 }}
                             >
                                 {i === current && (
                                     <motion.div
@@ -341,7 +342,7 @@ export default function HeroSlider() {
                     ))}
                 </div>
 
-                <span className="text-white/50 text-xs font-bold tracking-widest ml-2">
+                <span className="text-white/50 text-[10px] sm:text-xs font-bold tracking-widest ml-1 sm:ml-2 hidden sm:inline">
                     {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
                 </span>
             </div>
@@ -349,19 +350,19 @@ export default function HeroSlider() {
             {/* ══════════════ NAV ARROWS ══════════════ */}
             <button
                 onClick={prev}
-                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-[25] w-12 h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
+                className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
                 aria-label="Previous slide"
             >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
             <button
                 onClick={next}
-                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-[25] w-12 h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
+                className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
                 aria-label="Next slide"
             >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
@@ -382,11 +383,11 @@ export default function HeroSlider() {
             <div className="absolute top-0 left-0 right-0 z-[20] pointer-events-none">
                 <div className="h-1 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent" />
             </div>
-            <div className="absolute top-6 left-6 z-[20] pointer-events-none hidden sm:block">
-                <div className="w-16 h-16 border-t-2 border-l-2 border-yellow-500/20 rounded-tl-lg" />
+            <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-[20] pointer-events-none hidden sm:block">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 border-t-2 border-l-2 border-yellow-500/20 rounded-tl-lg" />
             </div>
-            <div className="absolute top-6 right-6 z-[20] pointer-events-none hidden sm:block">
-                <div className="w-16 h-16 border-t-2 border-r-2 border-yellow-500/20 rounded-tr-lg" />
+            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-[20] pointer-events-none hidden sm:block">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 border-t-2 border-r-2 border-yellow-500/20 rounded-tr-lg" />
             </div>
         </section>
     );

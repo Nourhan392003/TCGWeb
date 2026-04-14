@@ -498,6 +498,7 @@ body {
    ======================================== */
 
 @layer utilities {
+
     /* Price display with Riyal */
     .price-riyal {
         font-family: 'Noto Sans Arabic', 'JetBrains Mono', sans-serif;
@@ -526,5 +527,221 @@ body {
     .price-ar {
         direction: rtl;
         unicode-bidi: embed;
+    }
+
+/* ========================================
+   MOBILE RESPONSIVE FIXES - Mobile-First
+   ======================================== */
+
+@layer utilities {
+
+    /* 1. VIEWPORT & BASE MOBILE */
+    html {
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
+    }
+
+    body {
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* 2. CONTAINER RESPONSIVE */
+    .container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 12px;
+    }
+
+    @media (min-width: 640px) {
+        .container {
+            padding: 0 20px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .container {
+            padding: 0 32px;
+        }
+    }
+
+    /* 3. MOBILE GRID FIXES - For cards and products */
+    @media (max-width: 639px) {
+        .grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .grid-cols-3 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* 4. HERO HEIGHT RESPONSIVE */
+    .hero-section {
+        min-height: 50vh;
+    }
+
+    @media (min-width: 768px) {
+        .hero-section {
+            min-height: 70vh;
+        }
+    }
+
+    /* 5. NAVBAR MOBILE */
+    @media (max-width: 768px) {
+        .navbar-menu {
+            display: none !important;
+        }
+
+        .mobile-menu {
+            display: block !important;
+        }
+    }
+
+    /* 6. BUTTONS & CARDS MOBILE */
+    @media (max-width: 639px) {
+        .btn-primary {
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+
+        .card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* 7. PRICE RESPONSIVE */
+    .price-large {
+        font-size: 1.75rem;
+    }
+
+    @media (min-width: 768px) {
+        .price-large {
+            font-size: 2.5rem;
+        }
+    }
+}
+
+    body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        /* منع التمرير الأفقي */
+    }
+
+    /* 2. CONTAINER RESPONSIVE */
+    .container {
+        width: 100%;
+        max-width: 1400px;
+        /* أوسع شوية للكروت */
+        margin: 0 auto;
+        padding: 0 12px;
+        /* ضيق على الموبايل */
+    }
+
+    @media (min-width: 640px) {
+        .container {
+            padding: 0 20px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .container {
+            padding: 0 32px;
+        }
+    }
+
+    /* 3. MOBILE GRID FIXES - للكروت والمنتجات */
+    @media (max-width: 639px) {
+        .grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .grid-cols-3 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
+    /* 4. HERO HEIGHT RESPONSIVE */
+    .hero-section {
+        min-height: 50vh;
+        /* موبايل */
+    }
+
+    @media (min-width: 768px) {
+        .hero-section {
+            min-height: 70vh;
+        }
+    }
+
+    /* 5. NAVBAR MOBILE */
+    @media (max-width: 768px) {
+        .navbar-menu {
+            display: none !important;
+        }
+
+        .mobile-menu {
+            display: block !important;
+        }
+    }
+
+    /* 6. BUTTONS & CARDS MOBILE */
+    @media (max-width: 639px) {
+        .btn-primary {
+            padding: 12px 20px !important;
+            font-size: 16px !important;
+            /* منع zoom على iOS */
+        }
+
+        .card {
+            margin-bottom: 1rem !important;
+        }
+    }
+
+    /* 7. PRICE RESPONSIVE */
+    .price-large {
+        font-size: 1.75rem !important;
+        /* موبايل */
+    }
+
+    @media (min-width: 768px) {
+        .price-large {
+            font-size: 2.5rem !important;
+        }
+    }
+
+    /* 8. FIX ARABIC RTL ON MOBILE */
+    @media (max-width: 639px) {
+        .text-center {
+            text-align: center !important;
+        }
     }
 }

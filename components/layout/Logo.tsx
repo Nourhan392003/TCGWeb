@@ -7,20 +7,16 @@ export default function Logo() {
     return (
         <Link
             href="/"
-            // كبرنا العرض والطول هنا لمقاس مناسب جداً للـ Navbar
-            className="relative flex items-center justify-center overflow-hidden rounded-md group flex-shrink-0 bg-transparent"
-            style={{ width: '160px', height: '60px' }}
+            className="relative flex items-center justify-center overflow-hidden rounded-md group flex-shrink-0 bg-transparent w-28 h-12 sm:w-40 sm:h-14 lg:w-44 lg:h-16"
         >
-            {/* لمعة خارجية زرقا خفيفة */}
             <div className="absolute inset-0 bg-blue-500/20 blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 z-0" />
 
             <img
                 src="/logo.png"
                 alt="HTR Logo"
-                className="relative z-10 w-full h-full object-cover"
+                className="relative z-10 w-full h-full object-contain"
             />
 
-            {/* اللمعة (الهولوجرافيك) اللي بتتحرك */}
             <motion.div
                 className="absolute top-0 bottom-0 z-20 pointer-events-none"
                 style={{

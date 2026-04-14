@@ -19,10 +19,14 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className="dark" suppressHydrationWarning>
-            <body className={`${inter.className} bg-black text-white min-h-screen flex flex-col`}>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+                <meta name="theme-color" content="#0a0a0f" />
+            </head>
+            <body className={`${inter.className} bg-[#0a0a0f] text-white min-h-screen flex flex-col antialiased`}>
                 <Providers>
                     <Navbar />
-                    <main className="flex-grow pt-4">
+                    <main className="flex-grow pt-0">
                         {children}
                     </main>
                     <Footer />
