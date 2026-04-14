@@ -28,7 +28,7 @@ const SLIDES = [
         description: "Discover powerful new leaders, devastating events, and legendary characters.",
         date: "AVAILABLE JAN. 22, 2026",
         bgColor: "from-emerald-900 to-black",
-        characterImg: "/slider/charIImage2.png",
+        characterImg: "/slider/charImage2.png",
         floatingPackImg: "/slider/card2.jpg",
     },
     {
@@ -215,7 +215,7 @@ export default function HeroSlider() {
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
-                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-32 sm:w-40 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none hidden md:block"
+                    className="absolute top-[15%] right-[40%] lg:right-[45%] w-32 sm:w-40 md:w-48 lg:w-64 rounded-xl shadow-2xl z-0 pointer-events-none"
                     initial={{ y: 50, opacity: 0, rotate: -15 }}
                     animate={{ y: [-10, 10, -10], opacity: 1, rotate: -15 }}
                     transition={{
@@ -231,8 +231,7 @@ export default function HeroSlider() {
                     key={`char-${slide.id}`}
                     src={slide.characterImg}
                     alt="Character"
-                    className="absolute bottom-0 right-0 lg:right-10 w-[85%] md:w-[70%] lg:w-[50%] max-h-[90vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none hidden md:block"
-                    initial={{ x: 200, opacity: 0 }}
+                    className="absolute bottom-0 right-0 w-[55%] sm:w-[65%] md:w-[70%] lg:w-[50%] max-h-[75vh] object-contain object-bottom drop-shadow-2xl z-10 pointer-events-none block" initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1, y: [0, -15, 0] }}
                     exit={{ x: 200, opacity: 0, transition: { duration: 0.4 } }}
                     transition={{

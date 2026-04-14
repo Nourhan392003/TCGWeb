@@ -8,7 +8,7 @@ const cardImages = [
   "/cards/card3.png",
   "/cards/card4.png",
   "/cards/card5.png",
-  //"/cards/card6.png",
+  "/cards/card6.png",
   "/cards/card7.png",
   "/cards/card9.png",
   "/cards/card10.png",
