@@ -294,7 +294,7 @@ export default function HeroSlider() {
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
-            <motion.div variants={textItem} className="mt-4 sm:hidden">
+            <motion.div variants={textItem} className="mt-4 sm:hidden ml-4">
                 <Link
                     href="/products"
                     className="inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-black font-bold text-sm rounded-full shadow-lg"
@@ -302,51 +302,50 @@ export default function HeroSlider() {
                     Shop Now
                 </Link>
             </motion.div>
-        </motion.div>
-            {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */ }
-    <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
-        <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsPaused((p) => !p)}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            aria-label={isPaused ? 'Play' : 'Pause'}
-        >
-            {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
-        </motion.button>
-
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {SLIDES.map((s, i) => (
-                <button
-                    key={s.id}
-                    onClick={() => goTo(i)}
-                    className="group relative flex items-center"
-                    aria-label={`Go to slide ${i + 1}`}
+            {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
+            <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
+                <motion.button
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsPaused((p) => !p)}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                    aria-label={isPaused ? 'Play' : 'Pause'}
                 >
-                    <div
-                        className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-[72px]' : 'w-5'}`}
-                    >
-                        {i === current && (
-                            <motion.div
-                                className="h-full bg-yellow-400 rounded-full"
-                                style={{ width: `${progress}%` }}
-                                transition={{ duration: 0.05 }}
-                            />
-                        )}
-                        {i !== current && i < current && (
-                            <div className="h-full w-full bg-white/50 rounded-full" />
-                        )}
-                    </div>
-                </button>
-            ))}
-        </div>
+                    {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
+                </motion.button>
 
-        <span className="text-white/50 text-[10px] sm:text-xs font-bold tracking-widest ml-1 sm:ml-2 hidden sm:inline">
-            {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
-        </span>
-    </div>
+                <div className="flex items-center gap-1.5 sm:gap-2.5">
+                    {SLIDES.map((s, i) => (
+                        <button
+                            key={s.id}
+                            onClick={() => goTo(i)}
+                            className="group relative flex items-center"
+                            aria-label={`Go to slide ${i + 1}`}
+                        >
+                            <div
+                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-[72px]' : 'w-5'}`}
+                            >
+                                {i === current && (
+                                    <motion.div
+                                        className="h-full bg-yellow-400 rounded-full"
+                                        style={{ width: `${progress}%` }}
+                                        transition={{ duration: 0.05 }}
+                                    />
+                                )}
+                                {i !== current && i < current && (
+                                    <div className="h-full w-full bg-white/50 rounded-full" />
+                                )}
+                            </div>
+                        </button>
+                    ))}
+                </div>
 
-    {/* ══════════════ NAV ARROWS ══════════════ */ }
+                <span className="text-white/50 text-[10px] sm:text-xs font-bold tracking-widest ml-1 sm:ml-2 hidden sm:inline">
+                    {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+                </span>
+            </div>
+
+            {/* ══════════════ NAV ARROWS ══════════════ */}
             <button
                 onClick={prev}
                 className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
@@ -366,19 +365,19 @@ export default function HeroSlider() {
                 </svg>
             </button>
 
-    {/* ══════════════ DIAGONAL DIVIDER (BOTTOM) ══════════════ */ }
-    <div className="absolute bottom-0 left-0 right-0 z-[30] pointer-events-none">
-        <svg
-            viewBox="0 0 1440 80"
-            className="w-full h-auto block"
-            preserveAspectRatio="none"
-        >
-            <polygon fill="#06060c" points="0,80 1440,20 1440,80" />
-            <polygon fill="rgba(255,255,255,0.03)" points="0,80 1440,35 1440,80" />
-        </svg>
-    </div>
+            {/* ══════════════ DIAGONAL DIVIDER (BOTTOM) ══════════════ */}
+            <div className="absolute bottom-0 left-0 right-0 z-[30] pointer-events-none">
+                <svg
+                    viewBox="0 0 1440 80"
+                    className="w-full h-auto block"
+                    preserveAspectRatio="none"
+                >
+                    <polygon fill="#06060c" points="0,80 1440,20 1440,80" />
+                    <polygon fill="rgba(255,255,255,0.03)" points="0,80 1440,35 1440,80" />
+                </svg>
+            </div>
 
-    {/* ══════════════ CORNER ACCENTS ══════════════ */ }
+            {/* ══════════════ CORNER ACCENTS ══════════════ */}
             <div className="absolute top-0 left-0 right-0 z-[20] pointer-events-none">
                 <div className="h-1 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent" />
             </div>
