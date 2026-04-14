@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pause, Play } from 'lucide-react';
-
+import Link from 'next/link';
 /* ═══════════════════════════════ CONSTANTS & DATA ═══════════════════════════════ */
 
 const AUTOPLAY_INTERVAL = 6000; // 6 seconds per slide
@@ -294,8 +294,14 @@ export default function HeroSlider() {
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
-
-
+            <div className="absolute bottom-24 sm:hidden left-4-translate-x-1/2 z-[25]">
+                <Link
+                    href="/products"
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-black font-bold text-sm rounded-full shadow-lg"
+                >
+                    Shop Now
+                </Link>
+            </div>
             {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
             <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
                 <motion.button
