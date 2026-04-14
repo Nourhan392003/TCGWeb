@@ -80,7 +80,7 @@ export default function HeroBanner() {
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="relative min-h-[620px] md:min-h-[700px] h-[100svh] overflow-hidden selection:bg-yellow-400/40"        >
+            className="relative min-h-[100svh] md:min-h-[700px] overflow-hidden selection:bg-yellow-400/40"        >
             {/* ══════════════ LAYER 0 — Vibrant Red Background ══════════════ */}
             <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(180deg, #2a160d 0%, #120a06 100%)' }} />
 
@@ -154,7 +154,7 @@ export default function HeroBanner() {
                     rotate: { type: 'spring', stiffness: 55, damping: 16, mass: 1.8, delay: 0.2 },
                 }}
                 className="absolute bottom-0 right-[2%] z-[10] pointer-events-none
-                           hidden md:block"
+                           hidden lg:block"
                 style={{ width: 'clamp(320px, 48vw, 720px)' }}
             >
                 <motion.div
@@ -178,7 +178,7 @@ export default function HeroBanner() {
             </motion.div>
 
             {/* ══════════════ LAYER 5 — Left Content (Title + Product + Date) ══════════════ */}
-            <div className="relative z-[15] flex items-center h-full px-4 sm:px-8 lg:px-16">
+            <div className="relative z-[15] flex items-start h-full px-4 sm:px-8 lg:px-16 pt-6 sm:pt-10">
                 <div className="max-w-[300px] sm:max-w-lg lg:max-w-xl">
                     {/* ── Subtitle badge ── */}
                     <motion.div {...stagger(0, 0.15)} className="mb-4">
