@@ -29,7 +29,7 @@ const SLIDES = [
         date: "AVAILABLE JAN. 22, 2026",
         bgColor: "from-emerald-900 to-black",
         characterImg: "/slider/charImage2.png",
-        floatingPackImg: "/slider/card2.jpg",
+        floatingPackImg: "/slider/card2.png",
     },
     {
         id: 3,
@@ -324,7 +324,7 @@ export default function HeroSlider() {
                             aria-label={`Go to slide ${i + 1}`}
                         >
                             <div
-                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-18' : 'w-5'}`}
+                                className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-[72px]' : 'w-5'}`}
                             >
                                 {i === current && (
                                     <motion.div
