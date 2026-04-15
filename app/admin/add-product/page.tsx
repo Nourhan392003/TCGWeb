@@ -138,7 +138,7 @@ export default function AddProductForm() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-300">Price (EGP)</label>
+                        <label className="text-sm text-gray-300">Price (SAR)</label>
                         <input
                             type="number"
                             step="0.01"

@@ -12,7 +12,7 @@ import {
 
 export default function AdminDashboard() {
     // Fetch all products
-    const products = useQuery(api.cards.getAll);
+    const products = useQuery(api.products.getAllProducts);
 
     // Fetch all orders
     const orders = useQuery(api.orders.getAllOrders);

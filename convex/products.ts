@@ -36,7 +36,6 @@ export const updateProductImage = mutation({
         });
     },
 });
-
 export const addProduct = mutation({
     args: {
         name: v.string(),
@@ -46,14 +45,15 @@ export const addProduct = mutation({
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
         game: v.optional(v.string()),
+        type: v.optional(v.string()),
         rarity: v.optional(v.string()),
         condition: v.optional(v.string()),
         inStock: v.boolean(),
         stockQuantity: v.optional(v.number()),
         isFoil: v.optional(v.boolean()),
         isFirstEdition: v.optional(v.boolean()),
-
-
+        isFeatured: v.optional(v.boolean()),
+        isGraded: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         let resolvedImageUrl = args.imageUrl || args.image;
@@ -158,6 +158,7 @@ export const updateCard = mutation({
         inStock: v.optional(v.boolean()),
         stockQuantity: v.optional(v.number()),
         isFeatured: v.optional(v.boolean()),
+        type: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const { id, ...updates } = args;
@@ -242,5 +243,11 @@ export const getFeaturedCards = query({
         );
 
         return productsWithUrls;
+    },
+});
+export const getAllProducts = query({
+    args: {},
+    handler: async (ctx) => {
+        return await ctx.db.query("products").collect();
     },
 });

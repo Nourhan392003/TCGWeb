@@ -19,7 +19,7 @@ import Link from "next/link";
 import { formatPrice } from "@/utils/currency";
 
 export default function ProductsPage() {
-    const products = useQuery(api.products.getAllCards);
+    const products = useQuery(api.products.getAllProducts);
     const deleteProduct = useMutation(api.products.deleteCard);
     const updateProduct = useMutation(api.products.updateCard);
     const [editingProduct, setEditingProduct] = useState<any>(null);

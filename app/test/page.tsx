@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function TestPage() {
-    const products = useQuery(api.cards.getAll);
+    const products = useQuery(api.products.getAllProducts);
 
     return (
         <div className="p-8">

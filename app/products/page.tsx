@@ -16,19 +16,28 @@ type FilterSection = {
     title: string;
     isOpen: boolean;
 };
+const normalizeValue = (value?: string) =>
+    (value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
 
 export default function ProductsPage() {
-    const products = useQuery(api.products.getAllCards);
+    const products = useQuery(api.products.getAllProducts);
     const [searchQuery, setSearchQuery] = useState("");
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [showMoreTypes, setShowMoreTypes] = useState(false);
-    
+
     const [availableInStock, setAvailableInStock] = useState<boolean | null>(null);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
     const [minPriceInput, setMinPriceInput] = useState("0");
-    const [maxPriceInput, setMaxPriceInput] = useState("500");
+    const [maxPriceInput, setMaxPriceInput] = useState("5000");
+
 
     const [filterSections, setFilterSections] = useState<FilterSection[]>([
         { id: "availability", title: "Availability", isOpen: true },
@@ -36,23 +45,22 @@ export default function ProductsPage() {
         { id: "type", title: "Product Type", isOpen: true },
         { id: "price", title: "Price Range", isOpen: true },
     ]);
-    
+
     const addItemToCart = useCartStore((state) => state.addItem);
     const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
 
     const toggleSection = (id: string) => {
-        setFilterSections(sections => 
+        setFilterSections(sections =>
             sections.map(s => s.id === id ? { ...s, isOpen: !s.isOpen } : s)
         );
     };
 
     const brands = [
-        { value: "yugioh", label: "Yu-Gi-Oh!" },
-        { value: "pokemon", label: "Pokemon" },
-        { value: "onepiece", label: "One Piece" },
-        { value: "magic", label: "Magic" }
+        { value: "yu_gi_oh", label: "Yu-Gi-Oh!" },
+        { value: "pokemon", label: "Pokémon" },
+        { value: "one_piece", label: "One Piece" },
+        { value: "magic", label: "Magic" },
     ];
-
     const productTypes = [
         { value: "booster_boxes", label: "Booster Boxes" },
         { value: "card_sleeves_small", label: "Card Sleeves - Small" },
@@ -65,7 +73,7 @@ export default function ProductsPage() {
 
     const getProductCounts = () => {
         if (!products) return { inStock: 0, outOfStock: 0, brands: {}, types: {} };
-        
+
         const counts = {
             inStock: 0,
             outOfStock: 0,
@@ -78,8 +86,6 @@ export default function ProductsPage() {
             else counts.outOfStock++;
 
             const brand = product.game?.toLowerCase() || "other";
-            counts.brands[brand] = (counts.brands[brand] || 0) + 1;
-
             const type = product.type?.toLowerCase().replace(/\s+/g, "_") || "single_cards";
             counts.types[type] = (counts.types[type] || 0) + 1;
         });
@@ -90,16 +96,16 @@ export default function ProductsPage() {
     const productCounts = useMemo(() => getProductCounts(), [products]);
 
     const handleBrandToggle = (brand: string) => {
-        setSelectedBrands(prev => 
-            prev.includes(brand) 
+        setSelectedBrands(prev =>
+            prev.includes(brand)
                 ? prev.filter(b => b !== brand)
                 : [...prev, brand]
         );
     };
 
     const handleTypeToggle = (type: string) => {
-        setSelectedTypes(prev => 
-            prev.includes(type) 
+        setSelectedTypes(prev =>
+            prev.includes(type)
                 ? prev.filter(t => t !== type)
                 : [...prev, type]
         );
@@ -111,22 +117,22 @@ export default function ProductsPage() {
 
     const filteredProducts = useMemo(() => {
         if (!products) return [];
-        
+
         return products.filter((product: any) => {
-            const searchMatch = searchQuery === "" || 
+            const searchMatch = searchQuery === "" ||
                 product.name?.toLowerCase().includes(searchQuery.toLowerCase());
-            
-            const stockMatch = availableInStock === null || 
+
+            const stockMatch = availableInStock === null ||
                 product.inStock === availableInStock;
-            
-            const brandMatch = selectedBrands.length === 0 || 
-                selectedBrands.includes(product.game?.toLowerCase());
-            
-            const typeMatch = selectedTypes.length === 0 || 
-                selectedTypes.includes(product.type?.toLowerCase().replace(/\s+/g, "_"));
-            
+            const brandMatch =
+                selectedBrands.length === 0 ||
+                selectedBrands.includes(normalizeValue(product.game));
+
+            const typeMatch =
+                selectedTypes.length === 0 ||
+                selectedTypes.includes(normalizeValue(product.type) || "single_cards");
+
             const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-            
             return searchMatch && stockMatch && brandMatch && typeMatch && priceMatch;
         });
     }, [products, searchQuery, availableInStock, selectedBrands, selectedTypes, priceRange]);
@@ -148,10 +154,10 @@ export default function ProductsPage() {
     const handleWishlistToggle = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const stringId = product._id.toString();
         const inWishlist = isInWishlist(stringId);
-        
+
         if (inWishlist) {
             removeWishlistItem(stringId);
             toast.error(`${product.name} removed from wishlist`);
@@ -177,8 +183,12 @@ export default function ProductsPage() {
         setMaxPriceInput("500");
     };
 
-    const hasActiveFilters = availableInStock !== null || selectedBrands.length > 0 || selectedTypes.length > 0 || priceRange[0] > 0 || priceRange[1] < 500;
-
+    const hasActiveFilters =
+        availableInStock !== null ||
+        selectedBrands.length > 0 ||
+        selectedTypes.length > 0 ||
+        priceRange[0] > 0 ||
+        priceRange[1] < 5000;
     if (products === undefined) {
         return (
             <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
@@ -238,18 +248,17 @@ export default function ProductsPage() {
                                         <ChevronDown className="w-4 h-4 text-gray-400" />
                                     )}
                                 </button>
-                                
+
                                 {filterSections.find(s => s.id === "availability")?.isOpen && (
                                     <div className="space-y-2">
                                         <label className="flex items-center justify-between cursor-pointer group">
                                             <div className="flex items-center gap-2">
-                                                <div 
+                                                <div
                                                     onClick={() => setAvailableInStock(availableInStock === true ? null : true)}
-                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                        availableInStock === true 
-                                                            ? 'bg-blue-500 border-blue-500' 
-                                                            : 'border-gray-600 group-hover:border-gray-500'
-                                                    }`}
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === true
+                                                        ? 'bg-blue-500 border-blue-500'
+                                                        : 'border-gray-600 group-hover:border-gray-500'
+                                                        }`}
                                                 >
                                                     {availableInStock === true && <Check className="w-3 h-3 text-white" />}
                                                 </div>
@@ -257,16 +266,15 @@ export default function ProductsPage() {
                                             </div>
                                             <span className="text-xs text-gray-500">({productCounts.inStock})</span>
                                         </label>
-                                        
+
                                         <label className="flex items-center justify-between cursor-pointer group">
                                             <div className="flex items-center gap-2">
-                                                <div 
+                                                <div
                                                     onClick={() => setAvailableInStock(availableInStock === false ? null : false)}
-                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                        availableInStock === false 
-                                                            ? 'bg-blue-500 border-blue-500' 
-                                                            : 'border-gray-600 group-hover:border-gray-500'
-                                                    }`}
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === false
+                                                        ? 'bg-blue-500 border-blue-500'
+                                                        : 'border-gray-600 group-hover:border-gray-500'
+                                                        }`}
                                                 >
                                                     {availableInStock === false && <Check className="w-3 h-3 text-white" />}
                                                 </div>
@@ -290,7 +298,7 @@ export default function ProductsPage() {
                                         <ChevronDown className="w-4 h-4 text-gray-400" />
                                     )}
                                 </button>
-                                
+
                                 {filterSections.find(s => s.id === "brand")?.isOpen && (
                                     <div className="space-y-2">
                                         {brands.map((brand) => {
@@ -298,13 +306,12 @@ export default function ProductsPage() {
                                             return (
                                                 <label key={brand.value} className="flex items-center justify-between cursor-pointer group">
                                                     <div className="flex items-center gap-2">
-                                                        <div 
+                                                        <div
                                                             onClick={() => handleBrandToggle(brand.value)}
-                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                                selectedBrands.includes(brand.value) 
-                                                                    ? 'bg-blue-500 border-blue-500' 
-                                                                    : 'border-gray-600 group-hover:border-gray-500'
-                                                            }`}
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand.value)
+                                                                ? 'bg-blue-500 border-blue-500'
+                                                                : 'border-gray-600 group-hover:border-gray-500'
+                                                                }`}
                                                         >
                                                             {selectedBrands.includes(brand.value) && <Check className="w-3 h-3 text-white" />}
                                                         </div>
@@ -330,7 +337,7 @@ export default function ProductsPage() {
                                         <ChevronDown className="w-4 h-4 text-gray-400" />
                                     )}
                                 </button>
-                                
+
                                 {filterSections.find(s => s.id === "type")?.isOpen && (
                                     <div className="space-y-2">
                                         {(showMoreTypes ? productTypes : productTypes.slice(0, 5)).map((type) => {
@@ -338,13 +345,12 @@ export default function ProductsPage() {
                                             return (
                                                 <label key={type.value} className="flex items-center justify-between cursor-pointer group">
                                                     <div className="flex items-center gap-2">
-                                                        <div 
+                                                        <div
                                                             onClick={() => handleTypeToggle(type.value)}
-                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                                selectedTypes.includes(type.value) 
-                                                                    ? 'bg-blue-500 border-blue-500' 
-                                                                    : 'border-gray-600 group-hover:border-gray-500'
-                                                            }`}
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedTypes.includes(type.value)
+                                                                ? 'bg-blue-500 border-blue-500'
+                                                                : 'border-gray-600 group-hover:border-gray-500'
+                                                                }`}
                                                         >
                                                             {selectedTypes.includes(type.value) && <Check className="w-3 h-3 text-white" />}
                                                         </div>
@@ -354,7 +360,7 @@ export default function ProductsPage() {
                                                 </label>
                                             );
                                         })}
-                                        
+
                                         {productTypes.length > 5 && (
                                             <button
                                                 onClick={() => setShowMoreTypes(!showMoreTypes)}
@@ -379,7 +385,7 @@ export default function ProductsPage() {
                                         <ChevronDown className="w-4 h-4 text-gray-400" />
                                     )}
                                 </button>
-                                
+
                                 {filterSections.find(s => s.id === "price")?.isOpen && (
                                     <div className="space-y-2 sm:space-y-3">
                                         <div className="flex items-center gap-2">
@@ -413,18 +419,19 @@ export default function ProductsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="px-0 sm:px-1">
                                             <input
                                                 type="range"
                                                 min="0"
-                                                max="500"
-                                                step="10"
+                                                max="5000"
+                                                step="50"
                                                 value={priceRange[1]}
                                                 onChange={(e) => {
                                                     const val = parseInt(e.target.value);
-                                                    setPriceRange([priceRange[0], val]);
-                                                    setMaxPriceInput(val.toString());
+                                                    setPriceRange([0, 5000]);
+                                                    setMinPriceInput("0");
+                                                    setMaxPriceInput("5000");
                                                 }}
                                                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                                             />
@@ -482,7 +489,7 @@ export default function ProductsPage() {
                                                         No Image
                                                     </div>
                                                 )}
-                                                
+
                                                 <button
                                                     onClick={(e) => handleWishlistToggle(e, product)}
                                                     className="absolute top-2 right-2 z-10 p-1.5 sm:p-2 rounded-full bg-black/60 backdrop-blur-md border border-gray-700 hover:border-red-500 transition-colors"
@@ -501,17 +508,16 @@ export default function ProductsPage() {
                                                 <h3 className="text-white font-semibold text-xs sm:text-sm truncate mb-1 sm:mb-2">
                                                     {product.name}
                                                 </h3>
-                                                
+
                                                 <div className="flex items-center justify-between mb-2 sm:mb-3">
                                                     <span className="text-sm sm:text-lg font-bold text-blue-400">
                                                         {formatPrice(product.price)}
                                                     </span>
-                                                    
-                                                    <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
-                                                        product.inStock 
-                                                            ? 'bg-green-500/20 text-green-400' 
-                                                            : 'bg-red-500/20 text-red-400'
-                                                    }`}>
+
+                                                    <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${product.inStock
+                                                        ? 'bg-green-500/20 text-green-400'
+                                                        : 'bg-red-500/20 text-red-400'
+                                                        }`}>
                                                         {product.inStock ? 'In Stock' : 'Out'}
                                                     </span>
                                                 </div>
