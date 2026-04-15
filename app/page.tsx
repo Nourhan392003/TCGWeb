@@ -9,25 +9,10 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import toast from "react-hot-toast";
 import { ShoppingCart, Heart } from "lucide-react";
-const HeroSlider = dynamic(() => import("@/components/HeroSlider"), {
-    ssr: false,
-});
-
-const FloatingCardsCTA = dynamic(() => import("@/components/FloatingCardsCTA"), {
-    ssr: false,
-});
-
-const VideoSection = dynamic(() => import("@/components/VideoSection"), {
-    ssr: false,
-});
-
-const RecommendSection = dynamic(() => import("@/components/RecommendSection"), {
-    ssr: false,
-});
-
-const VideosSection = dynamic(() => import("@/components/VideosSection"), {
-    ssr: false,
-});
+import HeroSlider from "@/components/HeroSlider";
+import FloatingCardsCTA from "@/components/FloatingCardsCTA";
+import RecommendSection from "@/components/RecommendSection";
+import VideosSection from "@/components/VideosSection";
 
 import { formatPrice } from "@/utils/currency";
 export default function Home() {
