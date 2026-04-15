@@ -22,44 +22,51 @@ interface RecommendSectionProps {
 const posterData: Poster[] = [
   {
     id: '1',
-    name: 'Luffy - Straw Hat Pirate',
+    name: 'Pirates Party 2026 Vol.1',
     price: 24.99,
     image: '/cards/card1.png',
     rarity: 'Rare',
   },
   {
     id: '2',
-    name: 'Zoro - Three Sword Style',
+    name: 'Recommended Decks',
     price: 19.99,
     image: '/cards/card2.png',
     rarity: 'Rare',
   },
   {
     id: '3',
-    name: 'Nami - Navigator',
+    name: "Quick Beginner's Guide",
     price: 15.99,
     image: '/cards/card3.png',
     rarity: 'Uncommon',
   },
   {
     id: '4',
-    name: 'Sanji - Black Leg Style',
+    name: 'Teaching App',
     price: 22.99,
     image: '/cards/card4.png',
     rarity: 'Rare',
   },
+  {
+    id: '5',
+    name: 'Championship 26-27',
+    price: 29.99,
+    image: '/cards/card1.png',
+    rarity: 'Legendary',
+  },
 ];
 
 const posterPositions = [
-  { top: '8%', left: '5%', rotate: -3 },
-  { top: '12%', left: '28%', rotate: 2 },
-  { top: '6%', left: '51%', rotate: -1 },
-  { top: '10%', left: '74%', rotate: 3 },
+  { top: '15%', left: '5%', rotate: -5 },
+  { top: '38%', left: '32%', rotate: 0 },
+  { top: '12%', left: '52%', rotate: -1 },
+  { top: '5%', left: '72%', rotate: 5 },
+  { top: '48%', left: '70%', rotate: -3 },
 ];
 
 export default function RecommendSection({ featuredCards }: RecommendSectionProps) {
   const addItemToCart = useCartStore((state) => state.addItem);
-  const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
 
   const cards = featuredCards?.length ? featuredCards : posterData;
 
@@ -77,135 +84,123 @@ export default function RecommendSection({ featuredCards }: RecommendSectionProp
     toast.success(`${card.name} added to cart!`);
   };
 
-
   return (
-    <section className="relative z-10 w-full min-h-screen flex justify-center items-center py-[clamp(3rem,8vw,6rem)] overflow-hidden">
+    <section className="relative w-full py-[clamp(4rem,10vw,8rem)] overflow-hidden bg-[#0a0a0f]">
+      {/* ── Main Wooden Banner Container ── */}
       <div
-        className="relative w-[clamp(320px,95vw,1400px)] aspect-[16/10] shadow-[0_clamp(20px,5vw,60px)_clamp(40px,10vw,100px)_rgba(0,0,0,0.6)] border-[clamp(4px,1.2vw,12px)] border-[#1b120a]"
+        className="relative mx-auto w-full max-w-[1700px] aspect-[21/8] flex items-center justify-center shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
         style={{
-          transform: 'rotate(-3deg)',
-          backgroundImage: 'url("/wood-bg.jpg")',
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/wood-bg.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          boxShadow: 'inset 0 0 100px rgba(0,0,0,0.4), 0 40px 100px rgba(0,0,0,0.8)',
         }}
       >
-        <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+        {/* Plank Overlays (Vertical Lines) */}
+        <div 
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 15%, rgba(0,0,0,0.4) 15.1%)',
+            backgroundSize: '100% 100%'
+          }} 
+        />
 
-        <div className="absolute top-0 left-0 w-full h-[clamp(30px,5vw,50px)] bg-gradient-to-b from-[#2a2a2a] via-[#111] to-[#000] border-b-[clamp(2px,0.5vw,4px)] border-black/90 flex justify-around items-center z-10 shadow-[0_clamp(5px,1.5vw,15px)_clamp(10px,3vw,25px)_rgba(0,0,0,0.5)]">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={`top-${i}`}
-              className="w-[clamp(10px,2vw,20px)] h-[clamp(10px,2vw,20px)] rounded-full bg-gradient-to-br from-[#d4af37] to-[#8b6508] shadow-[inset_2px_2px_4px_rgba(255,255,255,0.4)] border-[clamp(1px,0.3vw,2px)] border-black/80"
-            />
+        {/* Metal Strips with Rivets */}
+        <div className="absolute top-0 left-0 w-full h-[clamp(20px,4vw,50px)] bg-gradient-to-b from-[#222] via-[#111] to-[#000] border-b-2 border-white/5 flex justify-around items-center px-[2vw] z-30 shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+          {[...Array(25)].map((_, i) => (
+            <div key={`t-rivet-${i}`} className="w-[clamp(10px,1.5vw,18px)] h-[clamp(10px,1.5vw,18px)] rounded-full bg-gradient-to-br from-[#c4a65d] via-[#8b6508] to-[#453204] border border-black/40 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.3),2px_2px_4px_rgba(0,0,0,0.6)]" />
           ))}
         </div>
 
-        <div
-          className="relative z-20 w-full h-full flex flex-col items-center justify-center px-[clamp(1rem,3vw,4rem)] py-[clamp(2rem,5vw,4rem)]"
-          style={{ transform: 'rotate(3deg)' }}
-        >
+        <div className="absolute bottom-0 left-0 w-full h-[clamp(20px,4vw,50px)] bg-gradient-to-b from-[#000] via-[#111] to-[#222] border-t-2 border-white/5 flex justify-around items-center px-[2vw] z-30 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
+          {[...Array(25)].map((_, i) => (
+            <div key={`b-rivet-${i}`} className="w-[clamp(10px,1.5vw,18px)] h-[clamp(10px,1.5vw,18px)] rounded-full bg-gradient-to-br from-[#c4a65d] via-[#8b6508] to-[#453204] border border-black/40 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.3),2px_2px_4px_rgba(0,0,0,0.6)]" />
+          ))}
+        </div>
+
+        {/* Big Background Title "RECOMMEND" */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
           <h2
-            className="text-[clamp(3rem,10vw,7rem)] font-black text-[#f4e4c1] tracking-[0.15em] uppercase"
+            className="text-[clamp(5rem,18vw,16rem)] font-black text-black/25 tracking-[0.2em] uppercase whitespace-nowrap"
             style={{
-              fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-              textShadow: `
-                clamp(2px,0.6vw,5px) clamp(2px,0.6vw,5px) 0px #3e2723,
-                clamp(3px,0.8vw,6px) clamp(3px,0.8vw,6px) 0px #000,
-                0px clamp(5px,1.5vw,15px) clamp(10px,2.5vw,25px) rgba(0,0,0,0.8)
-              `,
+              fontFamily: 'Impact, sans-serif',
+              transform: 'scaleY(1.1) rotate(-2deg)',
+              textShadow: '2px 2px 0px rgba(255,255,255,0.05)',
             }}
           >
             RECOMMEND
           </h2>
-
-          <div className="relative w-full h-[clamp(300px,50vw,600px)] mt-[clamp(1rem,3vw,2rem)]">
-            {cards.slice(0, 4).map((card, index) => {
-              const pos = posterPositions[index];
-              return (
-                <motion.div
-                  key={card.id}
-                  initial={{ opacity: 0, scale: 0.8, rotate: Number(pos.rotate) + 10 }}
-                  whileInView={{ opacity: 1, scale: 1, rotate: Number(pos.rotate), y: 0 }}
-                  whileHover={{ scale: 1.03, rotate: 0, zIndex: 40 }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 20, delay: index * 0.1 }}
-                  className="absolute group flex flex-col items-center pt-[clamp(0.5rem,1.5vw,1rem)] pb-[clamp(0.3rem,1vw,0.5rem)] px-[clamp(0.3rem,1vw,0.5rem)] shadow-[0_clamp(10px,2.5vw,25px)_clamp(20px,5vw,50px)_rgba(0,0,0,0.7)] cursor-pointer"
-                  style={{
-                    top: pos.top,
-                    left: pos.left,
-                    width: 'clamp(120px, 22%, 240px)',
-                    maxWidth: '24%',
-                    backgroundImage: 'url("/wanted-bg.jpg")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    border: '2px solid #5c3a21',
-                    borderRadius: '2px',
-                  }}
-                >
-                  <div className="absolute top-[clamp(2px,0.5vw,4px)] left-1/2 -translate-x-1/2 w-[clamp(4px,1vw,6px)] h-[clamp(4px,1vw,6px)] rounded-full bg-[#111] border border-black shadow-sm z-30" />
-
-                  <div className="w-full text-center mb-[clamp(0.2rem,0.5vw,0.5rem)]">
-                    <h3
-                      className="text-[clamp(1.5rem,4vw,3rem)] font-black text-[#2e1a0b] tracking-wider leading-none"
-                      style={{ fontFamily: 'Impact, sans-serif', transform: 'scaleY(1.3)' }}
-                    >
-                      WANTED
-                    </h3>
-                  </div>
-
-                  <Link
-                    href={`/products/${card.id}`}
-                    className="w-full relative aspect-[4/3] flex items-center justify-center overflow-hidden mb-[clamp(0.2rem,0.5vw,0.5rem)] border-[2px] border-[#e8decd] shadow-inner"
-                  >
-                    <img
-                      src={card.image}
-                      alt={card.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </Link>
-
-                  <div className="w-full text-center flex flex-col items-center px-[clamp(2px,0.5vw,4px)] flex-grow">
-                    <h4
-                      className="text-[clamp(0.6rem,1.5vw,1rem)] font-bold text-[#2e1a0b] tracking-widest"
-                      style={{ fontFamily: '"Times New Roman", Times, serif' }}
-                    >
-                      DEAD OR ALIVE
-                    </h4>
-                    <Link href={`/products/${card.id}`} className="block w-full mb-[clamp(0.2rem,0.5vw,0.5rem)]">
-                      <p className="text-[clamp(0.65rem,1.8vw,1rem)] text-[#2e1a0b] font-bold leading-snug line-clamp-2 hover:text-black">
-                        {card.name}
-                      </p>
-                    </Link>
-                    <div className="mt-auto w-full flex justify-between items-end border-t-[2px] border-[#5c3a21]/30 pt-[clamp(0.2rem,0.5vw,0.4rem)]">
-                      <p
-                        className="text-[clamp(1rem,2.5vw,2rem)] font-black text-[#2e1a0b] tracking-tight"
-                        style={{ fontFamily: 'Impact, sans-serif' }}
-                      >
-                        {formatPrice(card.price)}
-                      </p>
-                      <button
-                        onClick={(e) => handleAddToCart(e, card)}
-                        className="bg-[#2e1a0b] hover:bg-black text-[#f4e4c1] px-[clamp(0.3rem,1vw,0.5rem)] py-[clamp(0.2rem,0.5vw,0.3rem)] font-bold uppercase text-[clamp(0.5rem,1.2vw,0.7rem)] tracking-widest transition-colors"
-                      >
-                        Claim
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full h-[clamp(30px,5vw,50px)] bg-gradient-to-b from-[#2a2a2a] via-[#111] to-[#000] border-t-[clamp(2px,0.5vw,4px)] border-black/90 flex justify-around items-center z-10 shadow-[0_-clamp(5px,1.5vw,15px)_clamp(10px,3vw,25px)_rgba(0,0,0,0.5)]">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={`bottom-${i}`}
-              className="w-[clamp(10px,2vw,20px)] h-[clamp(10px,2vw,20px)] rounded-full bg-gradient-to-br from-[#d4af37] to-[#8b6508] shadow-[inset_2px_2px_4px_rgba(255,255,255,0.4)] border-[clamp(1px,0.3vw,2px)] border-black/80"
-            />
-          ))}
+        {/* ── Posters Layer ── */}
+        <div className="relative z-20 w-[94%] h-[85%] mx-auto">
+          {cards.slice(0, 5).map((card, index) => {
+            const pos = posterPositions[index % posterPositions.length];
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 50, rotate: pos.rotate + 10 }}
+                whileInView={{ opacity: 1, y: 0, rotate: pos.rotate }}
+                whileHover={{ scale: 1.06, rotate: 0, zIndex: 50, transition: { duration: 0.2 } }}
+                viewport={{ once: true }}
+                className="absolute w-[18%] min-w-[130px] max-w-[280px] aspect-[1/1.4] flex flex-col p-[1.5%] shadow-[5px_15px_40px_rgba(0,0,0,0.7)] cursor-pointer overflow-hidden border-[#5c3a21] border"
+                style={{
+                  top: pos.top,
+                  left: pos.left,
+                  backgroundImage: 'url("/wanted-bg.jpg")',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {/* Torn Edge Effect Overlays */}
+                <div className="absolute inset-0 border-[clamp(2px,0.5vw,4px)] border-[#5c3a21]/20 pointer-events-none" />
+                
+                {/* WANTED Header */}
+                <div className="w-full text-center mt-[2%] mb-[4%]">
+                  <h3
+                    className="text-[clamp(1.2rem,3.5vw,2.8rem)] font-black text-[#2e1a0b] tracking-wider leading-none"
+                    style={{ fontFamily: 'Impact, sans-serif', transform: 'scaleY(1.3)' }}
+                  >
+                    WANTED
+                  </h3>
+                </div>
+
+                {/* Poster Content Area */}
+                <div className="relative w-full aspect-[4/3] overflow-hidden border-[clamp(1px,0.25vw,3px)] border-[#5c3a21]/30 bg-[#f5e6d3] shadow-inner mb-[10%]">
+                  <img src={card.image} alt={card.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10" />
+                </div>
+
+                {/* Text Area */}
+                <div className="w-full text-center flex flex-col items-center flex-grow px-[2%]">
+                  <span className="text-[clamp(0.4rem,1.1vw,0.8rem)] font-bold text-[#2e1a0b] tracking-[0.2em] uppercase opacity-75 mb-[2%]">
+                    DEAD OR ALIVE
+                  </span>
+                  
+                  <p className="w-full text-[clamp(0.6rem,1.4vw,1rem)] text-[#2e1a0b] font-black leading-tight line-clamp-2 uppercase" style={{ fontFamily: 'Impact, sans-serif' }}>
+                    {card.name}
+                  </p>
+
+                  <div className="mt-auto w-full flex justify-between items-center border-t border-[#5c3a21]/20 pt-[4%] pb-[2%]">
+                    <span className="text-[clamp(0.8rem,1.8vw,1.5rem)] font-black text-[#2e1a0b]" style={{ fontFamily: 'Impact, sans-serif' }}>
+                      {formatPrice(card.price)}
+                    </span>
+                    <button
+                      onClick={(e) => handleAddToCart(e, card)}
+                      className="bg-[#2e1a0b] hover:bg-black text-[#f4e4c1] px-[clamp(6px,1.2vw,12px)] py-[clamp(2px,0.5vw,6px)] rounded-sm text-[clamp(0.5rem,1vw,0.75rem)] font-black uppercase tracking-wider transition-colors shadow-sm"
+                    >
+                      Claim
+                    </button>
+                  </div>
+                </div>
+
+                {/* Decorative Pin Head */}
+                <div className="absolute top-[3%] left-1/2 -translate-x-1/2 w-[clamp(4px,1vw,8px)] h-[clamp(4px,1vw,8px)] rounded-full bg-[#111] shadow-[inset_-1px_-1px_2px_rgba(255,255,255,0.3)]" />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
-}
+}
