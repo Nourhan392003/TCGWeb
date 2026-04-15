@@ -1,5 +1,7 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
@@ -43,18 +45,21 @@ const gameIcons: Record<string, string> = {
 };
 
 export default function ProductHero({ product }: ProductHeroProps) {
+  const { isSignedIn } = useUser();
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
 
   const productImage = product.imageUrl || product.image || "";
-  console.log("productImage =", productImage);
-  console.log("product", product);
-  console.log("imageUrl", product.imageUrl);
-  console.log("image", product.image);
-  console.log("productImage", productImage);
+
   const inWishlist = isInWishlist(product._id.toString());
 
   const handleAddToCart = () => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to add items to cart");
+      router.push("/sign-in");
+      return;
+    }
     addItem({
       id: product._id.toString(),
       name: product.name,
@@ -67,6 +72,11 @@ export default function ProductHero({ product }: ProductHeroProps) {
   };
 
   const handleWishlistToggle = () => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to manage wishlist");
+      router.push("/sign-in");
+      return;
+    }
     if (inWishlist) {
       removeWishlistItem(product._id.toString());
       toast.success("Removed from wishlist");

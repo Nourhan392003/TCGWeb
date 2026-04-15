@@ -34,7 +34,12 @@ const mobilePosterPositions = [
     { top: '45%', left: '80%', rotate: -3 },
 ];
 
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+
 export default function RecommendSectionMobile({ featuredCards }: RecommendSectionProps) {
+    const { isSignedIn } = useUser();
+    const router = useRouter();
     const addItemToCart = useCartStore((state) => state.addItem);
 
     const cards = featuredCards?.length ? featuredCards : posterData;
@@ -42,6 +47,13 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
     const handleAddToCart = (e: React.MouseEvent, card: any) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!isSignedIn) {
+            toast.error("Please sign in to add items to cart");
+            router.push("/sign-in");
+            return;
+        }
+
         addItemToCart({
             id: card.id,
             name: card.name,
