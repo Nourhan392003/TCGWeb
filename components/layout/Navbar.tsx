@@ -7,6 +7,8 @@ import { useCartStore } from '@/store/useCartStore';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import Logo from './Logo';
 import { Menu, X, Search, ShoppingCart, Heart, Home, Package, Gamepad, Star } from 'lucide-react';
+import { useAuthAction } from '@/hooks/useAuthAction';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
     { name: 'Home', href: '/', icon: Home },
@@ -58,6 +60,8 @@ const CartIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Navbar() {
+    const { checkAuth } = useAuthAction();
+    const router = useRouter();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -91,17 +95,26 @@ export default function Navbar() {
                             variants={itemVariants}
                             className="hidden md:flex items-center space-x-1"
                         >
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="relative px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 hover:text-amber-400 group"
-                                >
-                                    <span className="relative z-10">{link.name}</span>
-                                    <span className="absolute inset-x-4 -bottom-0 h-[2px] scale-x-0 bg-gradient-to-r from-amber-400 to-yellow-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
-                                    <span className="absolute inset-0 -z-10 rounded-lg bg-amber-500/0 transition-colors duration-300 group-hover:bg-amber-500/10" />
-                                </Link>
-                            ))}
+                            {navLinks.map((link) => {
+                                const isProtected = link.name === 'Wishlist';
+                                return (
+                                    <div
+                                        key={link.name}
+                                        onClick={() => {
+                                            if (isProtected) {
+                                                checkAuth(() => router.push(link.href), undefined, link.href);
+                                            } else {
+                                                router.push(link.href);
+                                            }
+                                        }}
+                                        className="relative px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 hover:text-amber-400 group cursor-pointer"
+                                    >
+                                        <span className="relative z-10">{link.name}</span>
+                                        <span className="absolute inset-x-4 -bottom-0 h-[2px] scale-x-0 bg-gradient-to-r from-amber-400 to-yellow-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                                        <span className="absolute inset-0 -z-10 rounded-lg bg-amber-500/0 transition-colors duration-300 group-hover:bg-amber-500/10" />
+                                    </div>
+                                );
+                            })}
                         </motion.div>
 
                         <motion.div
@@ -133,14 +146,17 @@ export default function Navbar() {
                                 )}
                             </div>
 
-                            <Link href="/cart" className="relative p-2 text-gray-400 transition-all duration-200 hover:text-amber-400 hover:bg-white/5 rounded-lg group">
+                             <div
+                                onClick={() => checkAuth(() => router.push('/cart'), undefined, '/cart')}
+                                className="relative p-2 text-gray-400 transition-all duration-200 hover:text-amber-400 hover:bg-white/5 rounded-lg group cursor-pointer"
+                            >
                                 <CartIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                                 {cartCount > 0 && (
                                     <span className="absolute top-0 right-0 bg-[#F5A524] text-black text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full transform translate-x-1 -translate-y-1">
                                         {cartCount}
                                     </span>
                                 )}
-                            </Link>
+                            </div>
 
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -162,18 +178,25 @@ export default function Navbar() {
                             className="md:hidden border-t border-white/5 bg-black/80 backdrop-blur-xl"
                         >
                             <div className="px-4 py-4 space-y-2">
-                                {navLinks.map((link) => {
+                                 {navLinks.map((link) => {
                                     const Icon = link.icon;
+                                    const isProtected = link.name === 'Wishlist';
                                     return (
-                                        <Link
+                                        <div
                                             key={link.name}
-                                            href={link.href}
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors"
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                if (isProtected) {
+                                                    checkAuth(() => router.push(link.href), undefined, link.href);
+                                                } else {
+                                                    router.push(link.href);
+                                                }
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                                         >
                                             <Icon className="w-5 h-5" />
                                             {link.name}
-                                        </Link>
+                                        </div>
                                     );
                                 })}
                                 <div className="pt-4 border-t border-white/10">
