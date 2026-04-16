@@ -7,6 +7,9 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCartStore } from "@/store/useCartStore";
 import toast from "react-hot-toast";
 
+import { useAuthAction } from "@/hooks/useAuthAction";
+import { useRouter } from "next/navigation";
+
 interface TCGCardItemProps {
     id: string | number;
     image: string;
@@ -17,6 +20,8 @@ interface TCGCardItemProps {
 
 export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardItemProps) {
     const stringId = id.toString();
+    const { checkAuth } = useAuthAction();
+    const router = useRouter();
 
     // دوال المفضلة
     const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
@@ -31,38 +36,53 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
     const handleWishlist = (e: React.MouseEvent) => {
         e.preventDefault();
 
-        if (inWishlist) {
-            removeWishlistItem(stringId);
-            toast.error(`${name} removed from wishlist`);
-        } else {
-            addWishlistItem({
-                id: stringId,
-                name,
-                price,
-                image,
-                rarity
-            });
-            toast.success(`${name} added to wishlist! 💖`);
-        }
+        checkAuth(() => {
+            if (inWishlist) {
+                removeWishlistItem(stringId);
+                toast.error(`${name} removed from wishlist`);
+            } else {
+                addWishlistItem({
+                    id: stringId,
+                    name,
+                    price,
+                    image,
+                    rarity
+                });
+                toast.success(`${name} added to wishlist! 💖`);
+            }
+        });
     };
 
     // إضافة للسلة
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
 
-        addItemToCart({
-            id: stringId,
-            name,
-            price,
-            quantity: 1,
-            image,
-            rarity
+        checkAuth(() => {
+            addItemToCart({
+                id: stringId,
+                name,
+                price,
+                quantity: 1,
+                image,
+                rarity
+            });
+            toast.success(`${name} added to cart! 🛒`);
         });
-        toast.success(`${name} added to cart! 🛒`);
+    };
+
+    // معالجة الضغط على البطاقة (مهم للموبايل)
+    const handleCardClick = (e: React.MouseEvent) => {
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        if (isMobile) {
+            e.preventDefault();
+            checkAuth(() => {
+                router.push(`/products/${stringId}`);
+            }, undefined, `/products/${stringId}`);
+        }
     };
 
     return (
-        <Link href={`/products/${stringId}`}>
+        <Link href={`/products/${stringId}`} onClick={handleCardClick}>
             <div className="group relative rounded-xl bg-[#16161e] border border-[#2a2a38] p-4 transition-all duration-300 hover:border-yellow-500/50 hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] cursor-pointer h-full flex flex-col">
 
                 {/* Rarity Badge */}

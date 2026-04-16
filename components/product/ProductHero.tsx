@@ -1,12 +1,12 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import toast from "react-hot-toast";
+import { useAuthAction } from "@/hooks/useAuthAction";
 
 interface ProductHeroProps {
   product: {
@@ -45,7 +45,7 @@ const gameIcons: Record<string, string> = {
 };
 
 export default function ProductHero({ product }: ProductHeroProps) {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, checkAuth } = useAuthAction();
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
@@ -55,41 +55,35 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const inWishlist = isInWishlist(product._id.toString());
 
   const handleAddToCart = () => {
-    if (!isSignedIn) {
-      toast.error("Please sign in to add items to cart");
-      router.push("/sign-in");
-      return;
-    }
-    addItem({
-      id: product._id.toString(),
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: productImage,
-      rarity: product.rarity || "",
-    });
-    toast.success(`${product.name} added to cart!`);
-  };
-
-  const handleWishlistToggle = () => {
-    if (!isSignedIn) {
-      toast.error("Please sign in to manage wishlist");
-      router.push("/sign-in");
-      return;
-    }
-    if (inWishlist) {
-      removeWishlistItem(product._id.toString());
-      toast.success("Removed from wishlist");
-    } else {
-      addWishlistItem({
+    checkAuth(() => {
+      addItem({
         id: product._id.toString(),
         name: product.name,
         price: product.price,
+        quantity: 1,
         image: productImage,
-        rarity: product.rarity,
+        rarity: product.rarity || "",
       });
-      toast.success(`${product.name} added to wishlist!`);
-    }
+      toast.success(`${product.name} added to cart!`);
+    });
+  };
+
+  const handleWishlistToggle = () => {
+    checkAuth(() => {
+      if (inWishlist) {
+        removeWishlistItem(product._id.toString());
+        toast.success("Removed from wishlist");
+      } else {
+        addWishlistItem({
+          id: product._id.toString(),
+          name: product.name,
+          price: product.price,
+          image: productImage,
+          rarity: product.rarity,
+        });
+        toast.success(`${product.name} added to wishlist!`);
+      }
+    });
   };
 
   const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");

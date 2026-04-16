@@ -34,11 +34,11 @@ const mobilePosterPositions = [
     { top: '45%', left: '80%', rotate: -3 },
 ];
 
-import { useUser } from '@clerk/nextjs';
+import { useAuthAction } from '@/hooks/useAuthAction';
 import { useRouter } from 'next/navigation';
 
 export default function RecommendSectionMobile({ featuredCards }: RecommendSectionProps) {
-    const { isSignedIn } = useUser();
+    const { checkAuth } = useAuthAction();
     const router = useRouter();
     const addItemToCart = useCartStore((state) => state.addItem);
 
@@ -48,21 +48,24 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
         e.preventDefault();
         e.stopPropagation();
 
-        if (!isSignedIn) {
-            toast.error("Please sign in to add items to cart");
-            router.push("/sign-in");
-            return;
-        }
-
-        addItemToCart({
-            id: card.id,
-            name: card.name,
-            price: card.price,
-            quantity: 1,
-            image: card.image,
-            rarity: 'Rare',
+        checkAuth(() => {
+            addItemToCart({
+                id: card.id,
+                name: card.name,
+                price: card.price,
+                quantity: 1,
+                image: card.image,
+                rarity: 'Rare',
+            });
+            toast.success(`${card.name} added to cart!`);
         });
-        toast.success(`${card.name} added to cart!`);
+    };
+
+    const handleProductClick = (e: React.MouseEvent, cardId: string) => {
+        e.preventDefault();
+        checkAuth(() => {
+            router.push(`/products/${cardId}`);
+        }, undefined, `/products/${cardId}`);
     };
 
     return (
@@ -139,7 +142,11 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                                     </div>
 
                                     {/* Image */}
-                                    <Link href={`/products/${card.id}`} className="block relative aspect-[4/3] overflow-hidden border border-[#5c3a21]/20 mb-3 bg-[#f5e6d3]">
+                                    <Link 
+                                        href={`/products/${card.id}`} 
+                                        onClick={(e) => handleProductClick(e, card.id)}
+                                        className="block relative aspect-[4/3] overflow-hidden border border-[#5c3a21]/20 mb-3 bg-[#f5e6d3]"
+                                    >
                                         <Image src={card.image} alt={card.name} fill className="object-cover" />
                                     </Link>
 

@@ -6,7 +6,7 @@ import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCartStore, CartItem } from "@/store/useCartStore";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import { useUser } from "@clerk/nextjs";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import toast from "react-hot-toast";
 
 /**
@@ -121,7 +121,7 @@ function CartItemRow({ item }: { item: CartItem }) {
  * Sliding drawer from the right side with cart items
  */
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-    const { isSignedIn } = useUser();
+    const { checkAuth } = useAuthAction();
     const { items, getTotalPrice, clearCart } = useCartStore();
     const [isHydrated, setIsHydrated] = useState(false);
     const router = useRouter();
@@ -232,13 +232,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 {/* Checkout Button */}
                                 <button
                                     onClick={() => {
-                                        if (!isSignedIn) {
-                                            toast.error("Please sign in to checkout");
-                                            router.push("/sign-in");
-                                        } else {
+                                        checkAuth(() => {
                                             router.push("/checkout");
                                             onClose();
-                                        }
+                                        }, undefined, "/checkout");
                                     }}
                                     className="w-full block text-center py-4 px-6 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                                 >
