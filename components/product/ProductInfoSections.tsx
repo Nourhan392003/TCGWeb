@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useAuthAction } from "@/hooks/useAuthAction";
+import { useRouter } from "next/navigation";
 
 interface ProductInfoSectionsProps {
   product: {
@@ -83,6 +85,8 @@ export default function ProductInfoSections({
   relatedProducts,
   loadingRelated,
 }: ProductInfoSectionsProps) {
+  const { checkAuth } = useAuthAction();
+  const router = useRouter();
   const descriptionLines = formatDescription(product.description);
   const highlights = generateHighlights(product);
 
@@ -157,11 +161,11 @@ export default function ProductInfoSections({
           </div>
         ) : relatedProducts && relatedProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {relatedProducts.slice(0, 4).map((item) => (
-              <Link
+             {relatedProducts.slice(0, 4).map((item) => (
+              <div
                 key={item._id}
-                href={`/products/${item._id}`}
-                className="group block"
+                onClick={() => checkAuth(() => router.push(`/products/${item._id}`), undefined, `/products/${item._id}`)}
+                className="group block cursor-pointer"
               >
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-[#1a1a24] to-[#0d0d12] border border-[#2a2a38] group-hover:border-yellow-500/50 transition-all duration-300">
                   <img
@@ -184,7 +188,7 @@ export default function ProductInfoSections({
                   </h3>
                   <p className="text-gray-400 text-sm">SAR{item.price}</p>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         ) : (

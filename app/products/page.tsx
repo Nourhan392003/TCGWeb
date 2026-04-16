@@ -9,6 +9,7 @@ import { Loader2, Search, Heart, ShoppingCart, X, Filter, ChevronDown, ChevronUp
 import { formatPrice } from "@/utils/currency";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import toast from "react-hot-toast";
 
 type FilterSection = {
@@ -26,6 +27,7 @@ const normalizeValue = (value?: string) =>
         .replace(/^_+|_+$/g, "");
 
 export default function ProductsPage() {
+    const { checkAuth } = useAuthAction();
     const products = useQuery(api.products.getAllProducts);
     const [searchQuery, setSearchQuery] = useState("");
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -140,37 +142,42 @@ export default function ProductsPage() {
     const handleAddToCart = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
         e.stopPropagation();
-        addItemToCart({
-            id: product._id.toString(),
-            name: product.name,
-            price: product.price,
-            quantity: 1,
-            image: product.imageUrl || product.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
-            rarity: product.rarity || "Common",
+        
+        checkAuth(() => {
+            addItemToCart({
+                id: product._id.toString(),
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                image: product.imageUrl || product.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
+                rarity: product.rarity || "Common",
+            });
+            toast.success(`${product.name} added to cart!`);
         });
-        toast.success(`${product.name} added to cart!`);
     };
 
     const handleWishlistToggle = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const stringId = product._id.toString();
-        const inWishlist = isInWishlist(stringId);
+        checkAuth(() => {
+            const stringId = product._id.toString();
+            const inWishlist = isInWishlist(stringId);
 
-        if (inWishlist) {
-            removeWishlistItem(stringId);
-            toast.error(`${product.name} removed from wishlist`);
-        } else {
-            addWishlistItem({
-                id: stringId,
-                name: product.name,
-                price: product.price,
-                image: product.imageUrl || product.image,
-                rarity: product.rarity
-            });
-            toast.success(`${product.name} added to wishlist!`);
-        }
+            if (inWishlist) {
+                removeWishlistItem(stringId);
+                toast.error(`${product.name} removed from wishlist`);
+            } else {
+                addWishlistItem({
+                    id: stringId,
+                    name: product.name,
+                    price: product.price,
+                    image: product.imageUrl || product.image,
+                    rarity: product.rarity
+                });
+                toast.success(`${product.name} added to wishlist!`);
+            }
+        });
     };
 
     const clearFilters = () => {

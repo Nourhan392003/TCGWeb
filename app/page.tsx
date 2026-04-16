@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import toast from "react-hot-toast";
 import { ShoppingCart, Heart } from "lucide-react";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import HeroSlider from "@/components/HeroSlider";
 import FloatingCardsCTA from "@/components/FloatingCardsCTA";
 import RecommendSection from "@/components/RecommendSection";
@@ -16,6 +17,7 @@ import VideosSection from "@/components/VideosSection";
 
 import { formatPrice } from "@/utils/currency";
 export default function Home() {
+    const { checkAuth } = useAuthAction();
     const featuredCards = useQuery(api.products.getFeaturedCards);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
@@ -23,34 +25,38 @@ export default function Home() {
     const handleAddToCart = (e: React.MouseEvent, card: any) => {
         e.preventDefault();
         e.stopPropagation();
-        addItemToCart({
-            id: card._id.toString(),
-            name: card.name,
-            price: card.price,
-            quantity: 1,
-            image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
-            rarity: card.rarity || "Common",
+        checkAuth(() => {
+            addItemToCart({
+                id: card._id.toString(),
+                name: card.name,
+                price: card.price,
+                quantity: 1,
+                image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
+                rarity: card.rarity || "Common",
+            });
+            toast.success(`${card.name} added to cart!`);
         });
-        toast.success(`${card.name} added to cart!`);
     };
 
     const toggleWishlist = (e: React.MouseEvent, card: any) => {
         e.preventDefault();
         e.stopPropagation();
-        const cardId = card._id.toString();
-        if (isInWishlist(cardId)) {
-            removeWishlistItem(cardId);
-            toast.error(`${card.name} removed from wishlist`);
-        } else {
-            addWishlistItem({
-                id: cardId,
-                name: card.name,
-                price: card.price,
-                image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
-                rarity: card.rarity || "Common",
-            });
-            toast.success(`${card.name} added to wishlist!`);
-        }
+        checkAuth(() => {
+            const cardId = card._id.toString();
+            if (isInWishlist(cardId)) {
+                removeWishlistItem(cardId);
+                toast.error(`${card.name} removed from wishlist`);
+            } else {
+                addWishlistItem({
+                    id: cardId,
+                    name: card.name,
+                    price: card.price,
+                    image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
+                    rarity: card.rarity || "Common",
+                });
+                toast.success(`${card.name} added to wishlist!`);
+            }
+        });
     };
 
 
