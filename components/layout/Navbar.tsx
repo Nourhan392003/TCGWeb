@@ -101,21 +101,23 @@ export default function Navbar() {
                             {navLinks.map((link) => {
                                 const isWishlist = link.href === '/wishlist';
                                 return (
-                                    <div
+                                    <Link
                                         key={link.href}
-                                        onClick={() => {
+                                        href={link.href}
+                                        className="relative px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 hover:text-amber-400 group cursor-pointer"
+                                        onClick={(e) => {
                                             if (isWishlist) {
+                                                e.preventDefault();
                                                 checkAuth(() => router.push(link.href), undefined, link.href);
-                                            } else {
-                                                router.push(link.href);
                                             }
                                         }}
-                                        className="relative px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 hover:text-amber-400 group cursor-pointer"
                                     >
-                                        <span className="relative z-10">{link.name}</span>
+                                        <span className="relative z-10">{String(link.name)}</span>
+                                        ...
+                                        {String(link.name)}
                                         <span className="absolute inset-x-4 -bottom-0 h-[2px] scale-x-0 bg-gradient-to-r from-amber-400 to-yellow-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
                                         <span className="absolute inset-0 -z-10 rounded-lg bg-amber-500/0 transition-colors duration-300 group-hover:bg-amber-500/10" />
-                                    </div>
+                                    </Link>
                                 );
                             })}
                         </motion.div>
