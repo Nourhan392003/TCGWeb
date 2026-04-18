@@ -3,8 +3,22 @@ import { v } from "convex/values";
 
 export default defineSchema({
     products: defineTable({
-        name: v.string(),
-        description: v.optional(v.string()),
+        name: v.union(
+            v.string(),
+            v.object({
+                en: v.string(),
+                ar: v.optional(v.string()),
+            })
+        ),
+        description: v.optional(
+            v.union(
+                v.string(),
+                v.object({
+                    en: v.string(),
+                    ar: v.optional(v.string()),
+                })
+            )
+        ),
         price: v.number(),
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
@@ -31,7 +45,7 @@ export default defineSchema({
                 id: v.optional(v.string()),
                 quantity: v.number(),
                 price: v.number(),
-                name: v.string(),
+                name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
                 image: v.optional(v.string()),
                 rarity: v.optional(v.string()),
             })

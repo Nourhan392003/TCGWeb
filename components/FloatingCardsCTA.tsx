@@ -2,7 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 const cardImages = [
   "/cards/card3.png",
@@ -26,6 +27,8 @@ const cardConfigs = [
 ]
 
 const FloatingCardsCTA: React.FC = () => {
+  const t = useTranslations('CTA');
+
   return (
     <section className="relative min-h-[75vh] sm:min-h-[70vh] md:min-h-[80vh] overflow-hidden bg-black">
 
@@ -80,7 +83,7 @@ const FloatingCardsCTA: React.FC = () => {
           viewport={{ once: true }}
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 drop-shadow-[0_0_25px_rgba(250,204,21,0.35)] mb-4 sm:mb-6 leading-tight"
         >
-          A World of Treasure and Adventure Awaits.
+          {t('title')}
         </motion.h1>
 
         <motion.p
@@ -89,7 +92,7 @@ const FloatingCardsCTA: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           viewport={{ once: true }}
           className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 leading-relaxed max-w-md md:max-w-2xl mb-6 sm:mb-8 md:mb-12 tracking-wide drop-shadow-md"        >
-          TCG Vault is a trading card game platform built for collectors and champions.
+          {t('desc')}
         </motion.p>
 
         <motion.h2
@@ -98,10 +101,10 @@ const FloatingCardsCTA: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           viewport={{ once: true }}
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase text-white tracking-tight leading-[1.1] mb-8 sm:mb-10 md:mb-14 drop-shadow-lg"        >
-          Experience it.
+          {t('experience')}
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
-            New Era of Card Games.
+            {t('newEra')}
           </span>
         </motion.h2>
 
@@ -115,7 +118,7 @@ const FloatingCardsCTA: React.FC = () => {
             whileTap={{ scale: 0.97 }}
             className="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg lg:text-xl font-extrabold uppercase tracking-widest text-black bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 rounded-lg cursor-pointer shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:shadow-[0_0_50px_rgba(250,204,21,0.6),0_0_100px_rgba(250,204,21,0.3)] transition-all duration-300"
           >
-            BEGIN YOUR ADVENTURE
+            {t('button')}
           </motion.button>
         </Link>
       </div>

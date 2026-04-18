@@ -1,0 +1,475 @@
+{
+  "General": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success",
+    "retry": "Retry"
+  },
+  "Navbar": {
+    "home": "Home",
+    "products": "Products",
+    "games": "Games",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "search": "Search cards, sets, games...",
+    "signIn": "Sign In"
+  },
+  "Actions": {
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "claim": "Claim",
+    "checkout": "Proceed to Checkout",
+    "shopNow": "Shop Now",
+    "viewDetails": "View Details",
+    "addedToCart": "{name} added to cart!",
+    "removedFromWishlist": "{name} removed from wishlist",
+    "addedToWishlist": "{name} added to wishlist!",
+    "loginRequired": "Please sign in first to add products or complete purchase"
+  },
+  "Hero": {
+    "available": "AVAILABLE {date}",
+    "title1": "CARRYING ON HIS WILL",
+    "subtitle1": "3 Brothers to celebrate 3 Years!",
+    "desc1": "New powers keep joining the OPCG. Don't miss the special anniversary products.",
+    "title2": "NEW EXPANSION AWAKENS",
+    "subtitle2": "The Pirate King's Journey",
+    "desc2": "Discover powerful new leaders, devastating events, and legendary characters.",
+    "title3": "GEAR 5 UNLEASHED",
+    "subtitle3": "The Warrior of Liberation",
+    "desc3": "Experience the peak of power with the new ultimate rare collection. Pre-order your booster boxes now.",
+    "title4": "EMPERORS OF THE SEA",
+    "subtitle4": "Clash of the Titans",
+    "desc4": "Dominate the meta with cards featuring the most feared pirates in the New World.",
+    "setSail": "SET SAIL!",
+    "sections": {
+      "featured": "Featured Products",
+      "videos": "Adventure in Motion"
+    }
+  },
+  "CTA": {
+    "title": "A World of Treasure and Adventure Awaits.",
+    "desc": "TCG Vault is a trading card game platform built for collectors and champions.",
+    "experience": "Experience it.",
+    "newEra": "New Era of Card Games.",
+    "button": "BEGIN YOUR ADVENTURE"
+  },
+  "Products": {
+    "listingTitle": "Explore Cards",
+    "listingDesc": "Discover the latest and rarest cards in our collection.",
+    "filters": "Filters",
+    "clear": "Clear",
+    "searchPlaceholder": "Search products...",
+    "availability": "Availability",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "brand": "Brand",
+    "productType": "Product Type",
+    "priceRange": "Price Range",
+    "from": "From",
+    "to": "To",
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "noProducts": "No products found",
+    "tryAdjusting": "Try adjusting your filters",
+    "allProducts": "All Products",
+    "availableCount": "{count} products available",
+    "add": "Add",
+    "out": "Out",
+    "details": "Product Details",
+    "buyNow": "Buy Now",
+    "addToCart": "Add to Cart",
+    "price": "Price",
+    "rarity": "Rarity",
+    "condition": "Condition",
+    "description": "Product Description",
+    "highlights": "Product Highlights",
+    "relatedProducts": "Related Products",
+    "noRelated": "No related products found."
+  },
+  "Cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "Looks like you haven't added any cards to your collection yet.",
+    "continueShopping": "Continue Shopping",
+    "summary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "Free",
+    "total": "Total",
+    "clearCart": "Clear Cart"
+  },
+  "ProductHero": {
+    "home": "Home",
+    "products": "Products",
+    "noImage": "No image available",
+    "inStock": "IN STOCK",
+    "outOfStock": "OUT OF STOCK",
+    "foil": "FOIL",
+    "firstEdition": "1ST EDITION",
+    "graded": "GRADED",
+    "tcg": "Trading Card Game",
+    "condition": "Condition",
+    "onlyLeft": "Only {count} left in stock - order soon!",
+    "dispatch": "Available for immediate dispatch",
+    "unavailable": "Currently unavailable",
+    "shipsToday": "Ships today if ordered before 2PM EST",
+    "addToCart": "Add to Cart",
+    "soldOut": "Sold Out",
+    "game": "Game",
+    "rarity": "Rarity",
+    "availability": "Availability"
+  },
+  "ProductSpecs": {
+    "title": "Product Details",
+    "game": "Game",
+    "rarity": "Rarity",
+    "condition": "Condition",
+    "availability": "Availability",
+    "price": "Price",
+    "notSpecified": "Not Specified",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "specialAttributes": "Special Attributes:",
+    "foil": "Foil",
+    "firstEdition": "1st Edition",
+    "graded": "Graded"
+  },
+  "ProductInfo": {
+    "description": "Product Description",
+    "highlights": "Product Highlights",
+    "disclaimer": "Images are for reference only. Actual product may vary slightly due to monitor settings or manufacturing differences. All products are physically inspected before shipping to ensure quality.",
+    "note": "Note",
+    "relatedProducts": "Related Products",
+    "viewMore": "View more from {game}",
+    "outOfStock": "Out of Stock",
+    "noRelated": "No related products found.",
+    "h1": "Factory sealed - pristine condition",
+    "h2": "Original packaging intact",
+    "h3": "Authenticity verified",
+    "h4": "Complete booster box",
+    "h5": "All packs sealed",
+    "h6": "Collector's item",
+    "h7": "High-value collector's item",
+    "h8": "Limited edition release",
+    "h9": "Foil finish",
+    "h10": "Official Pokémon TCG merchandise",
+    "h11": "Official Yu-Gi-Oh! TCG product",
+    "h12": "One Piece Card Game official product",
+    "h13": "Magic: The Gathering official set",
+    "h14": "Authentic trading card game product",
+    "h15": "Direct from authorized distributors",
+    "h16": "Carefully packed for delivery"
+  },
+  "Wishlist": {
+    "title": "Wishlist",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Start adding cards you love to your wishlist. They'll appear here so you can easily find them later.",
+    "explore": "Explore Cards",
+    "myWishlist": "My Collection Wishlist",
+    "saved": "{count, plural, =0 {No cards} one {1 card} other {# cards}} saved"
+  },
+  "Footer": {
+    "policies": "Policies",
+    "moreInfo": "More Info",
+    "newsletter": "Subscribe to our newsletter!",
+    "newsletterPlaceholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "followUs": "Follow us:",
+    "followShop": "Follow on shop",
+    "allRightsReserved": "All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "refundPolicy": "Refund Policy",
+    "shippingPolicy": "Shipping Policy",
+    "termsOfService": "Terms of Service",
+    "aboutUs": "About Us",
+    "faq": "FAQ",
+    "contactUs": "Contact Us",
+    "subscribeTitle": "Subscribe"
+  },
+  "ProductGallery": {
+    "title": "Product Gallery"
+  },
+  "Checkout": {
+    "title": "Checkout",
+    "back": "Back to Cart",
+    "secure": "Secure Checkout",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "Free",
+    "total": "Total",
+    "billingShipping": "Billing & Shipping",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Shipping Address",
+    "city": "City",
+    "zipCode": "Zip Code",
+    "required": "*",
+    "paymentMethod": "Payment Method",
+    "visaEnding": "Visa ending in {last4}",
+    "expires": "Expires {date}",
+    "selected": "Selected",
+    "securePayment": "Your payment info is secure and encrypted",
+    "placeOrder": "Place Order - {amount}",
+    "processing": "Processing...",
+    "orderConfirmed": "Order Confirmed!",
+    "confirmationDesc": "Thank you for your purchase. We'll send you a confirmation email shortly.",
+    "orderNumber": "Order Number",
+    "continueShopping": "Continue Shopping",
+    "ssl": "SSL Encrypted Checkout",
+    "empty": "Your cart is empty",
+    "qty": "Qty: {count}",
+    "fillRequired": "Please fill in all required fields."
+  },
+  "About": {
+    "title": "About Us",
+    "subtitle": "Your trusted source for trading cards",
+    "back": "Back to Home",
+    "story": {
+      "title": "Our Story",
+      "p1": "TCG Vault was founded with a simple mission: to provide collectors and players with the best selection of trading cards at competitive prices. What started as a small local shop has grown into a trusted online destination for TCG enthusiasts across the region.",
+      "p2": "We specialize in Pokémon, Yu-Gi-Oh!, One Piece, and Magic: The Gathering cards, offering everything from budget-friendly singles to premium graded collectibles."
+    },
+    "values": {
+      "title": "Our Values",
+      "quality": {
+        "title": "Quality First",
+        "desc": "Every card is carefully inspected and professionally graded"
+      },
+      "customer": {
+        "title": "Customer Focus",
+        "desc": "Your satisfaction is our top priority"
+      },
+      "community": {
+        "title": "Community",
+        "desc": "Building lasting relationships with collectors"
+      }
+    },
+    "why": {
+      "title": "Why Choose TCG Vault?",
+      "l1": "Authentic products with verified authenticity guarantee",
+      "l2": "Professional card grading and condition assessment",
+      "l3": "Secure packaging and fast shipping",
+      "l4": "Competitive prices and regular discounts",
+      "l5": "Knowledgeable staff passionate about TCGs"
+    },
+    "getInTouch": "Get In Touch",
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "locationValue": "Riyadh, Saudi Arabia"
+  },
+  "Contact": {
+    "title": "Contact Us",
+    "subtitle": "We'd love to hear from you",
+    "back": "Back to Home",
+    "send": "Send Message",
+    "info": "Contact Information",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "your@email.com",
+    "messagePlaceholder": "How can we help?",
+    "sending": "Sending...",
+    "success": "Message sent! We will reply within 24 hours.",
+    "error": "Failed to send. Please try again.",
+    "fillAll": "Please fill all fields",
+    "replyTime": "Reply within 24 hours",
+    "workHours": "Sun-Thu 9AM-6PM"
+  },
+  "Policies": {
+    "lastUpdated": "Last updated: April 2026",
+    "back": "Back to Home",
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "Your privacy is important to us",
+      "section1": {
+        "title": "Information We Collect",
+        "p1": "We collect information that you provide directly to us, including:",
+        "l1": "Name and contact information",
+        "l2": "Payment and billing information",
+        "l3": "Order history and preferences",
+        "l4": "Communication history with our team"
+      },
+      "section2": {
+        "title": "How We Use Your Information",
+        "p1": "We use the information we collect to:",
+        "l1": "Process and fulfill your orders",
+        "l2": "Communicate with you about your purchases",
+        "l3": "Provide customer support",
+        "l4": "Send you promotional offers (with your consent)",
+        "l5": "Improve our services and website"
+      },
+      "section3": {
+        "title": "Data Protection",
+        "p1": "We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. Your payment information is encrypted using industry-standard security protocols."
+      },
+      "section4": {
+        "title": "Third-Party Disclosure",
+        "p1": "We do not sell, trade, or otherwise transfer your personal information to outside parties. We may share information with trusted service providers who assist us in operating our website, conducting our business, or servicing you."
+      }
+    },
+    "refund": {
+      "title": "Refund Policy",
+      "subtitle": "Our commitment to your satisfaction",
+      "eligibility": {
+        "title": "Eligibility for Refunds",
+        "p1": "We offer refunds under the following conditions:",
+        "l1": "Items received damaged or defective",
+        "l2": "Wrong item shipped to you",
+        "l3": "Items not as described on our website",
+        "l4": "Request made within 14 days of delivery"
+      },
+      "process": {
+        "title": "Refund Process",
+        "p1": "To request a refund:",
+        "l1": "Contact us at support@tcgvault.com within 14 days",
+        "l2": "Provide your order number and reason for refund",
+        "l3": "Return the item in original condition",
+        "l4": "Refunds are processed within 5-7 business days"
+      },
+      "nonRefundable": {
+        "title": "Non-Refundable Items",
+        "p1": "The following items cannot be refunded:",
+        "l1": "Opened or used trading card products",
+        "l2": "Single or graded cards (unless damaged)",
+        "l3": "Items damaged by customer misuse",
+        "l4": "Items returned after 14 days of delivery"
+      },
+      "method": {
+        "title": "Refund Method",
+        "p1": "Refunds will be issued to the original payment method. Please allow 5-10 business days for the refund to appear in your account after processing."
+      }
+    },
+    "shipping": {
+      "title": "Shipping Policy",
+      "subtitle": "Fast and secure delivery to your door",
+      "methods": {
+        "title": "Shipping Methods",
+        "p1": "We offer multiple shipping options:",
+        "l1": "Standard Shipping: 5-7 business days - Free for orders over 200 SAR",
+        "l2": "Express Shipping: 2-3 business days - 30 SAR",
+        "l3": "Priority Shipping: 1-2 business days - 50 SAR",
+        "l4": "International Shipping: 7-14 business days - Calculated at checkout"
+      },
+      "packaging": {
+        "title": "Packaging",
+        "p1": "All trading cards are carefully packaged to ensure safe delivery:",
+        "l1": "Cards are placed in protective sleeves and top loaders",
+        "l2": "Products are wrapped in bubble wrap",
+        "l3": "Boxes are reinforced with packing materials",
+        "l4": "Graded cards get extra protection with hard cases"
+      },
+      "processing": {
+        "title": "Processing Time",
+        "l1": "Orders are processed within 1-2 business days",
+        "l2": "Custom orders may take 3-5 business days",
+        "l3": "Pre-orders ship on the release date",
+        "l4": "Tracking information is sent via email once shipped"
+      },
+      "international": {
+        "title": "International Shipping",
+        "p1": "We ship internationally to select countries. Please note:",
+        "l1": "Customs fees and taxes are the responsibility of the buyer",
+        "l2": "International orders may be subject to customs inspections",
+        "l3": "Delivery times vary by country",
+        "l4": "Contact us for shipping availability to your country"
+      },
+      "address": {
+        "title": "Shipping Address",
+        "p1": "Please ensure your shipping address is correct at checkout. We are not responsible for orders delivered to incorrect addresses provided by the customer."
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "subtitle": "Please read our terms carefully",
+      "acceptance": {
+        "title": "Acceptance of Terms",
+        "p1": "By accessing and using the TCG Vault website, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service."
+      },
+      "license": {
+        "title": "Use License",
+        "p1": "Permission is granted to temporarily use TCG Vault for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:",
+        "l1": "Modify or copy the materials",
+        "l2": "Use the materials for any commercial purpose",
+        "l3": "Transfer the materials to another person",
+        "l4": "Attempt to reverse engineer any software contained in the website"
+      },
+      "productInfo": {
+        "title": "Product Information",
+        "p1": "We strive to provide accurate product descriptions and images. However:",
+        "l1": "Colors may appear differently on your monitor",
+        "l2": "Card conditions are based on our professional grading",
+        "l3": "We reserve the right to correct any pricing errors",
+        "l4": "Product availability is subject to change without notice"
+      },
+      "orders": {
+        "title": "Orders and Payments",
+        "l1": "All orders are subject to acceptance and availability",
+        "l2": "Payment must be received before order processing",
+        "l3": "We accept major credit cards and digital payments",
+        "l4": "Orders may be cancelled if payment cannot be verified"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "p1": "TCG Vault shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses resulting from your use of our website."
+      },
+      "changes": {
+        "title": "Changes to Terms",
+        "p1": "We reserve the right to modify these terms at any time. Your continued use of the website following any changes indicates your acceptance of the new terms."
+      }
+    }
+  },
+  "Admin": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "addProduct": "Add New Product",
+    "editProduct": "Edit Product",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this product?",
+    "productInfo": "Product Information",
+    "nameEN": "Name (English)",
+    "nameAR": "Name (Arabic)",
+    "price": "Price",
+    "stock": "In Stock",
+    "quantity": "Stock Quantity",
+    "game": "Game",
+    "rarity": "Rarity",
+    "condition": "Condition",
+    "descriptionEN": "Description (English)",
+    "descriptionAR": "Description (Arabic)",
+    "uploadImage": "Upload Image",
+    "preview": "Image Preview",
+    "uploading": "Uploading...",
+    "successAdd": "Product added successfully!",
+    "errorAdd": "Failed to add product.",
+    "selectImage": "Please select an image from your device!",
+    "noProducts": "No products found",
+    "manageInventory": "Manage your product inventory",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "SEO": {
+    "defaultTitle": "TCG Vault - Premium Trading Cards",
+    "defaultDesc": "Your premium source for trading card games - Pokémon, Yu-Gi-Oh!, Magic & more",
+    "homeTitle": "TCG Vault - Home",
+    "productsTitle": "Explore Collections - TCG Vault",
+    "aboutTitle": "About Us - TCG Vault",
+    "contactTitle": "Contact Us - TCG Vault",
+    "cartTitle": "Shopping Cart - TCG Vault",
+    "wishlistTitle": "Your Wishlist - TCG Vault",
+    "checkoutTitle": "Secure Checkout - TCG Vault"
+  }
+}

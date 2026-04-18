@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
-import Image from "next/image";
+
 import { Loader2, Search, Heart, ShoppingCart, X, Filter, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 import { useCartStore } from "@/store/useCartStore";
@@ -142,7 +142,7 @@ export default function ProductsPage() {
     const handleAddToCart = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         checkAuth(() => {
             addItemToCart({
                 id: product._id.toString(),

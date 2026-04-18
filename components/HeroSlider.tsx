@@ -1,52 +1,37 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pause, Play } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+
 /* ═══════════════════════════════ CONSTANTS & DATA ═══════════════════════════════ */
 
 const AUTOPLAY_INTERVAL = 6000; // 6 seconds per slide
 const PROGRESS_UPDATE = 50; // Update progress bar every 50ms
 
-const SLIDES = [
+const SLIDES_CONFIG = [
     {
         id: 1,
-        title: "CARRYING ON HIS WILL",
-        subtitle: "3 Brothers to celebrate 3 Years!",
-        description: "New powers keep joining the OPCG. Don't miss the special anniversary products.",
-        date: "AVAILABLE NOV. 7, 2025",
         bgColor: "from-red-800 to-black",
         characterImg: "/slider/charImage.png",
         floatingPackImg: "/slider/card1.png",
     },
     {
         id: 2,
-        title: "NEW EXPANSION AWAKENS",
-        subtitle: "The Pirate King's Journey",
-        description: "Discover powerful new leaders, devastating events, and legendary characters.",
-        date: "AVAILABLE JAN. 22, 2026",
         bgColor: "from-emerald-900 to-black",
         characterImg: "/slider/charImage2.png",
         floatingPackImg: "/slider/card2.png",
     },
     {
         id: 3,
-        title: "GEAR 5 UNLEASHED",
-        subtitle: "The Warrior of Liberation",
-        description: "Experience the peak of power with the new ultimate rare collection. Pre-order your booster boxes now.",
-        date: "AVAILABLE MAR. 15, 2026",
         bgColor: "from-blue-900 to-black",
         characterImg: "/slider/luffy-gea.png",
         floatingPackImg: "/slider/OP-05.png",
     },
     {
         id: 4,
-        title: "EMPERORS OF THE SEA",
-        subtitle: "Clash of the Titans",
-        description: "Dominate the meta with cards featuring the most feared pirates in the New World.",
-        date: "AVAILABLE MAY. 10, 2026",
         bgColor: "from-purple-900 to-black",
         characterImg: "/slider/charImage4.png",
         floatingPackImg: "/slider/card1.png",
@@ -78,20 +63,29 @@ const textItem = {
 
 /* ═══════════════════════════════ COMPONENT ═══════════════════════════════ */
 export default function HeroSlider() {
+    const t = useTranslations('Hero');
+    const tActions = useTranslations('Actions');
     const [current, setCurrent] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    // Correct Typescript references for intervals
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const progressRef = useRef<NodeJS.Timeout | null>(null);
+
+    const SLIDES = SLIDES_CONFIG.map((s, i) => ({
+        ...s,
+        title: t(`title${i + 1}`),
+        subtitle: t(`subtitle${i + 1}`),
+        description: t(`desc${i + 1}`),
+        date: t(`available`, { date: i === 0 ? "NOV. 7, 2025" : i === 1 ? "JAN. 22, 2026" : i === 2 ? "MAR. 15, 2026" : "MAY. 10, 2026" })
+    }));
 
     const slide = SLIDES[current];
 
     const goTo = useCallback((index: number) => {
         setCurrent((index + SLIDES.length) % SLIDES.length);
         setProgress(0);
-    }, []);
+    }, [SLIDES.length]);
 
     const next = useCallback(() => goTo(current + 1), [current, goTo]);
     const prev = useCallback(() => goTo(current - 1), [current, goTo]);
@@ -209,13 +203,12 @@ export default function HeroSlider() {
                 ))}
             </div>
 
-            {/* ══════════════ FLOATING CARD (z-0, BEHIND CHARACTER) ══════════════ */}
+            {/* ══════════════ FLOATING CARD ══════════════ */}
             <AnimatePresence mode="wait">
                 <motion.img
                     key={`pack-${slide.id}`}
                     src={slide.floatingPackImg}
                     alt="Card"
-
                     className="absolute top-[18%] sm:top-[12%] right-[8%] sm:right-[18%] md:right-[40%] w-16 sm:w-24 md:w-48 lg:w-64 rounded-xl shadow-2xl z-[8] pointer-events-none block opacity-90" animate={{ y: [-8, 8, -8], opacity: 1, rotate: -15 }}
                     transition={{
                         opacity: { duration: 0.5 },
@@ -224,7 +217,7 @@ export default function HeroSlider() {
                 />
             </AnimatePresence>
 
-            {/* ══════════════ MASSIVE CHARACTER (z-10, RIGHT, BOTTOM-ANCHORED) ══════════════ */}
+            {/* ══════════════ MASSIVE CHARACTER ══════════════ */}
             <AnimatePresence mode="wait">
                 <motion.img
                     key={`char-${slide.id}`}
@@ -243,73 +236,74 @@ export default function HeroSlider() {
             </AnimatePresence>
 
             {/* ══════════════ LEFT SIDE — TEXT & CTA ══════════════ */}
-            <div className="absolute inset-0 z-[20] flex items-start md:items-center px-4 sm:px-8 md:px-10 lg:px-16 pt-20 sm:pt-24 md:pt-0 w-full md:w-1/2">                <AnimatePresence mode="wait">
-                <motion.div
-                    key={`text-${slide.id}`}
-                    className="w-full max-w-[68%] sm:max-w-[60%] md:max-w-xl"
-                    variants={textStagger}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                >
-                    <motion.div variants={textItem} className="mb-3 sm:mb-6">
-                        <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase">
-                            {slide.subtitle}
-                        </span>
-                    </motion.div>
-
-                    <motion.h1
-                        variants={textItem}
-                        className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[7.5rem] font-black leading-[0.9] tracking-tight mb-3 sm:mb-6 max-w-[11ch]" style={{
-                            fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-                            color: '#fff',
-                            WebkitTextStroke: '3px rgba(0,0,0,0.5)',
-                            paintOrder: 'stroke fill',
-                            textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
-                        }}
+            <div className="absolute inset-0 z-[20] flex items-start md:items-center px-4 sm:px-8 md:px-10 lg:px-16 pt-20 sm:pt-24 md:pt-0 w-full md:w-1/2">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`text-${slide.id}`}
+                        className="w-full max-w-[68%] sm:max-w-[60%] md:max-w-xl"
+                        variants={textStagger}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
                     >
-                        {slide.title}
-                    </motion.h1>
+                        <motion.div variants={textItem} className="mb-3 sm:mb-6">
+                            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase">
+                                {slide.subtitle}
+                            </span>
+                        </motion.div>
 
-                    <motion.p
-                        variants={textItem}
-                        className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xs sm:max-w-md mb-4 sm:mb-8 hidden sm:block"
-                    >
-                        {slide.description}
-                    </motion.p>
-
-                    <motion.div variants={textItem} className="mb-6 sm:mb-10">
-                        <span
-                            className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-[0.15em] uppercase"
-                            style={{
-                                color: '#ffd700',
-                                textShadow: '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)',
+                        <motion.h1
+                            variants={textItem}
+                            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[7.5rem] font-black leading-[0.9] tracking-tight mb-3 sm:mb-6 max-w-[11ch] ltr:text-left rtl:text-right" style={{
+                                fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
+                                color: '#fff',
+                                WebkitTextStroke: '3px rgba(0,0,0,0.5)',
+                                paintOrder: 'stroke fill',
+                                textShadow: '4px 4px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.2), 0 0 80px rgba(0,0,0,0.1)',
                             }}
                         >
-                            {slide.date}
-                        </span>
+                            {slide.title}
+                        </motion.h1>
+
+                        <motion.p
+                            variants={textItem}
+                            className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xs sm:max-w-md mb-4 sm:mb-8 hidden sm:block"
+                        >
+                            {slide.description}
+                        </motion.p>
+
+                        <motion.div variants={textItem} className="mb-6 sm:mb-10">
+                            <span
+                                className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-[0.15em] uppercase"
+                                style={{
+                                    color: '#ffd700',
+                                    textShadow: '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)',
+                                }}
+                            >
+                                {slide.date}
+                            </span>
+                        </motion.div>
                     </motion.div>
-                </motion.div>
-            </AnimatePresence>
+                </AnimatePresence>
             </div>
 
             {/* ══════════════ MOBILE-ONLY CTA BUTTON ══════════════ */}
-            <div className="absolute bottom-24 left-6 z-[999] block sm:hidden">
+            <div className="absolute bottom-24 left-6 rtl:left-auto rtl:right-6 z-[999] block sm:hidden">
                 <Link
                     href="/products"
                     className="inline-block bg-yellow-500 text-black font-bold text-sm rounded-full px-6 py-3 shadow-xl"
                 >
-                    Shop Now
+                    {tActions('shopNow')}
                 </Link>
             </div>
-            {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE (BOTTOM LEFT) ══════════════ */}
-            <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 z-[25] flex items-center gap-3 sm:gap-4">
+
+            {/* ══════════════ SLIDE INDICATORS + PLAY/PAUSE ══════════════ */}
+            <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-10 rtl:left-auto rtl:right-4 sm:rtl:right-10 z-[25] flex items-center gap-3 sm:gap-4">
                 <motion.button
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setIsPaused((p) => !p)}
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                    aria-label={isPaused ? 'Play' : 'Pause'}
                 >
                     {isPaused ? <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5" /> : <Pause className="w-3 h-3 sm:w-4 sm:h-4" />}
                 </motion.button>
@@ -320,7 +314,6 @@ export default function HeroSlider() {
                             key={s.id}
                             onClick={() => goTo(i)}
                             className="group relative flex items-center"
-                            aria-label={`Go to slide ${i + 1}`}
                         >
                             <div
                                 className={`h-1.5 rounded-full bg-white/20 overflow-hidden transition-all duration-300 ${i === current ? 'w-10 sm:w-[72px]' : 'w-5'}`}
@@ -348,24 +341,22 @@ export default function HeroSlider() {
             {/* ══════════════ NAV ARROWS ══════════════ */}
             <button
                 onClick={prev}
-                className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
-                aria-label="Previous slide"
+                className="absolute left-2 sm:left-4 md:left-8 rtl:left-auto rtl:right-2 sm:rtl:right-4 md:rtl:right-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
             >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
             <button
                 onClick={next}
-                className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
-                aria-label="Next slide"
+                className="absolute right-2 sm:right-4 md:right-8 rtl:right-auto rtl:left-2 sm:rtl:left-4 md:rtl:left-8 top-1/2 -translate-y-1/2 z-[25] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/25 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/40 transition-all hidden md:flex"
             >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
 
-            {/* ══════════════ DIAGONAL DIVIDER (BOTTOM) ══════════════ */}
+            {/* ══════════════ DIAGONAL DIVIDER ══════════════ */}
             <div className="absolute bottom-0 left-0 right-0 z-[30] pointer-events-none">
                 <svg
                     viewBox="0 0 1440 80"
@@ -375,17 +366,6 @@ export default function HeroSlider() {
                     <polygon fill="#06060c" points="0,80 1440,20 1440,80" />
                     <polygon fill="rgba(255,255,255,0.03)" points="0,80 1440,35 1440,80" />
                 </svg>
-            </div>
-
-            {/* ══════════════ CORNER ACCENTS ══════════════ */}
-            <div className="absolute top-0 left-0 right-0 z-[20] pointer-events-none">
-                <div className="h-1 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent" />
-            </div>
-            <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-[20] pointer-events-none hidden sm:block">
-                <div className="w-12 sm:w-16 h-12 sm:h-16 border-t-2 border-l-2 border-yellow-500/20 rounded-tl-lg" />
-            </div>
-            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-[20] pointer-events-none hidden sm:block">
-                <div className="w-12 sm:w-16 h-12 sm:h-16 border-t-2 border-r-2 border-yellow-500/20 rounded-tr-lg" />
             </div>
         </section >
     );

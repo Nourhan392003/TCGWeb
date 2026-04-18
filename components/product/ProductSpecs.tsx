@@ -1,6 +1,7 @@
 "use client";
 
-import { formatPrice } from "@/utils/currency";
+import { formatPriceByLocale } from "@/utils/currency";
+import { useTranslations, useLocale } from "next-intl";
 
 interface ProductSpecsProps {
   product: {
@@ -16,68 +17,69 @@ interface ProductSpecsProps {
   };
 }
 
-const rarityConfig: Record<string, { label: string; color: string }> = {
-  common: { label: "Common", color: "text-gray-300" },
-  uncommon: { label: "Uncommon", color: "text-green-300" },
-  rare: { label: "Rare", color: "text-blue-300" },
-  "ultra rare": { label: "Ultra Rare", color: "text-purple-300" },
-  "secret rare": { label: "Secret Rare", color: "text-yellow-300" },
-  promo: { label: "Promo", color: "text-gray-200" },
-  "sealed product": { label: "Sealed Product", color: "text-rose-200" },
+const rarityConfig: Record<string, { color: string }> = {
+  common: { color: "text-gray-300" },
+  uncommon: { color: "text-green-300" },
+  rare: { color: "text-blue-300" },
+  "ultra_rare": { color: "text-purple-300" },
+  "secret_rare": { color: "text-yellow-300" },
 };
 
 export default function ProductSpecs({ product }: ProductSpecsProps) {
+  const t = useTranslations('ProductSpecs');
+  const locale = useLocale();
+
   const specs = [
     {
-      label: "Game",
+      label: t('game'),
       value: product.game || "TCG",
       icon: "🎴",
     },
     {
-      label: "Rarity",
-      value: product.rarity || "Not Specified",
+      label: t('rarity'),
+      value: product.rarity || t('notSpecified'),
       icon: "⭐",
       color: rarityConfig[(product.rarity || "").toLowerCase().replace(/ /g, "_")]?.color || "text-white",
     },
     {
-      label: "Condition",
-      value: product.condition || "Not Specified",
+      label: t('condition'),
+      value: product.condition || t('notSpecified'),
       icon: "📦",
     },
     {
-      label: "Availability",
-      value: product.inStock ? "In Stock" : "Out of Stock",
+      label: t('availability'),
+      value: product.inStock ? t('inStock') : t('outOfStock'),
       icon: "📍",
       color: product.inStock ? "text-green-400" : "text-red-400",
       badge: product.inStock,
     },
     {
-      label: "Price",
-      value: formatPrice(product.price),
+      label: t('price'),
+      value: formatPriceByLocale(product.price, locale),
       icon: "💰",
       highlight: true,
     },
   ];
 
   const additionalFeatures = [
-    ...(product.isFoil ? ["Foil"] : []),
-    ...(product.isFirstEdition ? ["1st Edition"] : []),
-    ...(product.isGraded ? ["Graded"] : []),
+    ...(product.isFoil ? [t('foil')] : []),
+    ...(product.isFirstEdition ? [t('firstEdition')] : []),
+    ...(product.isGraded ? [t('graded')] : []),
   ];
 
   return (
-    <section className="w-full">
+    <section className="w-full ltr:text-left rtl:text-right">
       <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <span className="w-1 h-6 bg-gradient-to-b from-yellow-500 to-orange-500 rounded-full" />
-        Product Details
+        <span className="w-1 h-6 bg-gradient-to-b from-amber-500 to-yellow-500 rounded-full" />
+        {t('title')}
       </h2>
 
-      <div className="bg-[#16161e]/80 rounded-xl border border-[#2a2a38] overflow-hidden">
-        <div className="divide-y divide-[#2a2a38]">
-          {specs.map((spec, index) => (
+      <div className="bg-[#16161e]/80 rounded-xl border border-white/5 overflow-hidden">
+        <div className="divide-y divide-white/5">
+          {specs.map((spec) => (
             <div
               key={spec.label}
-              className="flex items-center justify-between p-4 hover:bg-[#1a1a24]/50 transition-colors"
+              className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <span className="text-lg">{spec.icon}</span>
@@ -85,7 +87,7 @@ export default function ProductSpecs({ product }: ProductSpecsProps) {
               </div>
               <span
                 className={`font-semibold ${spec.highlight
-                  ? "text-xl bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent"
+                  ? "text-xl text-amber-500"
                   : spec.color || "text-white"
                   }`}
               >
@@ -96,13 +98,13 @@ export default function ProductSpecs({ product }: ProductSpecsProps) {
         </div>
 
         {additionalFeatures.length > 0 && (
-          <div className="p-4 border-t border-[#2a2a38] bg-[#12121a]/50">
-            <p className="text-gray-400 text-sm mb-2">Special Attributes:</p>
+          <div className="p-4 border-t border-white/5 bg-black/20">
+            <p className="text-gray-400 text-sm mb-2">{t('specialAttributes')}</p>
             <div className="flex flex-wrap gap-2">
               {additionalFeatures.map((feature) => (
                 <span
                   key={feature}
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-300 border border-yellow-500/30"
+                  className="px-3 py-1 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20"
                 >
                   {feature}
                 </span>

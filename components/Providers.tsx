@@ -1,28 +1,19 @@
-'use client';
+"use client";
 
-import { ClerkProvider } from '@clerk/nextjs';
-import { ConvexProvider, ConvexReactClient } from 'convex/react';
-import { Toaster } from "react-hot-toast";
+import { ClerkProvider } from "@clerk/nextjs";
+import { arSA } from "@clerk/localizations";
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+type Props = {
+    children: React.ReactNode;
+    locale: string;
+};
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children, locale }: Props) {
     return (
         <ClerkProvider
-            publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+            localization={locale === "ar" ? (arSA as any) : undefined}
         >
-            <ConvexProvider client={convex}>
-                {children}
-                <Toaster
-                    position="bottom-right"
-                    toastOptions={{
-                        style: {
-                            background: '#333',
-                            color: '#fff',
-                        },
-                    }}
-                />
-            </ConvexProvider>
+            {children}
         </ClerkProvider>
     );
 }

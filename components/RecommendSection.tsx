@@ -5,7 +5,7 @@ import RecommendSectionDesktop from './RecommendSectionDesktop';
 
 type Poster = {
   id: string;
-  name: string;
+  name: string | { en: string; ar?: string };
   price: number;
   image: string;
   rarity: string;

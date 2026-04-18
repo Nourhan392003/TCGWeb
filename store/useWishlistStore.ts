@@ -3,10 +3,10 @@ import { persist } from 'zustand/middleware';
 
 export interface WishlistItem {
     id: string;
-    name: string;
+    name: string | { en: string; ar?: string };
     price: number;
     image?: string;
-    rarity?: string; // <-- تم الإضافة هنا
+    rarity?: string;
 }
 
 interface WishlistStore {

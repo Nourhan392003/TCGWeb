@@ -1,21 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import Logo from './Logo';
-import { Menu, X, Search, ShoppingCart, Heart, Home, Package, Gamepad, Star } from 'lucide-react';
+import { Menu, X, ShoppingCart, Heart, Home, Package, Gamepad, Star } from 'lucide-react';
 import { useAuthAction } from '@/hooks/useAuthAction';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
+import LanguageSwitcher from './LanguageSwitcher';
 
-const navLinks = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'Games', href: '/games', icon: Gamepad },
-    { name: 'Wishlist', href: '/wishlist', icon: Star },
-];
+const SearchIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+);
+
+const CartIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+    </svg>
+);
 
 const containerVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -47,31 +53,28 @@ const logoVariants = {
     },
 };
 
-const SearchIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-    </svg>
-);
-
-const CartIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-    </svg>
-);
-
 export default function Navbar() {
+    const t = useTranslations('Navbar');
     const { checkAuth } = useAuthAction();
     const router = useRouter();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { isSignedIn, isLoaded } = useAuth();
+    const cartCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
+
+    const navLinks = [
+        { name: t('home'), href: '/', icon: Home },
+        { name: t('products'), href: '/products', icon: Package },
+        { name: t('games'), href: '/games', icon: Gamepad },
+        { name: t('wishlist'), href: '/wishlist', icon: Star },
+    ];
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const cartCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
+    if (!mounted) return null;
 
     return (
         <motion.nav
@@ -96,12 +99,12 @@ export default function Navbar() {
                             className="hidden md:flex items-center space-x-1"
                         >
                             {navLinks.map((link) => {
-                                const isProtected = link.name === 'Wishlist';
+                                const isWishlist = link.href === '/wishlist';
                                 return (
                                     <div
-                                        key={link.name}
+                                        key={link.href}
                                         onClick={() => {
-                                            if (isProtected) {
+                                            if (isWishlist) {
                                                 checkAuth(() => router.push(link.href), undefined, link.href);
                                             } else {
                                                 router.push(link.href);
@@ -121,6 +124,8 @@ export default function Navbar() {
                             variants={itemVariants}
                             className="flex items-center gap-1 sm:gap-2"
                         >
+                            <LanguageSwitcher />
+
                             <button
                                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                                 className="p-2 text-gray-400 transition-all duration-200 hover:text-amber-400 hover:bg-white/5 rounded-lg group"
@@ -132,7 +137,7 @@ export default function Navbar() {
                             <div className="hidden sm:flex items-center px-2">
                                 {isLoaded && !isSignedIn && (
                                     <Link href="/sign-in" className="text-sm font-medium text-amber-400 hover:text-amber-300 border border-amber-500/50 hover:bg-amber-500/10 px-3 sm:px-4 py-1.5 rounded-lg transition-all whitespace-nowrap">
-                                        Sign In
+                                        {t('signIn')}
                                     </Link>
                                 )}
                                 {isLoaded && isSignedIn && (
@@ -146,7 +151,7 @@ export default function Navbar() {
                                 )}
                             </div>
 
-                             <div
+                            <div
                                 onClick={() => checkAuth(() => router.push('/cart'), undefined, '/cart')}
                                 className="relative p-2 text-gray-400 transition-all duration-200 hover:text-amber-400 hover:bg-white/5 rounded-lg group cursor-pointer"
                             >
@@ -178,15 +183,15 @@ export default function Navbar() {
                             className="md:hidden border-t border-white/5 bg-black/80 backdrop-blur-xl"
                         >
                             <div className="px-4 py-4 space-y-2">
-                                 {navLinks.map((link) => {
+                                {navLinks.map((link) => {
                                     const Icon = link.icon;
-                                    const isProtected = link.name === 'Wishlist';
+                                    const isWishlist = link.href === '/wishlist';
                                     return (
                                         <div
-                                            key={link.name}
+                                            key={link.href}
                                             onClick={() => {
                                                 setIsMobileMenuOpen(false);
-                                                if (isProtected) {
+                                                if (isWishlist) {
                                                     checkAuth(() => router.push(link.href), undefined, link.href);
                                                 } else {
                                                     router.push(link.href);
@@ -206,7 +211,7 @@ export default function Navbar() {
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-amber-400 border border-amber-500/50 hover:bg-amber-500/10 rounded-lg transition-all"
                                         >
-                                            Sign In
+                                            {t('signIn')}
                                         </Link>
                                     )}
                                 </div>
@@ -228,7 +233,7 @@ export default function Navbar() {
                             <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-gray-500" />
                             <input
                                 type="text"
-                                placeholder="Search cards, sets, games..."
+                                placeholder={t('search')}
                                 className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 sm:py-3 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-gray-200 placeholder-gray-500 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                                 autoFocus
                             />

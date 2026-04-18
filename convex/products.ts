@@ -38,9 +38,9 @@ export const updateProductImage = mutation({
 });
 export const addProduct = mutation({
     args: {
-        name: v.string(),
+        name: v.object({ en: v.string(), ar: v.optional(v.string()) }),
         price: v.number(),
-        description: v.optional(v.string()),
+        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
         imageId: v.optional(v.id("_storage")),
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
@@ -98,8 +98,8 @@ export const getAllCards = query({
 
 export const addCard = mutation({
     args: {
-        name: v.string(),
-        description: v.optional(v.string()),
+        name: v.object({ en: v.string(), ar: v.optional(v.string()) }),
+        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
         price: v.number(),
         imageUrl: v.optional(v.string()),
         image: v.optional(v.string()),
@@ -144,8 +144,8 @@ export const deleteCard = mutation({
 export const updateCard = mutation({
     args: {
         id: v.id("products"),
-        name: v.optional(v.string()),
-        description: v.optional(v.string()),
+        name: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
+        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
         price: v.optional(v.number()),
         imageUrl: v.optional(v.string()),
         image: v.optional(v.string()),
@@ -196,7 +196,7 @@ export const createOrder = mutation({
         items: v.array(
             v.object({
                 productId: v.string(),
-                name: v.string(),
+                name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
                 price: v.number(),
                 quantity: v.number(),
             })
@@ -249,5 +249,40 @@ export const getAllProducts = query({
     args: {},
     handler: async (ctx) => {
         return await ctx.db.query("products").collect();
+    },
+});
+
+/**
+ * One-off migration mutation to convert flat strings to multilingual objects
+ */
+export const migrateToMultilingual = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const products = await ctx.db.query("products").collect();
+        let migratedCount = 0;
+
+        for (const product of products) {
+            let updates: any = {};
+            let hasUpdate = false;
+
+            // Migrate name
+            if (typeof product.name === "string") {
+                updates.name = { en: product.name, ar: product.name };
+                hasUpdate = true;
+            }
+
+            // Migrate description
+            if (product.description && typeof product.description === "string") {
+                updates.description = { en: product.description, ar: product.description };
+                hasUpdate = true;
+            }
+
+            if (hasUpdate) {
+                await ctx.db.patch(product._id, updates);
+                migratedCount++;
+            }
+        }
+
+        return { success: true, migratedCount };
     },
 });
