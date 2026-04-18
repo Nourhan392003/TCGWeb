@@ -139,9 +139,8 @@ export default function ProductsClient() {
             const searchMatch = searchQuery === "" ||
                 (typeof nameObj === "string"
                     ? nameObj.toLowerCase().includes(searchStr)
-                    : (nameObj.en.toLowerCase().includes(searchStr) ||
-                        (nameObj.ar?.toLowerCase().includes(searchStr)))
-                );
+                    : nameObj.en?.toLowerCase().includes(searchStr)) ||
+                (nameObj.ar?.toLowerCase().includes(searchStr));
 
             const stockMatch = availableInStock === null ||
                 product.inStock === availableInStock;
@@ -166,7 +165,7 @@ export default function ProductsClient() {
             const localizedName = getLocalizedName(product.name, locale);
             addItemToCart({
                 id: product._id.toString(),
-                name: product.name,
+                name: localizedName,
                 price: product.price,
                 quantity: 1,
                 image: product.imageUrl || product.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
@@ -191,7 +190,7 @@ export default function ProductsClient() {
             } else {
                 addWishlistItem({
                     id: stringId,
-                    name: product.name,
+                    name: localizedName,
                     price: product.price,
                     image: product.imageUrl || product.image,
                     rarity: product.rarity

@@ -7,10 +7,9 @@ import { useAuth, UserButton } from '@clerk/nextjs';
 import Logo from './Logo';
 import { Menu, X, ShoppingCart, Heart, Home, Package, Gamepad, Star } from 'lucide-react';
 import { useAuthAction } from '@/hooks/useAuthAction';
-import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
-
+import { useTranslations, useLocale } from 'next-intl';
 const SearchIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -52,7 +51,17 @@ const logoVariants = {
         },
     },
 };
+const locale = useLocale();
 
+const localizeText = (value: any) => {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object') {
+        return locale === 'ar'
+            ? (value.ar ?? value.en ?? '')
+            : (value.en ?? value.ar ?? '');
+    }
+    return '';
+};
 export default function Navbar() {
     const t = useTranslations('Navbar');
     const { checkAuth } = useAuthAction();
@@ -202,8 +211,7 @@ export default function Navbar() {
                                             className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                                         >
                                             <Icon className="w-5 h-5" />
-                                            {link.name}
-                                        </div>
+                                            {localizeText(link.name)}                                        </div>
                                     );
                                 })}
                                 <div className="pt-4 border-t border-white/10">
