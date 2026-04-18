@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export interface CartItem {
     id: string;
-    name: string | { en: string; ar?: string };
+    name: string;
     price: number;
     image: string;
     quantity: number;
@@ -27,6 +27,7 @@ export const useCartStore = create<CartStore>()(
             addItem: (newItem) => {
                 set((state) => {
                     const existingItem = state.items.find((item) => item.id === newItem.id);
+
                     if (existingItem) {
                         return {
                             items: state.items.map((item) =>
@@ -36,6 +37,7 @@ export const useCartStore = create<CartStore>()(
                             ),
                         };
                     }
+
                     return { items: [...state.items, { ...newItem, quantity: 1 }] };
                 });
             },
@@ -64,7 +66,7 @@ export const useCartStore = create<CartStore>()(
             },
         }),
         {
-            name: 'tcg-cart-storage', // يخزن الداتا في الـ Local Storage
+            name: 'tcg-cart-storage-v2',
         }
     )
 );

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export interface WishlistItem {
     id: string;
-    name: string | { en: string; ar?: string };
+    name: string;
     price: number;
     image?: string;
     rarity?: string;
@@ -42,7 +42,7 @@ export const useWishlistStore = create<WishlistStore>()(
             clearWishlist: () => set({ items: [] }),
         }),
         {
-            name: 'wishlist-storage',
+            name: 'wishlist-storage-v2',
         }
     )
 );
