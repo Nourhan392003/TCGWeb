@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useAuthAction } from "@/hooks/useAuthAction";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPriceByLocale } from "@/utils/currency";
+import { getLocalizedText } from "@/utils/localization";
 
 interface TCGCardItemProps {
     id: string | number;
@@ -25,9 +26,8 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
     const locale = useLocale();
     const tActions = useTranslations('Actions');
 
-    const localizedName = typeof name === 'string'
-        ? name
-        : (name[locale as 'en' | 'ar'] || name.en);
+    // Always use getLocalizedText for safe string conversion
+    const localizedName = getLocalizedText(name, locale);
 
     // دوال المفضلة
     const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
@@ -49,7 +49,7 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
             } else {
                 addWishlistItem({
                     id: stringId,
-                    name: name as any, // Store the whole object in the store
+                    name: localizedName,
                     price,
                     image,
                     rarity
@@ -66,7 +66,7 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
         checkAuth(() => {
             addItemToCart({
                 id: stringId,
-                name: name as any, // Store the whole object in the store
+                name: localizedName,
                 price,
                 quantity: 1,
                 image,

@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuthAction } from '@/hooks/useAuthAction';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { getLocalizedContent } from '@/utils/localization';
+import { getLocalizedText } from '@/utils/localization';
 
 interface Poster {
     id: string;
@@ -22,7 +22,7 @@ interface RecommendSectionProps {
 
 const posterData: Poster[] = [
     { id: '1', name: { en: 'Pirates Party 2026 Vol.1', ar: 'حفلة القراصنة ٢٠٢٦' }, price: 24.99, image: '/cards/card1.png' },
-    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/cards/card2.png' },
+    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/slider/card2.png' },
     { id: '3', name: { en: "Quick Beginner's Guide", ar: 'دليل المبتدئين السريع' }, price: 15.99, image: '/cards/card3.png' },
     { id: '4', name: { en: 'Teaching App', ar: 'تطبيق التعليم' }, price: 22.99, image: '/cards/card4.png' },
     { id: '5', name: { en: 'Championship 26-27', ar: 'البطولة ٢٦-٢٧' }, price: 29.99, image: '/cards/card1.png' },
@@ -50,12 +50,12 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
         e.preventDefault();
         e.stopPropagation();
 
-        const localizedName = getLocalizedContent(card.name, locale);
+        const localizedName = getLocalizedText(card.name, locale);
 
         checkAuth(() => {
             addItemToCart({
                 id: card.id,
-                name: card.name,
+                name: localizedName,
                 price: card.price,
                 quantity: 1,
                 image: card.image,
@@ -117,7 +117,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                     <div className="relative z-20 w-full h-full px-[2%]">
                         {cards.slice(0, 5).map((card, index) => {
                             const pos = mobilePosterPositions[index % mobilePosterPositions.length];
-                            const localizedName = getLocalizedContent(card.name, locale);
+                            const localizedName = getLocalizedText(card.name, locale);
 
                             return (
                                 <motion.div

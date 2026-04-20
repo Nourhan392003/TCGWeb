@@ -1,4 +1,12 @@
 import './globals.css';
+import { ClerkProvider } from '@clerk/nextjs';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    icons: {
+        icon: '/favicon.svg',
+    },
+};
 
 export default function RootLayout({
     children
@@ -6,8 +14,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html suppressHydrationWarning>
-            <body>{children}</body>
-        </html>
+        <ClerkProvider>
+            <html suppressHydrationWarning>
+                <body>{children}</body>
+            </html>
+        </ClerkProvider>
     );
 }

@@ -18,6 +18,7 @@ import {
     DollarSign,
 } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
+import { getLocalizedText } from "@/utils/localization";
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
@@ -266,35 +267,42 @@ export default function OrdersPage() {
                                                             <div className="col-span-1">Subtotal</div>
                                                         </div>
                                                         <div className="divide-y divide-gray-700">
-                                                            {order.items?.map((item: any, index: number) => (
-                                                                <div key={index} className="grid grid-cols-4 gap-4 p-3">
-                                                                    <div className="col-span-1">
-                                                                        <div className="flex items-center gap-2">
-                                                                            {item.image && (
-                                                                                <img
-                                                                                    src={item.image}
-                                                                                    alt={item.name}
-                                                                                    className="w-10 h-10 rounded object-cover"
-                                                                                />
-                                                                            )}
-                                                                            <span className="text-white text-sm">{item.name}</span>
+                                                            {order.items?.map((item: any, index: number) => {
+                                                                const localizedItemName = getLocalizedText(item.name, locale);
+
+                                                                return (
+                                                                    <div key={index} className="grid grid-cols-4 gap-4 p-3">
+                                                                        <div className="col-span-1">
+                                                                            <div className="flex items-center gap-2">
+                                                                                {item.image && (
+                                                                                    <img
+                                                                                        src={item.image}
+                                                                                        alt={localizedItemName}
+                                                                                        className="w-10 h-10 rounded object-cover"
+                                                                                    />
+                                                                                )}
+                                                                                <span className="text-white text-sm">{localizedItemName}</span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="col-span-1">
+                                                                            <span className="text-gray-300">
+                                                                                {formatPrice(item.price)}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="col-span-1">
+                                                                            <span className="text-gray-300">×{item.quantity}</span>
+                                                                        </div>
+
+                                                                        <div className="col-span-1">
+                                                                            <span className="text-green-400 font-medium">
+                                                                                {formatPrice(item.price * item.quantity)}
+                                                                            </span>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-span-1">
-                                                                        <span className="text-gray-300">
-                                                                            {formatPrice(item.price)}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="col-span-1">
-                                                                        <span className="text-gray-300">×{item.quantity}</span>
-                                                                    </div>
-                                                                    <div className="col-span-1">
-                                                                        <span className="text-green-400 font-medium">
-                                                                            {formatPrice(item.price * item.quantity)}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -312,8 +320,8 @@ export default function OrdersPage() {
                                                                 onClick={() => handleStatusChange(order._id, status)}
                                                                 disabled={order.status === status}
                                                                 className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${order.status === status
-                                                                        ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
-                                                                        : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
+                                                                    ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
+                                                                    : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
                                                                     }`}
                                                             >
                                                                 {statusConfig[status].label}

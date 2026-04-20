@@ -16,7 +16,7 @@ import { Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { formatPriceByLocale } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
-import { getLocalizedContent } from "@/utils/localization";
+import { getLocalizedText } from "@/utils/localization";
 
 interface CheckoutFormData {
     firstName: string;
@@ -108,7 +108,7 @@ export default function CheckoutPage() {
                 },
                 items: items.map((item) => ({
                     productId: item.id,
-                    name: item.name,
+                    name: typeof item.name === 'string' ? item.name : (item.name as any)?.en || (item.name as any)?.ar || '',
                     price: item.price,
                     quantity: item.quantity,
                 })),
@@ -374,7 +374,7 @@ export default function CheckoutPage() {
 
                                 <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#2a2a38] scrollbar-track-transparent">
                                     {items.map((item) => {
-                                        const localizedName = getLocalizedContent(item.name, locale);
+                                        const localizedName = getLocalizedText(item.name, locale);
                                         return (
                                             <div
                                                 key={item.id}

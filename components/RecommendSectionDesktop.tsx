@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuthAction } from '@/hooks/useAuthAction';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { getLocalizedContent } from '@/utils/localization';
+import { getLocalizedText } from '@/utils/localization';
 
 interface Poster {
   id: string;
@@ -77,24 +77,24 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
 
   const cards = featuredCards?.length ? featuredCards : posterData;
 
-  const handleAddToCart = (e: React.MouseEvent, card: Poster) => {
-    e.preventDefault();
-    e.stopPropagation();
+   const handleAddToCart = (e: React.MouseEvent, card: Poster) => {
+     e.preventDefault();
+     e.stopPropagation();
 
-    const localizedName = getLocalizedContent(card.name, locale);
+     const localizedName = getLocalizedText(card.name, locale);
 
-    checkAuth(() => {
-      addItemToCart({
-        id: card.id,
-        name: card.name,
-        price: card.price,
-        quantity: 1,
-        image: card.image,
-        rarity: card.rarity,
-      });
-      toast.success(tActions('addedToCart', { name: localizedName }));
-    });
-  };
+     checkAuth(() => {
+       addItemToCart({
+         id: card.id,
+         name: localizedName,
+         price: card.price,
+         quantity: 1,
+         image: card.image,
+         rarity: card.rarity,
+       });
+       toast.success(tActions('addedToCart', { name: localizedName }));
+     });
+   };
 
   const handleProductClick = (cardId: string) => {
     checkAuth(() => {
@@ -152,9 +152,9 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
 
         {/* ── Posters Layer ── */}
         <div className="relative z-20 w-[94%] h-[85%] mx-auto">
-          {cards.slice(0, 5).map((card, index) => {
-            const pos = posterPositions[index % posterPositions.length];
-            const localizedName = getLocalizedContent(card.name, locale);
+           {cards.slice(0, 5).map((card, index) => {
+             const pos = posterPositions[index % posterPositions.length];
+             const localizedName = getLocalizedText(card.name, locale);
 
             return (
               <motion.div

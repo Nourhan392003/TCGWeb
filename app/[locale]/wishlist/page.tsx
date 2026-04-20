@@ -6,6 +6,7 @@ import TCGCardItem from "@/components/ui/TCGCardItem";
 import { Heart, ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { getLocalizedText } from "@/utils/localization";
 
 export default function WishlistPage() {
     const t = useTranslations('Wishlist');
@@ -78,7 +79,7 @@ export default function WishlistPage() {
                                 <TCGCardItem
                                     key={item.id}
                                     id={item.id}
-                                    name={item.name}
+                                    name={getLocalizedText(item.name, locale)}
                                     image={item.image || ""}
                                     price={item.price}
                                     rarity={item.rarity || ""}

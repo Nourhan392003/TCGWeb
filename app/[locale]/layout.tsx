@@ -29,14 +29,12 @@ export default async function LocaleLayout({
     const messages = await getMessages();
 
     return (
-        <Providers locale={locale}>
+        <Providers locale={locale} messages={messages}>
             <ConvexClientProvider>
-                <NextIntlClientProvider locale={locale} messages={messages}>
                     <div lang={locale} className={locale === 'ar' ? 'font-ar' : ''} dir="ltr">                            <Navbar />
                         {children}
                         <Footer />
                     </div>
-                </NextIntlClientProvider>
             </ConvexClientProvider>
         </Providers>
     );

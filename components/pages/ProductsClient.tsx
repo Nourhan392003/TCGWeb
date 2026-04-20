@@ -11,6 +11,7 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { useAuthAction } from "@/hooks/useAuthAction";
 import toast from "react-hot-toast";
 import { useTranslations, useLocale } from "next-intl";
+import { getLocalizedText, getLocalizedStringForSearch } from "@/utils/localization";
 
 type FilterSection = {
     id: string;
@@ -18,19 +19,17 @@ type FilterSection = {
     isOpen: boolean;
 };
 
-const normalizeValue = (value?: string) =>
-    (value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/&/g, "and")
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "");
-
-const getLocalizedName = (name: any, locale: string) => {
-    if (!name) return "";
-    if (typeof name === "string") return name;
-    return name[locale] || name.en || "";
+// Normalize a string value for filtering (lowercase, ASCII-only, underscores)
+const normalizeFilterValue = (value?: string): string => {
+    return (
+        (value || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/&/g, "and")
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+    );
 };
 
 export default function ProductsClient() {
@@ -98,8 +97,8 @@ export default function ProductsClient() {
             if (product.inStock) counts.inStock++;
             else counts.outOfStock++;
 
-            const brand = normalizeValue(product.game);
-            const type = normalizeValue(product.type || "single_cards");
+            const brand = normalizeFilterValue(product.game);
+            const type = normalizeFilterValue(product.type || "single_cards");
             counts.brands[brand] = (counts.brands[brand] || 0) + 1;
             counts.types[type] = (counts.types[type] || 0) + 1;
         });
@@ -133,24 +132,22 @@ export default function ProductsClient() {
         if (!products) return [];
 
         return products.filter((product: any) => {
-            const nameObj = product.name;
-            const searchStr = searchQuery.toLowerCase();
+            // Build searchable name using localized text
+            const productName = getLocalizedText(product.name, locale);
+            const searchLower = searchQuery.toLowerCase().trim();
 
             const searchMatch = searchQuery === "" ||
-                (typeof nameObj === "string"
-                    ? nameObj.toLowerCase().includes(searchStr)
-                    : nameObj.en?.toLowerCase().includes(searchStr)) ||
-                (nameObj.ar?.toLowerCase().includes(searchStr));
+                productName.toLowerCase().includes(searchLower);
 
             const stockMatch = availableInStock === null ||
                 product.inStock === availableInStock;
             const brandMatch =
                 selectedBrands.length === 0 ||
-                selectedBrands.includes(normalizeValue(product.game));
+                selectedBrands.includes(normalizeFilterValue(product.game));
 
             const typeMatch =
                 selectedTypes.length === 0 ||
-                selectedTypes.includes(normalizeValue(product.type) || "single_cards");
+                selectedTypes.includes(normalizeFilterValue(product.type) || "single_cards");
 
             const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
             return searchMatch && stockMatch && brandMatch && typeMatch && priceMatch;
@@ -162,7 +159,7 @@ export default function ProductsClient() {
         e.stopPropagation();
 
         checkAuth(() => {
-            const localizedName = getLocalizedName(product.name, locale);
+            const localizedName = getLocalizedText(product.name, locale);
             addItemToCart({
                 id: product._id.toString(),
                 name: localizedName,
@@ -182,7 +179,7 @@ export default function ProductsClient() {
         checkAuth(() => {
             const stringId = product._id.toString();
             const inWishlist = isInWishlist(stringId);
-            const localizedName = getLocalizedName(product.name, locale);
+            const localizedName = getLocalizedText(product.name, locale);
 
             if (inWishlist) {
                 removeWishlistItem(stringId);
@@ -498,7 +495,7 @@ export default function ProductsClient() {
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                                 {filteredProducts.map((product: any) => {
                                     const inWishlist = isInWishlist(product._id.toString());
-                                    const localizedName = getLocalizedName(product.name, locale);
+                                    const localizedName = getLocalizedText(product.name, locale);
                                     return (
                                         <Link
                                             key={product._id}

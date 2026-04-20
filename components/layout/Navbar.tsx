@@ -10,6 +10,7 @@ import { useAuthAction } from '@/hooks/useAuthAction';
 import { Link, useRouter } from '@/i18n/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslations, useLocale } from 'next-intl';
+import { getLocalizedText } from '@/utils/localization';
 const SearchIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -51,19 +52,10 @@ const logoVariants = {
         },
     },
 };
-const locale = useLocale();
 
-const localizeText = (value: any) => {
-    if (typeof value === 'string') return value;
-    if (value && typeof value === 'object') {
-        return locale === 'ar'
-            ? (value.ar ?? value.en ?? '')
-            : (value.en ?? value.ar ?? '');
-    }
-    return '';
-};
 export default function Navbar() {
     const t = useTranslations('Navbar');
+    const locale = useLocale();
     const { checkAuth } = useAuthAction();
     const router = useRouter();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -122,8 +114,6 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span className="relative z-10">{String(link.name)}</span>
-                                        ...
-                                        {String(link.name)}
                                         <span className="absolute inset-x-4 -bottom-0 h-[2px] scale-x-0 bg-gradient-to-r from-amber-400 to-yellow-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
                                         <span className="absolute inset-0 -z-10 rounded-lg bg-amber-500/0 transition-colors duration-300 group-hover:bg-amber-500/10" />
                                     </Link>
@@ -198,20 +188,21 @@ export default function Navbar() {
                                     const Icon = link.icon;
                                     const isWishlist = link.href === '/wishlist';
                                     return (
-                                        <div
-                                            key={link.href}
-                                            onClick={() => {
-                                                setIsMobileMenuOpen(false);
-                                                if (isWishlist) {
-                                                    checkAuth(() => router.push(link.href), undefined, link.href);
-                                                } else {
-                                                    router.push(link.href);
-                                                }
-                                            }}
-                                            className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                            <Icon className="w-5 h-5" />
-                                            {localizeText(link.name)}                                        </div>
+                                <div
+                                    key={link.href}
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        if (isWishlist) {
+                                            checkAuth(() => router.push(link.href), undefined, link.href);
+                                        } else {
+                                            router.push(link.href);
+                                        }
+                                    }}
+                                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                                >
+                                    <Icon className="w-5 h-5" />
+                                    {link.name}
+                                </div>
                                     );
                                 })}
                                 <div className="pt-4 border-t border-white/10">

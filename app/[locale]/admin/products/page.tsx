@@ -18,7 +18,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
-import { getLocalizedContent } from "@/utils/localization";
+import { getLocalizedText } from "@/utils/localization";
 
 export default function ProductsPage() {
     const t = useTranslations('Admin');

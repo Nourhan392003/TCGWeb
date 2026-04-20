@@ -277,7 +277,7 @@ export default function HeroBanner() {
                         </motion.button>
                     </Link>
 
-                    <Link href="/collection">
+                    <Link href="/products">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.96 }}

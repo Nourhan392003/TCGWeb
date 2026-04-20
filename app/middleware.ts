@@ -6,10 +6,9 @@ const intlMiddleware = createMiddleware(routing);
 
 const isProtectedRoute = createRouteMatcher([
   '/:locale/admin(.*)',
-  '/:locale/cart(.*)',
-  '/:locale/checkout(.*)',
-  '/:locale/products(.*)',
-  '/:locale/wishlist(.*)'
+  '/:locale/cart',
+  '/:locale/checkout',
+  '/:locale/wishlist'
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

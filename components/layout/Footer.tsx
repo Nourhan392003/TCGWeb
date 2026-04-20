@@ -72,7 +72,8 @@ export default function Footer() {
 
     const infoLinks = [
         { label: t('aboutUs'), href: '/about' },
-        { label: t('faq'), href: '/faq' },
+        // FAQ page not yet implemented - uncomment when available
+        // { label: t('faq'), href: '/faq' },
         { label: t('contactUs'), href: '/contact' },
     ];
 

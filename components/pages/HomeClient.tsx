@@ -6,9 +6,12 @@ import HeroSlider from "@/components/HeroSlider";
 import FloatingCardsCTA from "@/components/FloatingCardsCTA";
 import RecommendSection from "@/components/RecommendSection";
 import VideosSection from "@/components/VideosSection";
+import { useLocale } from "next-intl";
+import { getLocalizedText } from "@/utils/localization";
 
 export default function HomeClient() {
     const featuredCards = useQuery(api.products.getFeaturedCards);
+    const locale = useLocale();
 
     return (
         <div className="min-h-screen bg-[#06060c] text-white selection:bg-amber-500/30 overflow-x-hidden">
@@ -21,7 +24,7 @@ export default function HomeClient() {
             {/* 3️⃣ RECOMMEND / WANTED POSTERS SECTION */}
             <RecommendSection featuredCards={featuredCards?.map(card => ({
                 id: card._id.toString(),
-                name: card.name,
+                name: getLocalizedText(card.name, locale),
                 price: card.price,
                 image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
                 rarity: card.rarity || "Common",

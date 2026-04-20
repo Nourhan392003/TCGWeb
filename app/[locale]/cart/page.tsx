@@ -6,8 +6,8 @@ import { useCartStore, CartItem } from "@/store/useCartStore";
 import { formatPriceByLocale } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { getLocalizedContent } from "@/utils/localization";
 import Image from "next/image";
+import { getLocalizedText } from "@/utils/localization";
 
 const getRarityColor = (rarity: string) => {
     const colors: Record<string, string> = {
@@ -25,7 +25,9 @@ const getRarityColor = (rarity: string) => {
 function CartItemCard({ item }: { item: CartItem }) {
     const { updateQuantity, removeItem } = useCartStore();
     const locale = useLocale();
-    const localizedName = getLocalizedContent(item.name, locale);
+
+    // Safe localized name from centralized utility
+    const localizedName = getLocalizedText(item.name, locale);
 
     const handleIncrement = () => {
         updateQuantity(item.id, item.quantity + 1);

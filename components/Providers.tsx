@@ -1,19 +1,17 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
-import { arSA } from "@clerk/localizations";
+import { NextIntlClientProvider } from "next-intl";
 
 type Props = {
     children: React.ReactNode;
     locale: string;
+    messages: any;
 };
 
-export default function Providers({ children, locale }: Props) {
+export default function Providers({ children, locale, messages }: Props) {
     return (
-        <ClerkProvider
-            localization={locale === "ar" ? (arSA as any) : undefined}
-        >
+        <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
-        </ClerkProvider>
+        </NextIntlClientProvider>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { getLocalizedContent } from "@/utils/localization";
+import { getLocalizedText } from "@/utils/localization";
 
 interface ProductGalleryProps {
   product: {
@@ -22,8 +22,8 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
   
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const images = [product.imageUrl || product.image].filter((img): img is string => !!img);
-  const localizedName = getLocalizedContent(product.name, locale);
+   const images = [product.imageUrl || product.image].filter((img): img is string => !!img);
+   const localizedName = getLocalizedText(product.name, locale);
 
   const validImages = images.filter((img): img is string => !!img);
   

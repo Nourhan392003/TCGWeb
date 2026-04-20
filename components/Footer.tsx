@@ -12,10 +12,11 @@ const policiesLinks = [
 ];
 
 const moreInfoLinks = [
-  { label: 'About Us', href: '/about' },
-  { label: 'FAQ', href: '/faq' },
-  { label: 'Subscribe', href: '/subscribe' },
-  { label: 'Contact Us', href: '/contact' },
+    { label: 'About Us', href: '/about' },
+    // FAQ page not yet implemented - uncomment when available
+    // { label: 'FAQ', href: '/faq' },
+    { label: 'Subscribe', href: '/subscribe' },
+    { label: 'Contact Us', href: '/contact' },
 ];
 
 const socialIcons = [

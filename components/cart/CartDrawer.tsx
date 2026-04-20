@@ -9,7 +9,7 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import toast from "react-hot-toast";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPriceByLocale } from "@/utils/currency";
-import { getLocalizedContent } from "@/utils/localization";
+import { getLocalizedText } from "@/utils/localization";
 
 /**
  * Cart Drawer Props
@@ -41,7 +41,9 @@ const getRarityColor = (rarity: string) => {
 function CartItemRow({ item }: { item: CartItem }) {
     const { updateQuantity, removeItem } = useCartStore();
     const locale = useLocale();
-    const localizedName = getLocalizedContent(item.name, locale);
+
+    // Safe localized name using centralized utility
+    const localizedName = getLocalizedText(item.name, locale);
 
     return (
         <div className="flex gap-4 p-4 bg-[#1a1a24] rounded-lg border border-white/10">

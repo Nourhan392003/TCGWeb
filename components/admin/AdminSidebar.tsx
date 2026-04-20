@@ -31,16 +31,6 @@ const navItems = [
         href: "/admin/orders",
         icon: ShoppingCart
     },
-    {
-        name: "Customers",
-        href: "/admin/customers",
-        icon: Users
-    },
-    {
-        name: "Settings",
-        href: "/admin/settings",
-        icon: Settings
-    },
 ];
 
 export default function AdminSidebar() {
