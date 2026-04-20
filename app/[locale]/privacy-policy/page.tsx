@@ -1,7 +1,13 @@
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import PrivacyPolicyClient from "@/components/pages/PrivacyPolicyClient";
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+export async function generateMetadata({
+    params
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    setRequestLocale(locale);
     const messages: any = await getMessages();
     const t = messages.SEO;
 
@@ -11,6 +17,12 @@ export async function generateMetadata({ params: { locale } }: { params: { local
     };
 }
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage({
+    params
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    setRequestLocale(locale);
     return <PrivacyPolicyClient />;
 }

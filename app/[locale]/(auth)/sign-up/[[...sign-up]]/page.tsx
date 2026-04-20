@@ -2,10 +2,11 @@ import { SignUp } from "@clerk/nextjs";
 import { arSA } from "@clerk/localizations";
 
 interface Props {
-    params: { locale: string };
+    params: Promise<{ locale: string }>;
 }
 
-export default function SignUpPage({ params: { locale } }: Props) {
+export default async function SignUpPage({ params }: Props) {
+    const { locale } = await params;
     const isArabic = locale === 'ar';
     const clerkLocalization = isArabic ? arSA : undefined;
 

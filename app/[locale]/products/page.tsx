@@ -1,7 +1,12 @@
 import { getMessages } from 'next-intl/server';
 import ProductsClient from "@/components/pages/ProductsClient";
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+export async function generateMetadata({
+    params
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
     const messages: any = await getMessages();
     const t = messages.SEO;
 
@@ -11,6 +16,11 @@ export async function generateMetadata({ params: { locale } }: { params: { local
     };
 }
 
-export default function ProductsPage() {
+export default async function ProductsPage({
+    params
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
     return <ProductsClient />;
 }
