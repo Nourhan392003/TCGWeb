@@ -48,10 +48,10 @@
   },
   "CTA": {
     "title": "عالم من الكنوز والمغامرة في انتظارك.",
-    "desc": "TCG Vault هي منصة ألعاب بطاقات التداول المصممة للهواة والأبطال.",
-    "experience": "عش التجربة.",
-    "newEra": "عصر جديد من ألعاب البطاقات.",
-    "button": "ابدأ مغامرتك"
+    "desc": "TCG Vault is a trading card game platform built for collectors and champions.",
+    "experience": "Experience the thrill.",
+    "newEra": "A new era of card gaming.",
+    "button": "Begin Your Adventure"
   },
   "Products": {
     "listingTitle": "استكشف البطاقات",
@@ -248,7 +248,7 @@
       }
     },
     "why": {
-      "title": "لماذا تختار TCG Vault؟",
+      "title": "Why Choose TCG Vault?",
       "l1": "منتجات أصلية مع ضمان التحقق من الأصالة",
       "l2": "تصنيف احترافي للبطاقات وتقييم دقيق للحالة",
       "l3": "تغليف آمن وشحن سريع",
@@ -462,14 +462,14 @@
     }
   },
   "SEO": {
-    "defaultTitle": "TCG Vault - بطاقات تداول فاخرة",
-    "defaultDesc": "مصدرك المتميز لألعاب بطاقات التداول - بوكيمون، يو-غي-أوه!، ماجيك وأكثر",
-    "homeTitle": "TCG Vault - الرئيسية",
-    "productsTitle": "استكشف المجموعات - TCG Vault",
-    "aboutTitle": "من نحن - TCG Vault",
-    "contactTitle": "اتصل بنا - TCG Vault",
-    "cartTitle": "سلة التسوق - TCG Vault",
-    "wishlistTitle": "قائمة مفضلاتك - TCG Vault",
-    "checkoutTitle": "إتمام الشراء آمن - TCG Vault"
+    "defaultTitle": "TCG Vault - Premium Trading Cards",
+    "defaultDesc": "Your premium source for trading card games - Pokémon, Yu-Gi-Oh!, Magic & more",
+    "homeTitle": "TCG Vault - Home",
+    "productsTitle": "Explore Collections - TCG Vault",
+    "aboutTitle": "About Us - TCG Vault",
+    "contactTitle": "Contact Us - TCG Vault",
+    "cartTitle": "Shopping Cart - TCG Vault",
+    "wishlistTitle": "Your Wishlist - TCG Vault",
+    "checkoutTitle": "Secure Checkout - TCG Vault"
   }
 }
