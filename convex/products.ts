@@ -54,6 +54,7 @@ export const addProduct = mutation({
         isFirstEdition: v.optional(v.boolean()),
         isFeatured: v.optional(v.boolean()),
         isGraded: v.optional(v.boolean()),
+        isPreorder: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         let resolvedImageUrl = args.imageUrl || args.image;
@@ -112,6 +113,7 @@ export const addCard = mutation({
         inStock: v.boolean(),
         stockQuantity: v.optional(v.number()),
         isFeatured: v.optional(v.boolean()),
+        isPreorder: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         let resolvedImageUrl = args.imageUrl || args.image;
@@ -158,6 +160,7 @@ export const updateCard = mutation({
         inStock: v.optional(v.boolean()),
         stockQuantity: v.optional(v.number()),
         isFeatured: v.optional(v.boolean()),
+        isPreorder: v.optional(v.boolean()),
         type: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
@@ -245,6 +248,28 @@ export const getFeaturedCards = query({
         return productsWithUrls;
     },
 });
+export const getPreorderProducts = query({
+    args: {},
+    handler: async (ctx) => {
+        const products = await ctx.db
+            .query("products")
+            .filter((q) => q.eq(q.field("isPreorder"), true))
+            .collect();
+
+        const productsWithUrls = await Promise.all(
+            products.map(async (product) => {
+                const finalImageUrl = await resolveImageUrl(ctx, product);
+                return {
+                    ...product,
+                    imageUrl: finalImageUrl,
+                };
+            })
+        );
+
+        return productsWithUrls;
+    },
+});
+
 export const getAllProducts = query({
     args: {},
     handler: async (ctx) => {

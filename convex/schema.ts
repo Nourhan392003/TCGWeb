@@ -31,6 +31,7 @@ export default defineSchema({
         inStock: v.boolean(),
         stockQuantity: v.optional(v.number()),
         isFeatured: v.optional(v.boolean()),
+        isPreorder: v.optional(v.boolean()),
         createdAt: v.optional(v.number()),
         isGraded: v.optional(v.boolean()),
     }).index("by_game", ["game"]),

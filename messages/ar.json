@@ -8,7 +8,8 @@
   "Navbar": {
     "home": "الرئيسية",
     "products": "المنتجات",
-    "games": "الألعاب",
+    "tcg": "TCG",
+    "preorders": "الطلبات المسبقة",
     "wishlist": "المفضلة",
     "cart": "السلة",
     "search": "ابحث عن بطاقات، مجموعات، ألعاب...",
@@ -466,10 +467,23 @@
     "defaultDesc": "Your premium source for trading card games - Pokémon, Yu-Gi-Oh!, Magic & more",
     "homeTitle": "TCG Vault - Home",
     "productsTitle": "Explore Collections - TCG Vault",
+    "tcgTitle": "مجموعات TCG - TCG Vault",
+    "preordersTitle": "الطلبات المسبقة - TCG Vault",
     "aboutTitle": "About Us - TCG Vault",
     "contactTitle": "Contact Us - TCG Vault",
     "cartTitle": "Shopping Cart - TCG Vault",
     "wishlistTitle": "Your Wishlist - TCG Vault",
     "checkoutTitle": "Secure Checkout - TCG Vault"
+  },
+  "TCG": {
+    "title": "ألعاب بطاقات التداول",
+    "subtitle": "انغمس في عالم أشهر ألعاب بطاقات التداول. اختر عالمك وابدأ في بناء مجموعتك النهائية.",
+    "riftbound": "Riftbound",
+    "dragonBall": "Dragon Ball",
+    "naruto": "ناروتو",
+    "yugioh": "يوغي أوه!",
+    "unionArena": "Union Arena",
+    "onePiece": "ون بيس",
+    "pokemon": "بوكيمون"
   }
 }

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import Logo from './Logo';
-import { Menu, X, ShoppingCart, Heart, Home, Package, Gamepad, Star } from 'lucide-react';
+import { Menu, X, ShoppingCart, Heart, Home, Package, Gamepad, Star, Clock } from 'lucide-react';
 import { useAuthAction } from '@/hooks/useAuthAction';
 import { Link, useRouter } from '@/i18n/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -67,7 +67,8 @@ export default function Navbar() {
     const navLinks = [
         { name: t('home'), href: '/', icon: Home },
         { name: t('products'), href: '/products', icon: Package },
-        { name: t('games'), href: '/games', icon: Gamepad },
+        { name: t('tcg'), href: '/tcg', icon: Gamepad },
+        { name: t('preorders'), href: '/preorders', icon: Clock },
         { name: t('wishlist'), href: '/wishlist', icon: Star },
     ];
 
@@ -188,21 +189,21 @@ export default function Navbar() {
                                     const Icon = link.icon;
                                     const isWishlist = link.href === '/wishlist';
                                     return (
-                                <div
-                                    key={link.href}
-                                    onClick={() => {
-                                        setIsMobileMenuOpen(false);
-                                        if (isWishlist) {
-                                            checkAuth(() => router.push(link.href), undefined, link.href);
-                                        } else {
-                                            router.push(link.href);
-                                        }
-                                    }}
-                                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                                >
-                                    <Icon className="w-5 h-5" />
-                                    {link.name}
-                                </div>
+                                        <div
+                                            key={link.href}
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                if (isWishlist) {
+                                                    checkAuth(() => router.push(link.href), undefined, link.href);
+                                                } else {
+                                                    router.push(link.href);
+                                                }
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-300 hover:text-amber-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                            <Icon className="w-5 h-5" />
+                                            {link.name}
+                                        </div>
                                     );
                                 })}
                                 <div className="pt-4 border-t border-white/10">

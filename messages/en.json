@@ -8,7 +8,8 @@
   "Navbar": {
     "home": "Home",
     "products": "Products",
-    "games": "Games",
+    "tcg": "TCG",
+    "preorders": "Preorders",
     "wishlist": "Wishlist",
     "cart": "Cart",
     "search": "Search cards, sets, games...",
@@ -466,10 +467,23 @@
     "defaultDesc": "Your premium source for trading card games - Pokémon, Yu-Gi-Oh!, Magic & more",
     "homeTitle": "TCG Vault - Home",
     "productsTitle": "Explore Collections - TCG Vault",
+    "tcgTitle": "TCG Collections - TCG Vault",
+    "preordersTitle": "Preorders - TCG Vault",
     "aboutTitle": "About Us - TCG Vault",
     "contactTitle": "Contact Us - TCG Vault",
     "cartTitle": "Shopping Cart - TCG Vault",
     "wishlistTitle": "Your Wishlist - TCG Vault",
     "checkoutTitle": "Secure Checkout - TCG Vault"
+  },
+  "TCG": {
+    "title": "Trading Card Games",
+    "subtitle": "Dive into the world's most popular Trading Card Games. Choose your universe and start building your ultimate collection.",
+    "riftbound": "Riftbound",
+    "dragonBall": "Dragon Ball",
+    "naruto": "Naruto",
+    "yugioh": "Yu-Gi-Oh!",
+    "unionArena": "Union Arena",
+    "onePiece": "One Piece",
+    "pokemon": "Pokémon"
   }
 }

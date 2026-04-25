@@ -18,6 +18,7 @@ export default function AddProductForm() {
     const [rarity, setRarity] = useState("Common");
     const [condition, setCondition] = useState("Near Mint");
     const [inStock, setInStock] = useState(true);
+    const [isPreorder, setIsPreorder] = useState(false);
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -61,6 +62,7 @@ export default function AddProductForm() {
                 rarity,
                 condition,
                 inStock,
+                isPreorder,
                 imageId: storageId,
             });
 
@@ -75,6 +77,7 @@ export default function AddProductForm() {
             setRarity("Common");
             setCondition("Near Mint");
             setInStock(true);
+            setIsPreorder(false);
             setSelectedImage(null);
             if (imageInputRef.current) imageInputRef.current.value = "";
         } catch (error: any) {
@@ -128,9 +131,13 @@ export default function AddProductForm() {
                             onChange={(e) => setGame(e.target.value)}
                             className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
                         >
-                            <option>Pokémon</option>
-                            <option>One Piece</option>
-                            <option>Yu-Gi-Oh!</option>
+                            <option value="pokemon">Pokémon</option>
+                            <option value="one-piece">One Piece</option>
+                            <option value="yugioh">Yu-Gi-Oh!</option>
+                            <option value="dragon-ball">Dragon Ball</option>
+                            <option value="naruto">Naruto</option>
+                            <option value="union-arena">Union Arena</option>
+                            <option value="riftbound">Riftbound</option>
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -224,15 +231,28 @@ export default function AddProductForm() {
                     </div>
                 </div>
 
-                {/* In Stock */}
-                <div className="flex items-center gap-2 mt-2">
-                    <input
-                        type="checkbox"
-                        checked={inStock}
-                        onChange={(e) => setInStock(e.target.checked)}
-                        className="w-4 h-4 accent-amber-500"
-                    />
-                    <label className="text-sm text-white">{t('stock')}</label>
+                <div className="flex flex-col gap-3 mt-2">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="inStock"
+                            checked={inStock}
+                            onChange={(e) => setInStock(e.target.checked)}
+                            className="w-4 h-4 accent-amber-500"
+                        />
+                        <label htmlFor="inStock" className="text-sm text-white">{t('stock')}</label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="isPreorder"
+                            checked={isPreorder}
+                            onChange={(e) => setIsPreorder(e.target.checked)}
+                            className="w-4 h-4 accent-emerald-500"
+                        />
+                        <label htmlFor="isPreorder" className="text-sm text-white">Pre-order Product</label>
+                    </div>
                 </div>
 
                 <button

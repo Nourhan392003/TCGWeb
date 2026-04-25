@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Link } from "@/i18n/navigation";
@@ -27,7 +28,8 @@ const normalizeFilterValue = (value?: string): string => {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .replace(/&/g, "and")
-            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/[^a-z0-9-]+/g, "_")
+            .replace(/-/g, "_")
             .replace(/^_+|_+$/g, "")
     );
 };
@@ -43,6 +45,9 @@ export default function ProductsClient() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [showMoreTypes, setShowMoreTypes] = useState(false);
+
+    const searchParams = useSearchParams();
+    const initialGame = searchParams.get("game");
 
     const [availableInStock, setAvailableInStock] = useState<boolean | null>(null);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -68,10 +73,14 @@ export default function ProductsClient() {
     };
 
     const brands = [
-        { value: "yu_gi_oh", label: "Yu-Gi-Oh!" },
         { value: "pokemon", label: "Pokémon" },
         { value: "one_piece", label: "One Piece" },
+        { value: "yu_gi_oh", label: "Yu-Gi-Oh!" },
         { value: "magic", label: "Magic" },
+        { value: "dragon_ball", label: "Dragon Ball" },
+        { value: "naruto", label: "Naruto" },
+        { value: "union_arena", label: "Union Arena" },
+        { value: "riftbound", label: "Riftbound" },
     ];
     const productTypes = [
         { value: "booster_boxes", labelKey: "booster_boxes" },
@@ -150,9 +159,13 @@ export default function ProductsClient() {
                 selectedTypes.includes(normalizeFilterValue(product.type) || "single_cards");
 
             const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-            return searchMatch && stockMatch && brandMatch && typeMatch && priceMatch;
+
+            const urlGameMatch = !initialGame ||
+                normalizeFilterValue(product.game) === normalizeFilterValue(initialGame);
+
+            return searchMatch && stockMatch && brandMatch && typeMatch && priceMatch && urlGameMatch;
         });
-    }, [products, searchQuery, availableInStock, selectedBrands, selectedTypes, priceRange, locale]);
+    }, [products, searchQuery, availableInStock, selectedBrands, selectedTypes, priceRange, locale, initialGame]);
 
     const handleAddToCart = (e: React.MouseEvent, product: any) => {
         e.preventDefault();
