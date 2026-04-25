@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/useCartStore";
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -48,11 +47,10 @@ export default function CheckoutPage() {
 
     const { items, getTotalPrice, clearCart } = useCartStore();
     const router = useRouter();
-    const createOrder = useMutation(api.products.createOrder);
+
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [orderNumber, setOrderNumber] = useState("");
+
     const [formData, setFormData] = useState<CheckoutFormData>({
         firstName: "",
         lastName: "",
@@ -95,32 +93,58 @@ export default function CheckoutPage() {
         }
 
         try {
-            const orderId = await createOrder({
-                userId: formData.email,
-                totalAmount: grandTotal,
-                status: "pending",
-                shippingAddress: {
-                    fullName: `${formData.firstName} ${formData.lastName}`,
-                    address: formData.address,
-                    city: formData.city,
-                    phone: formData.phone,
-                    postalCode: formData.zipCode,
+            const orderReference = `tcg-${Date.now()}`;
+
+            const response = await fetch("/api/paymob/create-intention", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-                items: items.map((item) => ({
-                    productId: item.id,
-                    name: typeof item.name === 'string' ? item.name : (item.name as any)?.en || (item.name as any)?.ar || '',
-                    price: item.price,
-                    quantity: item.quantity,
-                })),
+                body: JSON.stringify({
+                    locale,
+                    orderReference,
+                    customer: {
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        email: formData.email,
+                        phone: formData.phone,
+                        address: formData.address,
+                        city: formData.city,
+                        zipCode: formData.zipCode,
+                    },
+                    items: items.map((item) => ({
+                        id: item.id,
+                        name:
+                            typeof item.name === "string"
+                                ? item.name
+                                : (item.name as any)?.en || (item.name as any)?.ar || "",
+                        price: item.price,
+                        quantity: item.quantity,
+                    })),
+                }),
             });
 
-            setOrderNumber(orderId);
-            clearCart();
-            setIsSuccess(true);
-            toast.success("Order placed successfully!");
+            const text = await response.text();
+            console.log("create-intention raw response:", text);
+
+            let data: any = null;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                throw new Error(`Server returned non-JSON response: ${text.slice(0, 200)}`);
+            }
+            if (!response.ok || !data?.checkoutUrl) {
+                throw new Error(data?.error || "Failed to initialize payment");
+            }
+
+            window.location.href = data.checkoutUrl;
         } catch (error) {
-            console.error("Order error:", error);
-            toast.error("Failed to place order. Please check console.");
+            console.error("Payment error:", error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to initialize payment"
+            );
         } finally {
             setIsLoading(false);
         }
@@ -137,34 +161,6 @@ export default function CheckoutPage() {
         );
     }
 
-    if (isSuccess) {
-        return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
-                <div className="max-w-md w-full ltr:text-left rtl:text-right">
-                    <div className="bg-[#12121a]/80 backdrop-blur-xl border border-[#2a2a38] rounded-2xl p-6 sm:p-8 text-center">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                            <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-green-500" />
-                        </div>
-                        <h1 className="text-xl sm:text-2xl sm:text-3xl font-bold text-[#f0f0f5] mb-2">{t('orderConfirmed')}</h1>
-                        <p className="text-[#a0a0b0] text-sm sm:text-base mb-4 sm:mb-6">
-                            {t('confirmationDesc')}
-                        </p>
-                        <div className="bg-[#1a1a24] rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-                            <p className="text-xs sm:text-sm text-[#6a6a7a] mb-1">{t('orderNumber')}</p>
-                            <p className="text-sm sm:text-lg font-mono font-semibold text-[#ffd700] uppercase">{orderNumber}</p>
-                        </div>
-                        <Link
-                            href="/products"
-                            className="w-full mt-4 sm:mt-6 py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold rounded-lg hover:shadow-[0_0_15px_rgba(251,191,36,0.4)] transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
-                        >
-                            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" /> {t('continueShopping')}
-                        </Link>
-
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-[#0a0a0f]">
@@ -318,35 +314,9 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="bg-[#12121a]/80 backdrop-blur-xl border border-[#2a2a38] rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                                    <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#eab308]" />
-                                        <h2 className="text-base sm:text-xl font-semibold text-[#f0f0f5]">{t('paymentMethod')}</h2>
-                                    </div>
-
-                                    <div className="bg-gradient-to-r from-[#1a1a24] to-[#22222e] border-2 border-[#eab308] rounded-lg sm:rounded-xl p-3 sm:p-4">
-                                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                            <div className="flex items-center gap-2 sm:gap-3">
-                                                <div className="w-10 h-6 sm:w-12 sm:h-8 bg-gradient-to-r from-[#1a1a24] to-[#2a2a38] rounded-md flex items-center justify-center">
-                                                    <div className="w-5 h-3 sm:w-6 sm:h-4 bg-gradient-to-r from-orange-400 to-red-500 rounded-sm"></div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs sm:text-sm font-medium text-[#f0f0f5]">{t('visaEnding', { last4: '4242' })}</p>
-                                                    <p className="text-[10px] sm:text-xs text-[#6a6a7a]">{t('expires', { date: '12/26' })}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 sm:gap-2">
-                                                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#eab308]" />
-                                                <span className="text-xs text-[#eab308]">{t('selected')}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-[#4a4a5a]">
-                                            <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                            <span>{t('securePayment')}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p className="text-xs sm:text-sm text-[#6a6a7a] text-center">
+                                    سيتم اختيار طريقة الدفع في صفحة Paymob الآمنة
+                                </p>
 
                                 <button
                                     type="submit"

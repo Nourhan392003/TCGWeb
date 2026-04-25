@@ -23,7 +23,6 @@ export default defineSchema({
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
         imageId: v.optional(v.string()),
-
         game: v.optional(v.string()),
         rarity: v.optional(v.string()),
         condition: v.optional(v.string()),
@@ -34,24 +33,13 @@ export default defineSchema({
         isFeatured: v.optional(v.boolean()),
         createdAt: v.optional(v.number()),
         isGraded: v.optional(v.boolean()),
-
     }).index("by_game", ["game"]),
 
     orders: defineTable({
         userId: v.string(),
-        items: v.array(
-            v.object({
-                productId: v.optional(v.string()),
-                id: v.optional(v.string()),
-                quantity: v.number(),
-                price: v.number(),
-                name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
-                image: v.optional(v.string()),
-                rarity: v.optional(v.string()),
-            })
-        ),
         totalAmount: v.number(),
         status: v.string(),
+
         shippingAddress: v.optional(
             v.object({
                 fullName: v.string(),
@@ -61,10 +49,22 @@ export default defineSchema({
                 postalCode: v.optional(v.string()),
             })
         ),
+
+        orderReference: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymobTransactionId: v.optional(v.string()),
+        paymentReference: v.optional(v.string()),
+
+        paymentStatus: v.optional(v.string()),
+        paymentProvider: v.optional(v.string()),
+        paymentRawPayload: v.optional(v.string()),
+
         createdAt: v.number(),
+        updatedAt: v.optional(v.number()),
     })
         .index("by_user", ["userId"])
-        .index("by_paymob_order", ["paymobOrderId"]),
+        .index("by_order_reference", ["orderReference"])
+        .index("by_paymob_order_id", ["paymobOrderId"])
+        .index("by_payment_reference", ["paymentReference"])
+
 });

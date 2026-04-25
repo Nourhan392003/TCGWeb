@@ -33,7 +33,7 @@ const posterData: Poster[] = [
     id: '2',
     name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' },
     price: 19.99,
-    image: '/cards/card2.png',
+    image: '/slider/card2.png',
     rarity: 'Rare',
   },
   {
@@ -77,24 +77,24 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
 
   const cards = featuredCards?.length ? featuredCards : posterData;
 
-   const handleAddToCart = (e: React.MouseEvent, card: Poster) => {
-     e.preventDefault();
-     e.stopPropagation();
+  const handleAddToCart = (e: React.MouseEvent, card: Poster) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-     const localizedName = getLocalizedText(card.name, locale);
+    const localizedName = getLocalizedText(card.name, locale);
 
-     checkAuth(() => {
-       addItemToCart({
-         id: card.id,
-         name: localizedName,
-         price: card.price,
-         quantity: 1,
-         image: card.image,
-         rarity: card.rarity,
-       });
-       toast.success(tActions('addedToCart', { name: localizedName }));
-     });
-   };
+    checkAuth(() => {
+      addItemToCart({
+        id: card.id,
+        name: localizedName,
+        price: card.price,
+        quantity: 1,
+        image: card.image,
+        rarity: card.rarity,
+      });
+      toast.success(tActions('addedToCart', { name: localizedName }));
+    });
+  };
 
   const handleProductClick = (cardId: string) => {
     checkAuth(() => {
@@ -152,9 +152,9 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
 
         {/* ── Posters Layer ── */}
         <div className="relative z-20 w-[94%] h-[85%] mx-auto">
-           {cards.slice(0, 5).map((card, index) => {
-             const pos = posterPositions[index % posterPositions.length];
-             const localizedName = getLocalizedText(card.name, locale);
+          {cards.slice(0, 5).map((card, index) => {
+            const pos = posterPositions[index % posterPositions.length];
+            const localizedName = getLocalizedText(card.name, locale);
 
             return (
               <motion.div

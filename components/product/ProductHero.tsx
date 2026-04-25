@@ -40,57 +40,57 @@ const gameIcons: Record<string, string> = {
   pokemon: "⚡",
   yugioh: "🀄",
   onepiece: "🏴‍☠️",
-  magic: "✨",
+  preorder: "✨",
 };
 
 export default function ProductHero({ product }: ProductHeroProps) {
-   const t = useTranslations('ProductHero');
-   const tActions = useTranslations('Actions');
-   const locale = useLocale();
-   const isRTL = locale === 'ar';
+  const t = useTranslations('ProductHero');
+  const tActions = useTranslations('Actions');
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
 
-   const { checkAuth } = useAuthAction();
-   const router = useRouter();
-   const addItem = useCartStore((state) => state.addItem);
-   const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
+  const { checkAuth } = useAuthAction();
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
+  const { addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
 
-   const localizedName = getLocalizedText(product.name, locale);
-   const productImage = product.imageUrl || product.image || "";
-   const inWishlist = isInWishlist(product._id.toString());
+  const localizedName = getLocalizedText(product.name, locale);
+  const productImage = product.imageUrl || product.image || "";
+  const inWishlist = isInWishlist(product._id.toString());
 
-   const handleAddToCart = () => {
-     checkAuth(() => {
-       addItem({
-         id: product._id.toString(),
-         name: localizedName,
-         price: product.price,
-         quantity: 1,
-         image: productImage,
-         rarity: product.rarity || "",
-       });
-       toast.success(tActions('addedToCart', { name: localizedName }));
-     });
-   };
+  const handleAddToCart = () => {
+    checkAuth(() => {
+      addItem({
+        id: product._id.toString(),
+        name: localizedName,
+        price: product.price,
+        quantity: 1,
+        image: productImage,
+        rarity: product.rarity || "",
+      });
+      toast.success(tActions('addedToCart', { name: localizedName }));
+    });
+  };
 
-   const handleWishlistToggle = () => {
-     checkAuth(() => {
-       if (inWishlist) {
-         removeWishlistItem(product._id.toString());
-         toast.success(tActions('removedFromWishlist', { name: localizedName }));
-       } else {
-         addWishlistItem({
-           id: product._id.toString(),
-           name: localizedName,
-           price: product.price,
-           image: productImage,
-           rarity: product.rarity,
-         });
-         toast.success(tActions('addedToWishlist', { name: localizedName }));
-       }
-     });
-   };
+  const handleWishlistToggle = () => {
+    checkAuth(() => {
+      if (inWishlist) {
+        removeWishlistItem(product._id.toString());
+        toast.success(tActions('removedFromWishlist', { name: localizedName }));
+      } else {
+        addWishlistItem({
+          id: product._id.toString(),
+          name: localizedName,
+          price: product.price,
+          image: productImage,
+          rarity: product.rarity,
+        });
+        toast.success(tActions('addedToWishlist', { name: localizedName }));
+      }
+    });
+  };
 
-   const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");
+  const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");
   const rarityStyle = rarityConfig[rarityKey] || rarityConfig.common;
 
   return (

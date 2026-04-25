@@ -951,7 +951,7 @@ class PaymobClient {
   async registerOrder(
     authToken: string,
     amount: number,
-    currency: string = 'EGP',
+    currency: string = 'SAR',
     items: PaymobItem[]
   ): Promise<PaymobOrderResponse> {
     const response = await fetch(`${this.baseUrl}/orders`, {
@@ -987,7 +987,7 @@ class PaymobClient {
       body: JSON.stringify({
         auth_token: authToken,
         amount_cents: Math.round(amount * 100),
-        currency: 'EGP',
+        currency: 'SAR',
         order_id: orderId,
         payment_methods: paymentMethods,
         billing_data: {
@@ -1064,7 +1064,7 @@ export async function POST(request: NextRequest) {
     const order = await paymobClient.registerOrder(
       auth.token,
       amount,
-      'EGP',
+      'SAR',
       items
     );
     

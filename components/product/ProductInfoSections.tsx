@@ -48,55 +48,55 @@ function formatDescription(description?: string | { en: string; ar?: string }, l
  * Generates translated highlights based on product data
  */
 function generateHighlights(product: ProductInfoSectionsProps["product"], t: any, locale: string): string[] {
-   const highlights: string[] = [];
-   const game = product.game?.toLowerCase() || "";
-   // getLocalizedContent always returns a string, safe for toLowerCase
-   const name = getLocalizedText(product.name, locale).toLowerCase();
+  const highlights: string[] = [];
+  const game = product.game?.toLowerCase() || "";
+  // getLocalizedContent always returns a string, safe for toLowerCase
+  const name = getLocalizedText(product.name, locale).toLowerCase();
 
-   if ((product.condition || "").toLowerCase().includes("sealed")) {
-     highlights.push(t('h1'));
-     highlights.push(t('h2'));
-     highlights.push(t('h3'));
-   } else if ((product.condition || "").toLowerCase().includes("box") || name.includes("box")) {
-     highlights.push(t('h4'));
-     highlights.push(t('h5'));
-     highlights.push(t('h6'));
-   }
+  if ((product.condition || "").toLowerCase().includes("sealed")) {
+    highlights.push(t('h1'));
+    highlights.push(t('h2'));
+    highlights.push(t('h3'));
+  } else if ((product.condition || "").toLowerCase().includes("box") || name.includes("box")) {
+    highlights.push(t('h4'));
+    highlights.push(t('h5'));
+    highlights.push(t('h6'));
+  }
 
-   if ((product.rarity || "").toLowerCase().includes("secret") || (product.rarity || "").toLowerCase().includes("ultra")) {
-     highlights.push(t('h7'));
-     highlights.push(t('h8'));
-   }
+  if ((product.rarity || "").toLowerCase().includes("secret") || (product.rarity || "").toLowerCase().includes("ultra")) {
+    highlights.push(t('h7'));
+    highlights.push(t('h8'));
+  }
 
-   if (product.rarity && typeof product.rarity === 'string') {
-     const rarityLower = product.rarity.toLowerCase();
-     if (rarityLower.includes("secret") || rarityLower.includes("ultra")) {
-       highlights.push(t('h7'));
-       highlights.push(t('h8'));
-     }
-   }
+  if (product.rarity && typeof product.rarity === 'string') {
+    const rarityLower = product.rarity.toLowerCase();
+    if (rarityLower.includes("secret") || rarityLower.includes("ultra")) {
+      highlights.push(t('h7'));
+      highlights.push(t('h8'));
+    }
+  }
 
-   if (product.isFoil) {
-     highlights.push(t('h9'));
-   }
+  if (product.isFoil) {
+    highlights.push(t('h9'));
+  }
 
-   if (game === "pokemon") {
-     highlights.push(t('h10'));
-   } else if (game === "yugioh") {
-     highlights.push(t('h11'));
-   } else if (game === "onepiece") {
-     highlights.push(t('h12'));
-   } else if (game === "magic") {
-     highlights.push(t('h13'));
-   }
+  if (game === "pokemon") {
+    highlights.push(t('h10'));
+  } else if (game === "yugioh") {
+    highlights.push(t('h11'));
+  } else if (game === "onepiece") {
+    highlights.push(t('h12'));
+  } else if (game === "preorder") {
+    highlights.push(t('h13'));
+  }
 
-   if (highlights.length === 0) {
-     highlights.push(t('h14'));
-     highlights.push(t('h15'));
-     highlights.push(t('h16'));
-   }
+  if (highlights.length === 0) {
+    highlights.push(t('h14'));
+    highlights.push(t('h15'));
+    highlights.push(t('h16'));
+  }
 
-   return highlights;
+  return highlights;
 }
 
 export default function ProductInfoSections({
@@ -182,7 +182,7 @@ export default function ProductInfoSections({
         ) : relatedProducts && relatedProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {relatedProducts.slice(0, 4).map((item) => {
-               const localizedItemName = getLocalizedText(item.name, locale);
+              const localizedItemName = getLocalizedText(item.name, locale);
               return (
                 <div
                   key={item._id}
