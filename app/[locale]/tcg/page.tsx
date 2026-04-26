@@ -12,7 +12,7 @@ const TCG_CATEGORIES = [
         nameKey: "pokemon",
         description: "Collect and battle with your favorite Pokémon. Discover rare cards and build the ultimate deck.",
         releaseYear: 1996,
-        bannerImage: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?q=80&w=2069&auto=format&fit=crop",
+        bannerImage: "/tcg/pokemon.jpg",
         themeColor: "amber-500",
         bgHover: "hover:shadow-amber-500/20"
     },
@@ -22,7 +22,7 @@ const TCG_CATEGORIES = [
         nameKey: "onePiece",
         description: "Set sail with Luffy and the Straw Hat Crew in this exciting new trading card game.",
         releaseYear: 2022,
-        bannerImage: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?q=80&w=1974&auto=format&fit=crop",
+        bannerImage: "/tcg/one-piece.jpg",
         themeColor: "red-500",
         bgHover: "hover:shadow-red-500/20"
     },
@@ -32,7 +32,7 @@ const TCG_CATEGORIES = [
         nameKey: "yugioh",
         description: "Enter the duel arena with powerful monsters, spells, and traps. It's time to duel!",
         releaseYear: 1999,
-        bannerImage: "https://images.unsplash.com/photo-1620336655055-088d06e36bf0?q=80&w=2070&auto=format&fit=crop",
+        bannerImage: "/tcg/yugioh.jpg",
         themeColor: "purple-500",
         bgHover: "hover:shadow-purple-500/20"
     },
@@ -42,7 +42,7 @@ const TCG_CATEGORIES = [
         nameKey: "dragonBall",
         description: "Unleash the power of the Saiyans. Fast-paced battles with iconic characters from the Dragon Ball universe.",
         releaseYear: 2017,
-        bannerImage: "https://images.unsplash.com/photo-1534333230407-be741e733a69?q=80&w=2070&auto=format&fit=crop",
+        bannerImage: "/tcg/dragon-ball.jpg",
         themeColor: "orange-500",
         bgHover: "hover:shadow-orange-500/20"
     },
@@ -52,7 +52,7 @@ const TCG_CATEGORIES = [
         nameKey: "naruto",
         description: "Master the way of the ninja. Strategic gameplay featuring the legendary shinobi of the Hidden Leaf.",
         releaseYear: 2002,
-        bannerImage: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=2070&auto=format&fit=crop",
+        bannerImage: "/tcg/naruto.jpg",
         themeColor: "blue-500",
         bgHover: "hover:shadow-blue-500/20"
     },
@@ -62,7 +62,7 @@ const TCG_CATEGORIES = [
         nameKey: "unionArena",
         description: "The ultimate crossover. Characters from multiple anime series battle it out in a single arena.",
         releaseYear: 2023,
-        bannerImage: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop",
+        bannerImage: "/tcg/union-arena.jpg",
         themeColor: "cyan-500",
         bgHover: "hover:shadow-cyan-500/20"
     },
@@ -72,9 +72,19 @@ const TCG_CATEGORIES = [
         nameKey: "riftbound",
         description: "Enter a dark fantasy world of magic and strategy. Defend your realm in this immersive TCG experience.",
         releaseYear: 2024,
-        bannerImage: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2070&auto=format&fit=crop",
+        bannerImage: "/tcg/riftbound.jpg",
         themeColor: "fuchsia-500",
         bgHover: "hover:shadow-fuchsia-500/20"
+    },
+    {
+        id: "chaos-rising",
+        slug: "chaos-rising",
+        nameKey: "chaosRising",
+        description: "Unleash the shadows. Master the chaos in this intense and strategic new card game.",
+        releaseYear: 2024,
+        bannerImage: "/tcg/chaos-rising.jpg",
+        themeColor: "violet-500",
+        bgHover: "hover:shadow-violet-500/20"
     }
 ];
 
@@ -119,11 +129,11 @@ export default function TCGPage() {
                     {TCG_CATEGORIES.map((game) => (
                         <motion.div key={game.id} variants={itemVariants}>
                             <Link href={`/products?game=${game.slug}`}>
-                                <div className={`relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer border border-white/10 transition-all duration-500 hover:-translate-y-2 ${game.bgHover} hover:shadow-2xl`}>
+                                <div className={`relative aspect-[16/9] w-full rounded-2xl overflow-hidden group cursor-pointer border border-white/10 transition-all duration-500 hover:-translate-y-2 ${game.bgHover} hover:shadow-2xl`}>
                                     
                                     {/* Background Image */}
                                     <div
-                                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                                        className="absolute inset-0 bg-cover bg-center object-cover transition-transform duration-700 group-hover:scale-110"
                                         style={{ backgroundImage: `url(${game.bannerImage})` }}
                                     />
 

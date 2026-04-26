@@ -81,6 +81,7 @@ export default function ProductsClient() {
         { value: "naruto", label: "Naruto" },
         { value: "union_arena", label: "Union Arena" },
         { value: "riftbound", label: "Riftbound" },
+        { value: "chaos_rising", label: "Chaos Rising" },
     ];
     const productTypes = [
         { value: "booster_boxes", labelKey: "booster_boxes" },

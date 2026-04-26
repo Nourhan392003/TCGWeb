@@ -138,6 +138,7 @@ export default function AddProductForm() {
                             <option value="naruto">Naruto</option>
                             <option value="union-arena">Union Arena</option>
                             <option value="riftbound">Riftbound</option>
+                            <option value="chaos-rising">Chaos Rising</option>
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">
