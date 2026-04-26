@@ -25,6 +25,9 @@ export default function ContactClient() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  const wordCount = formData.message.trim() ? formData.message.trim().split(/\s+/).length : 0;
+  const isWordLimitReached = wordCount >= 300;
+
   const sendEmail = useMutation(api.contact.sendContactEmail);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,16 +96,29 @@ export default function ContactClient() {
                 <textarea
                   name="message"
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={(e) => {
+                    const words = e.target.value.trim().split(/\s+/);
+                    if (words.length <= 300 || e.target.value.length < formData.message.length) {
+                      setFormData({ ...formData, message: e.target.value });
+                    }
+                  }}
                   rows={4}
                   placeholder={t('messagePlaceholder')}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#0a1628] border border-[#1a3050] rounded-lg text-white placeholder-gray-500 text-sm sm:text-base focus:border-yellow-500 resize-vertical"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#0a1628] border rounded-lg text-white placeholder-gray-500 text-sm sm:text-base outline-none transition-colors resize-vertical ${isWordLimitReached ? 'border-amber-500' : 'border-[#1a3050] focus:border-yellow-500'}`}
                   required
                 />
+                <div className="flex justify-between mt-1 text-[10px] sm:text-xs">
+                  <span className={isWordLimitReached ? 'text-amber-500 font-bold' : 'text-gray-500'}>
+                    {isWordLimitReached ? t('wordLimitReached') || 'Word limit reached' : ''}
+                  </span>
+                  <span className={isWordLimitReached ? 'text-amber-500' : 'text-gray-400'}>
+                    {wordCount} / 300 {t('words') || 'words'}
+                  </span>
+                </div>
               </div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isWordLimitReached}
                 className="w-full bg-yellow-500 text-black font-bold py-2.5 sm:py-4 px-4 sm:px-6 rounded-lg hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {isLoading ? t('sending') : t('send')}

@@ -3,7 +3,8 @@
     "loading": "جاري التحميل...",
     "error": "حدث خطأ ما",
     "success": "تم بنجاح",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "noImage": "لا توجد صورة"
   },
   "Navbar": {
     "home": "الرئيسية",
@@ -29,18 +30,18 @@
   },
   "Hero": {
     "available": "متوفر في {date}",
-    "title1": "الاستمرار في وصيته",
-    "subtitle1": "3 إخوة للاحتفال بمرور 3 سنوات!",
-    "desc1": "قوى جديدة تنضم باستمرار إلى OPCG. لا تفوت منتجات الذكرى السنوية الخاصة.",
-    "title2": "نهضة توسع جديد",
-    "subtitle2": "رحلة ملك القراصنة",
-    "desc2": "اكتشف قادة جدد أقوياء، أحداثاً مدمرة، وشخصيات أسطورية.",
-    "title3": "إطلاق العنان للـ GEAR 5",
+    "title1": "Adventure on KAMI’s Island",
+    "subtitle1": "رحلة ملك القراصنة",
+    "desc1": "اكتشف قادة جدد أقوياء، أحداثاً مدمرة، وشخصيات أسطورية.",
+    "title2": "GRENINJA EX",
+    "subtitle2": "صدام العمالقة",
+    "desc2": "سيطر على الساحة ببطاقات تضم أكثر البوكيمونات تميزاً.",
+    "title3": "NARUTO UNLEASHED",
     "subtitle3": "محارب التحرير",
     "desc3": "استمتع بقمة القوة مع مجموعة النوادر المطلقة الجديدة. اطلب صناديق التعزيز مسبقاً الآن.",
-    "title4": "أباطرة البحر",
-    "subtitle4": "صدام العمالقة",
-    "desc4": "سيطر على الساحة ببطاقات تضم أكثر القراصنة رعباً في العالم الجديد.",
+    "title4": "RIFTBOUND",
+    "subtitle4": "صراع جديد ينهض",
+    "desc4": "ادخل عالماً جديداً من الاستراتيجية والقوة والأبطال الأسطوريين.",
     "setSail": "أبحر الآن!",
     "sections": {
       "featured": "المنتجات المميزة",
@@ -63,7 +64,7 @@
     "availability": "التوفر",
     "inStock": "في المتوفر",
     "outOfStock": "نفذت الكمية",
-    "brand": "العلامة التجارية",
+    "brand": "البراند",
     "productType": "نوع المنتج",
     "priceRange": "نطاق السعر",
     "from": "من",
@@ -153,13 +154,13 @@
     "h7": "قطعة عالية القيمة لهواة الجمع",
     "h8": "إصدار محدود",
     "h9": "لمسة نهائية لامعة (Foil)",
-    "h10": "منتج رسمي من Pokémon TCG",
-    "h11": "منتج رسمي من Yu-Gi-Oh! TCG",
-    "h12": "منتج رسمي من لعبة بطاقات One Piece",
-    "h13": "مجموعة رسمية من pre-order",
-    "h14": "منتج أصلي لألعاب بطاقات التداول",
-    "h15": "مباشرة من الموزعين المعتمدين",
-    "h16": "معبأة بعناية للتسليم"
+    "h10": "Pokémon TCG Official Product",
+    "h11": "Yu-Gi-Oh! TCG Official Product",
+    "h12": "One Piece Card Game Official Product",
+    "h13": "Pre-Order Exclusive",
+    "h14": "Authentic Trading Card Game product",
+    "h15": "Directly from authorized distributors",
+    "h16": "Securely packaged for delivery"
   },
   "Wishlist": {
     "title": "المفضلة",
@@ -185,7 +186,9 @@
     "aboutUs": "من نحن",
     "faq": "الأسئلة الشائعة",
     "contactUs": "اتصل بنا",
-    "subscribeTitle": "اشتراك"
+    "subscribeTitle": "اشتراك",
+    "subscribeSuccess": "شكراً للاشتراك!",
+    "subscribeError": "فشل الاشتراك. حاول مرة أخرى."
   },
   "ProductGallery": {
     "title": "معرض الصور"
@@ -231,7 +234,7 @@
     "story": {
       "title": "قصتنا",
       "p1": "تأسست TCG Vault بمهمة بسيطة: تزويد الهواة واللاعبين بأفضل مجموعة من بطاقات التداول بأسعار تنافسية. ما بدأ كمتجر محلي صغير نما ليصبح وجهة موثوقة عبر الإنترنت لعشاق ألعاب بطاقات التداول في جميع أنحاء المنطقة.",
-      "p2": "نحن متخصصون في بطاقات بوكيمون، يو-غي-أوه!، ون بيس، وماجيك: ذا جاذرينج، ونقدم كل شيء بدءاً من البطاقات الفردية الاقتصادية وصولاً إلى المقتنيات النادرة والمصنفة."
+      "p2": "نحن متخصصون في بطاقات Pokémon، Yu-Gi-Oh!، One Piece، و Magic: The Gathering، ونقدم كل شيء بدءاً من البطاقات الفردية الاقتصادية وصولاً إلى المقتنيات النادرة والمصنفة."
     },
     "values": {
       "title": "قيمنا",
@@ -276,8 +279,10 @@
     "messagePlaceholder": "كيف يمكننا مساعدتك؟",
     "sending": "جاري الإرسال...",
     "success": "تم إرسال الرسالة بنجاح! سنقوم بالرد خلال 24 ساعة.",
-    "error": "فشل الإرسال. يرجى المحاولة مرة أخرى.",
-    "fillAll": "يرجى ملء جميع الحقول",
+    "error": "حدث خطأ أثناء الإرسال.",
+    "fillAll": "يرجى ملء جميع الحقول.",
+    "wordLimitReached": "تم الوصول للحد الأقصى للكلمات",
+    "words": "كلمة",
     "replyTime": "الرد خلال 24 ساعة",
     "workHours": "الأحد - الخميس (9 صباحاً - 6 مساءً)"
   },
@@ -454,6 +459,10 @@
     "selectImage": "يرجى اختيار صورة من جهازك!",
     "noProducts": "لم يتم العثور على منتجات",
     "manageInventory": "إدارة مخزون المنتجات",
+    "successUpdate": "تم تحديث المنتج بنجاح",
+    "errorUpdate": "فشل تحديث المنتج",
+    "successDelete": "تم حذف المنتج بنجاح",
+    "errorDelete": "فشل حذف المنتج",
     "status": {
       "pending": "قيد الانتظار",
       "processing": "جاري المعالجة",
@@ -463,12 +472,12 @@
     }
   },
   "SEO": {
-    "defaultTitle": "TCG Vault - Premium Trading Cards",
-    "defaultDesc": "Your premium source for trading card games - Pokémon, Yu-Gi-Oh!, Magic & more",
-    "homeTitle": "TCG Vault - Home",
-    "productsTitle": "Explore Collections - TCG Vault",
-    "tcgTitle": "مجموعات TCG - TCG Vault",
-    "preordersTitle": "الطلبات المسبقة - TCG Vault",
+    "defaultTitle": "TCG Vault | Authentic Trading Cards",
+    "defaultDesc": "Your premium source for Pokémon, Yu-Gi-Oh!, One Piece & more",
+    "homeTitle": "Home - TCG Vault",
+    "productsTitle": "Products - TCG Vault",
+    "tcgTitle": "TCG Collections - TCG Vault",
+    "preordersTitle": "Pre-orders - TCG Vault",
     "aboutTitle": "About Us - TCG Vault",
     "contactTitle": "Contact Us - TCG Vault",
     "cartTitle": "Shopping Cart - TCG Vault",
@@ -480,11 +489,21 @@
     "subtitle": "انغمس في عالم أشهر ألعاب بطاقات التداول. اختر عالمك وابدأ في بناء مجموعتك النهائية.",
     "riftbound": "Riftbound",
     "dragonBall": "Dragon Ball",
-    "naruto": "ناروتو",
-    "yugioh": "يوغي أوه!",
+    "naruto": "Naruto",
+    "yugioh": "Yu-Gi-Oh!",
     "unionArena": "Union Arena",
-    "onePiece": "ون بيس",
-    "pokemon": "بوكيمون",
+    "onePiece": "One Piece",
+    "pokemon": "Pokémon",
     "chaosRising": "Chaos Rising"
+  },
+  "Preorders": {
+    "title": "الطلبات المسبقة",
+    "subtitle": "احجز أحدث الإصدارات والمجموعات الحصرية قبل وصولها إلى الرفوف. كن أول من يؤمن بطاقاته!",
+    "loading": "جاري تحميل الطلبات المسبقة...",
+    "noOrders": "لا توجد طلبات مسبقة نشطة حالياً",
+    "checkBack": "تحقق مرة أخرى قريباً من الإصدارات القادمة!",
+    "browse": "تصفح جميع المنتجات",
+    "comingSoon": "قريباً",
+    "badge": "طلب مسبق"
   }
 }

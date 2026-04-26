@@ -159,7 +159,7 @@ export default function Navbar() {
                             >
                                 <CartIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                                 {cartCount > 0 && (
-                                    <span className="absolute top-0 right-0 bg-[#F5A524] text-black text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full transform translate-x-1 -translate-y-1">
+                                    <span className="absolute top-0 ltr:right-0 rtl:left-0 bg-[#F5A524] text-black text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full transform ltr:translate-x-1 rtl:-translate-x-1 -translate-y-1">
                                         {cartCount}
                                     </span>
                                 )}
@@ -232,11 +232,11 @@ export default function Navbar() {
                 >
                     <div className="mx-auto max-w-2xl px-3 sm:px-4 py-3 sm:py-4">
                         <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-gray-500" />
+                            <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-gray-500" />
                             <input
                                 type="text"
                                 placeholder={t('search')}
-                                className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 sm:py-3 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-gray-200 placeholder-gray-500 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                                className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 sm:py-3 ltr:pl-9 ltr:sm:pl-10 rtl:pr-9 rtl:sm:pr-10 ltr:pr-4 rtl:pl-4 text-sm sm:text-base text-gray-200 placeholder-gray-500 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                                 autoFocus
                             />
                         </div>

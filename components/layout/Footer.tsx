@@ -4,6 +4,10 @@ import { Link } from '@/i18n/navigation';
 import { ArrowRight, Mail } from 'lucide-react';
 import { FaInstagram, FaTiktok, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 import { useTranslations, useLocale } from 'next-intl';
+import { useState } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import toast from 'react-hot-toast';
 
 const socialLinks = [
     { name: 'Instagram', href: 'https://www.instagram.com/hatar_anime', icon: FaInstagram, color: 'hover:text-pink-500' },
@@ -14,31 +18,55 @@ const socialLinks = [
 
 function NewsletterForm() {
     const t = useTranslations('Footer');
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const subscribe = useMutation(api.contact.subscribeNewsletter);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const email = formData.get('email');
-        console.log('Newsletter signup:', email);
+        if (!email) return;
+
+        setIsLoading(true);
+        try {
+            await subscribe({ email });
+            toast.success(t('subscribeSuccess') || 'Subscribed successfully!');
+            setEmail('');
+        } catch (error) {
+            console.error('Newsletter error:', error);
+            toast.error(t('subscribeError') || 'Failed to subscribe. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <form method="post" onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-6 max-w-md">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-6 max-w-md">
             <div className="flex-1 relative">
                 <Mail className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 <input
                     type="email"
                     name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder={t('newsletterPlaceholder')}
                     required
-                    className="w-full ltr:pl-9 ltr:sm:pl-10 rtl:pr-9 rtl:sm:pr-10 ltr:pr-3 rtl:pl-3 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-amber-500 transition-colors"
+                    disabled={isLoading}
+                    className="w-full ltr:pl-9 ltr:sm:pl-10 rtl:pr-9 rtl:sm:pr-10 ltr:pr-3 rtl:pl-3 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-amber-500 transition-colors disabled:opacity-50"
                 />
             </div>
             <button
                 type="submit"
-                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-amber-500 text-black font-bold text-sm sm:text-base rounded-lg hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                disabled={isLoading}
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-amber-500 text-black font-bold text-sm sm:text-base rounded-lg hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 min-w-[120px]"
             >
-                {t('subscribeTitle')}
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                ) : (
+                    <>
+                        {t('subscribeTitle')}
+                        <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                    </>
+                )}
             </button>
         </form>
     );

@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 const cardImages = [
   "/cards/card3.png",
@@ -28,6 +28,7 @@ const cardConfigs = [
 
 const FloatingCardsCTA: React.FC = () => {
   const t = useTranslations('CTA');
+  const locale = useLocale();
 
   return (
     <section className="relative min-h-[75vh] sm:min-h-[70vh] md:min-h-[80vh] overflow-hidden bg-black">
@@ -52,7 +53,8 @@ const FloatingCardsCTA: React.FC = () => {
           alt={`Floating card ${index + 1}`}
           style={{
             position: 'absolute',
-            left: card.left,
+            left: locale === 'ar' ? 'auto' : card.left,
+            right: locale === 'ar' ? card.left : 'auto',
             width: card.width,
             opacity: card.opacity,
             zIndex: 1,

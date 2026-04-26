@@ -18,6 +18,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
+import toast from "react-hot-toast";
 import { getLocalizedText } from "@/utils/localization";
 
 export default function ProductsPage() {
@@ -80,19 +81,25 @@ export default function ProductsPage() {
             setEditingProduct(null);
             setSelectedImage(null);
             setPreviewUrl("");
+            toast.success(t('successUpdate') || "Product updated successfully");
         } catch (error) {
             console.error("Failed to update product:", error);
+            toast.error(t('errorUpdate') || "Failed to update product");
         } finally {
             setIsUploading(false);
         }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         const confirmed = confirm(t('confirmDelete'));
         if (confirmed) {
-            deleteProduct({ id: id as any }).catch((error) => {
+            try {
+                await deleteProduct({ id: id as any });
+                toast.success(t('successDelete') || "Product deleted successfully");
+            } catch (error) {
                 console.error("Failed to delete product:", error);
-            });
+                toast.error(t('errorDelete') || "Failed to delete product");
+            }
         }
     };
 

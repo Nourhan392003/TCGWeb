@@ -16,6 +16,8 @@ export default function PreordersClient() {
     const t = useTranslations('Products');
     const tNav = useTranslations('Navbar');
     const tActions = useTranslations('Actions');
+    const tPre = useTranslations('Preorders');
+    const tGen = useTranslations('General');
     const locale = useLocale();
     const isRTL = locale === 'ar';
 
@@ -73,7 +75,7 @@ export default function PreordersClient() {
             <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 animate-spin" />
-                    <p className="text-gray-400 text-sm sm:text-lg">Loading pre-orders...</p>
+                    <p className="text-gray-400 text-sm sm:text-lg">{tPre('loading')}</p>
                 </div>
             </div>
         );
@@ -85,10 +87,10 @@ export default function PreordersClient() {
                 <div className="text-center mb-12">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 flex items-center justify-center gap-3">
                         <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
-                        <span>{tNav('preorders')}</span>
+                        <span>{tPre('title')}</span>
                     </h1>
                     <p className="text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
-                        Reserve the latest expansions and exclusive sets before they hit the shelves. Be the first to secure your cards!
+                        {tPre('subtitle')}
                     </p>
                 </div>
 
@@ -97,10 +99,10 @@ export default function PreordersClient() {
                         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
                             <Clock className="w-8 h-8 text-gray-600" />
                         </div>
-                        <p className="text-gray-400 text-base sm:text-lg mb-2">No active pre-orders at the moment</p>
-                        <p className="text-gray-500 text-xs sm:text-sm">Check back soon for upcoming releases!</p>
+                        <p className="text-gray-400 text-base sm:text-lg mb-2">{tPre('noOrders')}</p>
+                        <p className="text-gray-500 text-xs sm:text-sm">{tPre('checkBack')}</p>
                         <Link href="/products" className="mt-8 px-6 py-2.5 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors text-sm">
-                            Browse All Products
+                            {tPre('browse')}
                         </Link>
                     </div>
                 ) : (
@@ -123,7 +125,7 @@ export default function PreordersClient() {
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs sm:text-sm">
-                                                No Image
+                                                {tGen('noImage')}
                                             </div>
                                         )}
 
@@ -135,7 +137,7 @@ export default function PreordersClient() {
                                         </button>
 
                                         <div className={`absolute top-2 ${isRTL ? 'right-2' : 'left-2'} z-10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-500/80 backdrop-blur-md text-[10px] sm:text-xs font-medium text-black border border-amber-400`}>
-                                            Pre-order
+                                            {tPre('badge')}
                                         </div>
                                     </div>
 
@@ -149,7 +151,7 @@ export default function PreordersClient() {
                                                 {formatPriceByLocale(product.price, locale)}
                                             </span>
                                             <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                                                Coming Soon
+                                                {tPre('comingSoon')}
                                             </span>
                                         </div>
 

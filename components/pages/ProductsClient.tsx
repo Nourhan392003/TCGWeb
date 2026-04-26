@@ -37,6 +37,7 @@ const normalizeFilterValue = (value?: string): string => {
 export default function ProductsClient() {
     const t = useTranslations('Products');
     const tActions = useTranslations('Actions');
+    const tGen = useTranslations('General');
     const locale = useLocale();
     const isRTL = locale === 'ar';
 
@@ -234,7 +235,7 @@ export default function ProductsClient() {
             <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 animate-spin" />
-                    <p className="text-gray-400 text-sm sm:text-lg">Loading products...</p>
+                    <p className="text-gray-400 text-sm sm:text-lg">{tGen('loading')}</p>
                 </div>
             </div>
         );
@@ -525,7 +526,7 @@ export default function ProductsClient() {
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs sm:text-sm">
-                                                        No Image
+                                                        {tGen('noImage')}
                                                     </div>
                                                 )}
 

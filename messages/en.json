@@ -3,7 +3,8 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "success": "Success",
-    "retry": "Retry"
+    "retry": "Retry",
+    "noImage": "No Image Available"
   },
   "Navbar": {
     "home": "Home",
@@ -29,18 +30,18 @@
   },
   "Hero": {
     "available": "AVAILABLE {date}",
-    "title1": "CARRYING ON HIS WILL",
-    "subtitle1": "3 Brothers to celebrate 3 Years!",
-    "desc1": "New powers keep joining the OPCG. Don't miss the special anniversary products.",
-    "title2": "NEW EXPANSION AWAKENS",
-    "subtitle2": "The Pirate King's Journey",
-    "desc2": "Discover powerful new leaders, devastating events, and legendary characters.",
-    "title3": "GEAR 5 UNLEASHED",
-    "subtitle3": "The Warrior of Liberation",
+    "title1": "Adventure on KAMI’s Island",
+    "subtitle1": "The Pirate King's Journey",
+    "desc1": "Discover powerful new leaders, devastating events, and legendary characters.",
+    "title2": "GRENINJA EX",
+    "subtitle2": "THE SHADOW ASSASSIN",
+    "desc2": "Dive into the shadows with this powerful Pokémon TCG feature card.",
+    "title3": "NARUTO UNLEASHED",
+    "subtitle3": "THE WILL OF FIRE",
     "desc3": "Experience the peak of power with the new ultimate rare collection. Pre-order your booster boxes now.",
-    "title4": "EMPERORS OF THE SEA",
-    "subtitle4": "Clash of the Titans",
-    "desc4": "Dominate the meta with cards featuring the most feared pirates in the New World.",
+    "title4": "RIFTBOUND",
+    "subtitle4": "A NEW BATTLE RISES",
+    "desc4": "Enter a new world of strategy, power, and legendary champions.",
     "setSail": "SET SAIL!",
     "sections": {
       "featured": "Featured Products",
@@ -185,7 +186,9 @@
     "aboutUs": "About Us",
     "faq": "FAQ",
     "contactUs": "Contact Us",
-    "subscribeTitle": "Subscribe"
+    "subscribeTitle": "Subscribe",
+    "subscribeSuccess": "Thanks for subscribing!",
+    "subscribeError": "Failed to subscribe. Please try again."
   },
   "ProductGallery": {
     "title": "Product Gallery"
@@ -276,8 +279,10 @@
     "messagePlaceholder": "How can we help?",
     "sending": "Sending...",
     "success": "Message sent! We will reply within 24 hours.",
-    "error": "Failed to send. Please try again.",
-    "fillAll": "Please fill all fields",
+    "error": "Error sending message.",
+    "fillAll": "Please fill all fields.",
+    "wordLimitReached": "Word limit reached",
+    "words": "words",
     "replyTime": "Reply within 24 hours",
     "workHours": "Sun-Thu 9AM-6PM"
   },
@@ -453,7 +458,11 @@
     "errorAdd": "Failed to add product.",
     "selectImage": "Please select an image from your device!",
     "noProducts": "No products found",
-    "manageInventory": "Manage your product inventory",
+    "manageInventory": "Manage Product Inventory",
+    "successUpdate": "Product updated successfully",
+    "errorUpdate": "Failed to update product",
+    "successDelete": "Product deleted successfully",
+    "errorDelete": "Failed to delete product",
     "status": {
       "pending": "Pending",
       "processing": "Processing",
@@ -486,5 +495,15 @@
     "onePiece": "One Piece",
     "pokemon": "Pokémon",
     "chaosRising": "Chaos Rising"
+  },
+  "Preorders": {
+    "title": "Pre-orders",
+    "subtitle": "Reserve the latest expansions and exclusive sets before they hit the shelves. Be the first to secure your cards!",
+    "loading": "Loading pre-orders...",
+    "noOrders": "No active pre-orders at the moment",
+    "checkBack": "Check back soon for upcoming releases!",
+    "browse": "Browse All Products",
+    "comingSoon": "Coming Soon",
+    "badge": "Pre-order"
   }
 }
