@@ -82,9 +82,17 @@ export default function HeroSlider() {
     const SLIDES = SLIDES_CONFIG.map((s, i) => {
         let dateStr = "";
         if (isRTL) {
-            dateStr = i === 0 ? "٧ نوفمبر، ٢٠٢٥" : i === 1 ? "٢٢ يناير، ٢٠٢٦" : i === 2 ? "١٥ مارس، ٢٠٢٦" : "١٠ مايو، ٢٠٢٦";
+            dateStr =
+                i === 0 ? "٣ أبريل، ٢٠٢٦" :
+                    i === 1 ? "٢٢ يناير، ٢٠٢٦" :
+                        i === 2 ? "١٣ مارس، ٢٠٢٦" :
+                            "٨ مايو، ٢٠٢٦";
         } else {
-            dateStr = i === 0 ? "NOV. 7, 2025" : i === 1 ? "JAN. 22, 2026" : i === 2 ? "MAR. 15, 2026" : "MAY. 10, 2026";
+            dateStr =
+                i === 0 ? "APR. 3, 2026" :
+                    i === 1 ? "JAN. 22, 2026" :
+                        i === 2 ? "MAR. 13, 2026" :
+                            "MAY. 8, 2026";
         }
         return {
             ...s,
