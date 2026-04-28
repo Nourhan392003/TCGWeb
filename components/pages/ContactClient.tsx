@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useAction, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/navigation';
@@ -28,7 +28,7 @@ export default function ContactClient() {
   const wordCount = formData.message.trim() ? formData.message.trim().split(/\s+/).length : 0;
   const isWordLimitReached = wordCount >= 300;
 
-  const sendEmail = useMutation(api.contact.sendContactEmail);
+  const sendEmail = useAction(api.contact.sendContactEmail);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

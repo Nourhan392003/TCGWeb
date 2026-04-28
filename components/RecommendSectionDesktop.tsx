@@ -33,7 +33,7 @@ const posterData: Poster[] = [
     id: '2',
     name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' },
     price: 19.99,
-    image: '/slider/card2.png',
+    image: '/cards/card2.png',
     rarity: 'Rare',
   },
   {

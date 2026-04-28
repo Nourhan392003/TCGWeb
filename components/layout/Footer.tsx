@@ -5,7 +5,7 @@ import { ArrowRight, Mail } from 'lucide-react';
 import { FaInstagram, FaTiktok, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 import { useTranslations, useLocale } from 'next-intl';
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import toast from 'react-hot-toast';
 
@@ -20,7 +20,7 @@ function NewsletterForm() {
     const t = useTranslations('Footer');
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState('');
-    const subscribe = useMutation(api.contact.subscribeNewsletter);
+    const subscribe = useAction(api.contact.subscribeNewsletter);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -72,7 +72,7 @@ function NewsletterForm() {
     );
 }
 
-function SocialIcon({ href, name, icon: Icon, color }: { href: string; name: string; icon: React.ElementType; color: string }) {
+function SocialIcon({ href, name, icon: Icon }: { href: string; name: string; icon: React.ElementType }) {
     return (
         <a
             href={href}
@@ -100,8 +100,6 @@ export default function Footer() {
 
     const infoLinks = [
         { label: t('aboutUs'), href: '/about' },
-        // FAQ page not yet implemented - uncomment when available
-        // { label: t('faq'), href: '/faq' },
         { label: t('contactUs'), href: '/contact' },
     ];
 
@@ -114,10 +112,7 @@ export default function Footer() {
                         <ul className="space-y-4">
                             {policyLinks.map((link) => (
                                 <li key={link.href}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-400 hover:text-amber-500 transition-colors cursor-pointer block"
-                                    >
+                                    <Link href={link.href} className="text-gray-400 hover:text-amber-500 transition-colors cursor-pointer block">
                                         {link.label}
                                     </Link>
                                 </li>
@@ -130,10 +125,7 @@ export default function Footer() {
                         <ul className="space-y-4">
                             {infoLinks.map((link) => (
                                 <li key={link.href}>
-                                    <Link
-                                        href={link.href}
-                                        className="text-gray-400 hover:text-amber-500 transition-colors cursor-pointer block"
-                                    >
+                                    <Link href={link.href} className="text-gray-400 hover:text-amber-500 transition-colors cursor-pointer block">
                                         {link.label}
                                     </Link>
                                 </li>
@@ -152,7 +144,7 @@ export default function Footer() {
                             <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">{t('followUs')}</span>
                             <div className="flex gap-3">
                                 {socialLinks.map((social) => (
-                                    <SocialIcon key={social.name} {...social} />
+                                    <SocialIcon key={social.name} href={social.href} name={social.name} icon={social.icon} />
                                 ))}
                             </div>
                         </div>

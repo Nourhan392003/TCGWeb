@@ -31,10 +31,10 @@ export default async function LocaleLayout({
     return (
         <Providers locale={locale} messages={messages}>
             <ConvexClientProvider>
-                    <div lang={locale} className={locale === 'ar' ? 'font-ar' : ''} dir={locale === 'ar' ? 'rtl' : 'ltr'}>                            <Navbar />
-                        {children}
-                        <Footer />
-                    </div>
+                <div lang={locale} className={locale === 'ar' ? 'font-ar' : ''} dir={locale === 'ar' ? 'rtl' : 'ltr'}>                            <Navbar />
+                    {children}
+                    <Footer />
+                </div>
             </ConvexClientProvider>
         </Providers>
     );
