@@ -15,9 +15,9 @@ export const sendContactEmail = mutation({
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                from: 'Contact Form <noreply@tcgweb.com>',
-                to: 'hatartcg@gmail.com',
-                subject: `New Contact: ${args.name}`,
+                from: "TCG Vault <noreply@mail.hatartcg.com>",
+                to: "hatartcg@gmail.com",
+                subject: `New contact message from ${name}`,
                 html: `
           <h2>New Contact Form</h2>
           <p><strong>Name:</strong> ${args.name}</p>

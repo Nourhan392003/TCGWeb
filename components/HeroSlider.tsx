@@ -23,7 +23,7 @@ const SLIDES_CONFIG = [
     {
         id: 2,
         bgColor: "from-[#071827] via-[#35104f] to-blue", glowColor: "rgba(160, 141, 219, 0.12)", // Purple glow
-        characterImg: "/slider/pokemonchar.png",
+        // characterImg: "/slider/pokemonchar.png",
         floatingPackImg: "/slider/pokemoncard.png",
     },
     {
