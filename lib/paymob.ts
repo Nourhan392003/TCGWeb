@@ -104,8 +104,10 @@ export async function createPaymobIntention(
 }
 
 export function getPaymobCheckoutUrl(clientSecret: string) {
-    if (!PAYMOB_PUBLIC_KEY) throw new Error("Missing PAYMOB_PUBLIC_KEY in environment variables");
-    return `https://accept.paymob.com/unifiedcheckout/?publicKey=${encodeURIComponent(
-        PAYMOB_PUBLIC_KEY!
-    )}&clientSecret=${encodeURIComponent(clientSecret)}`;
+  if (!PAYMOB_PUBLIC_KEY) throw new Error("Missing PAYMOB_PUBLIC_KEY in environment variables");
+  if (!PAYMOB_BASE_URL) throw new Error("Missing PAYMOB_BASE_URL in environment variables");
+
+  return `${PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${encodeURIComponent(
+    PAYMOB_PUBLIC_KEY
+  )}&clientSecret=${encodeURIComponent(clientSecret)}`;
 }
