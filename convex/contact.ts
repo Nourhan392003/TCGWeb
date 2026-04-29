@@ -18,6 +18,7 @@ export const sendContactEmail = action({
                 from: "TCG Vault <noreply@mail.hatartcg.com>",
                 to: "hatartcg@gmail.com",
                 subject: `New contact message from ${args.name}`,
+                reply_to: args.email,
                 html: `
           <h2>New Contact Form</h2>
           <p><strong>Name:</strong> ${args.name}</p>
