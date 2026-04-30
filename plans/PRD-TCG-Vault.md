@@ -95,7 +95,7 @@ Filter Categories:
 │   └── Market price vs. listing price
 ├── Condition
 │   ├── Mint (M)
-│   ├── Near Mint (NM)
+│   ├── Factory Sealed (FS)
 │   ├── Lightly Played (LP)
 │   ├── Moderately Played (MP)
 │   ├── Heavily Played (HP)

@@ -21,7 +21,7 @@ enum ProductType {
 
 enum CardCondition {
   MINT           // M - Perfect condition
-  NEAR_MINT      // NM - Almost perfect
+  FACTORY_SEALED      // NM - Almost perfect
   LIGHTLY_PLAYED // LP - Minor wear
   MODERATELY_PLAYED // MP - Visible wear
   HEAVILY_PLAYED // HP - Significant wear
@@ -326,7 +326,7 @@ model Product {
 
 // ProductVariant - The actual sellable unit
 // Each variant represents a unique combination of:
-// - Condition (Mint, Near Mint, etc.)
+// - Condition (Mint, Factory Sealed, etc.)
 // - Language (English, Japanese, etc.)
 // - Foil Status (Non-Foil, Foil, Holo, etc.)
 // - Edition (1st Edition, Unlimited, etc.)

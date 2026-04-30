@@ -299,7 +299,7 @@ tcg-vault/
      ============================================ */
   
   --condition-mint: #10b981;         /* Green */
-  --condition-near-mint: #22c55e;    /* Light Green */
+  --condition-factory-sealed: #22c55e;    /* Light Green */
   --condition-lightly-played: #84cc16; /* Lime */
   --condition-moderately-played: #eab308; /* Yellow */
   --condition-heavily-played: #f97316; /* Orange */

@@ -16,7 +16,7 @@ export default function AddProductForm() {
     const [descriptionAr, setDescriptionAr] = useState("");
     const [game, setGame] = useState("Pokémon");
     const [rarity, setRarity] = useState("Common");
-    const [condition, setCondition] = useState("Near Mint");
+    const [condition, setCondition] = useState("Factory Sealed");
     const [inStock, setInStock] = useState(true);
     const [isPreorder, setIsPreorder] = useState(false);
 
@@ -177,7 +177,7 @@ export default function AddProductForm() {
                             onChange={(e) => setCondition(e.target.value)}
                             className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
                         >
-                            <option>Near Mint</option>
+                            <option>Factory Sealed</option>
                             <option>Lightly Played</option>
                             <option>Moderately Played</option>
                             <option>Heavy Played</option>
