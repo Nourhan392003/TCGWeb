@@ -75,7 +75,7 @@ export default function AddProductForm() {
             setDescriptionAr("");
             setGame("Pokémon");
             setRarity("Common");
-            setCondition("Near Mint");
+            setCondition("Factory Sealed");
             setInStock(true);
             setIsPreorder(false);
             setSelectedImage(null);
