@@ -10,6 +10,7 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPriceByLocale } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 
 interface TCGCardItemProps {
     id: string | number;
@@ -25,6 +26,7 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
     const router = useRouter();
     const locale = useLocale();
     const tActions = useTranslations('Actions');
+    const { flyToCart } = useFlyToCart();
 
     // Always use getLocalizedText for safe string conversion
     const localizedName = getLocalizedText(name, locale);
@@ -41,6 +43,7 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
     // إضافة/إزالة المفضلة
     const handleWishlist = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent card link navigation
 
         checkAuth(() => {
             if (inWishlist) {
@@ -59,11 +62,16 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
         });
     };
 
-    // إضافة للسلة
-    const handleAddToCart = (e: React.MouseEvent) => {
+    const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        e.stopPropagation(); // <-- CRITICAL: Stops the outer <Link> from navigating to the product page instantly
+        
+        // Extract target synchronously because React synthetic event properties (like currentTarget)
+        // become null inside async callbacks like checkAuth
+        const targetElement = e.currentTarget;
 
         checkAuth(() => {
+            flyToCart(targetElement, image);
             addItemToCart({
                 id: stringId,
                 name: localizedName,
@@ -88,8 +96,10 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
     };
 
     return (
-        <Link href={`/products/${stringId}`} onClick={handleCardClick}>
-            <div className="group relative rounded-xl bg-[#16161e] border border-[#2a2a38] p-4 transition-all duration-300 hover:border-yellow-500/50 hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] cursor-pointer h-full flex flex-col">
+        <div className="group relative rounded-xl bg-[#16161e] border border-[#2a2a38] p-4 transition-all duration-300 hover:border-yellow-500/50 hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] h-full flex flex-col">
+            
+            {/* Absolute Link Overlay for whole card clickability */}
+            <Link href={`/products/${stringId}`} onClick={handleCardClick} className="absolute inset-0 z-0" aria-label={localizedName as string}></Link>
 
                 {/* Rarity Badge */}
                 <div className="absolute top-6 left-6 rtl:left-auto rtl:right-6 z-10">
@@ -107,7 +117,7 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
                 </button>
 
                 {/* Card Image */}
-                <div className="relative aspect-[2.5/3.5] w-full overflow-hidden rounded-lg mb-4">
+                <div className="relative aspect-[2.5/3.5] w-full overflow-hidden rounded-lg mb-4 pointer-events-none">
                     <Image
                         src={image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg"}
                         alt={localizedName || "Card Image"}
@@ -129,13 +139,13 @@ export default function TCGCardItem({ id, image, name, price, rarity }: TCGCardI
 
                         <button
                             onClick={handleAddToCart}
-                            className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors z-10"
+                            className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors z-10 relative"
                         >
                             <ShoppingCart className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
             </div>
-        </Link>
+        </div>
     );
 }

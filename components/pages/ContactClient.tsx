@@ -6,6 +6,7 @@ import { api } from '@/convex/_generated/api';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Mail, Phone, Send } from 'lucide-react';
+import BackButton from '@/components/ui/BackButton';
 import { useTranslations, useLocale } from 'next-intl';
 
 const COMPANY_DATA = {
@@ -54,18 +55,15 @@ export default function ContactClient() {
     <div className="min-h-screen bg-[#0a1628]">
       <div className="relative h-40 sm:h-48 md:h-64 bg-gradient-to-br from-[#0a1628] via-[#1a2d47] to-[#0a1628]">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 h-full flex flex-col justify-center">
-          <Link href="/" className="inline-flex items-center text-gray-400 hover:text-white mb-3 sm:mb-4 text-sm">
-            <ArrowLeft className={`w-4 h-4 ${isRTL ? 'ml-1.5 sm:ml-2 rotate-180' : 'mr-1.5 sm:mr-2'}`} />
-            {t('back')}
-          </Link>
+          <BackButton text={t('back')} />
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white">{t('title')}</h1>
-          <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">{t('subtitle')}</p>
+          <p className="text-gray-200 mt-2 sm:mt-3 text-base sm:text-lg font-medium drop-shadow-sm">{t('subtitle')}</p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-12 grid md:grid-cols-2 gap-6 sm:gap-12">
         <div>
-          <div className="bg-[#0d1f35] rounded-xl p-5 sm:p-8 border border-[#1a3050]">
+          <div className="bg-[#0d1f35]/80 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-[#1a3050] hover:border-[#2a4566] transition-all duration-300 shadow-xl shadow-black/20">
             <h2 className="text-lg sm:text-2xl font-bold text-white mb-4 sm:mb-6">{t('send')}</h2>
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
@@ -129,12 +127,12 @@ export default function ContactClient() {
         </div>
 
         <div className="space-y-4 sm:space-y-6">
-          <div className="bg-[#0d1f35] rounded-xl p-5 sm:p-8 border border-[#1a3050]">
+          <div className="bg-[#0d1f35]/80 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-[#1a3050] hover:border-[#2a4566] transition-all duration-300 shadow-xl shadow-black/20">
             <h2 className="text-lg sm:text-2xl font-bold text-white mb-4 sm:mb-6">{t('info')}</h2>
             <div className="space-y-4 sm:space-y-6">
               <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-400/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1 text-sm sm:text-base">{t('email')}</h3>
@@ -146,8 +144,8 @@ export default function ContactClient() {
               </div>
 
               <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-400/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
                 </div>
                 <div>
                   <h3 className="text-white font-bold mb-1 text-sm sm:text-base">{t('phone')}</h3>

@@ -5,6 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
+import { GAME_OPTIONS } from "@/lib/constants";
 
 export default function AddProductForm() {
     const t = useTranslations('Admin');
@@ -14,7 +15,7 @@ export default function AddProductForm() {
     const [price, setPrice] = useState("");
     const [descriptionEn, setDescriptionEn] = useState("");
     const [descriptionAr, setDescriptionAr] = useState("");
-    const [game, setGame] = useState("Pokémon");
+    const [game, setGame] = useState(GAME_OPTIONS[0].value);
     const [rarity, setRarity] = useState("Common");
     const [condition, setCondition] = useState("Factory Sealed");
     const [inStock, setInStock] = useState(true);
@@ -73,7 +74,7 @@ export default function AddProductForm() {
             setPrice("");
             setDescriptionEn("");
             setDescriptionAr("");
-            setGame("Pokémon");
+            setGame(GAME_OPTIONS[0].value);
             setRarity("Common");
             setCondition("Factory Sealed");
             setInStock(true);
@@ -131,14 +132,9 @@ export default function AddProductForm() {
                             onChange={(e) => setGame(e.target.value)}
                             className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
                         >
-                            <option value="pokemon">Pokémon</option>
-                            <option value="one-piece">One Piece</option>
-                            <option value="yugioh">Yu-Gi-Oh!</option>
-                            <option value="dragon-ball">Dragon Ball</option>
-                            <option value="naruto">Naruto</option>
-                            <option value="union-arena">Union Arena</option>
-                            <option value="riftbound">Riftbound</option>
-                            <option value="chaos-rising">Chaos Rising</option>
+                            {GAME_OPTIONS.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">

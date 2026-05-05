@@ -1,5 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 import { arSA } from "@clerk/localizations";
+import { dark } from "@clerk/themes";
 
 interface Props {
     params: Promise<{ locale: string }>;
@@ -14,15 +15,17 @@ export default async function SignInPage({ params }: Props) {
         <div className="flex items-center justify-center min-h-screen bg-black relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
             <SignIn
-
+                signUpUrl={`/${locale}/sign-up`}
                 appearance={{
+                    baseTheme: dark,
                     elements: {
                         rootBox: "mx-auto",
                         card: "bg-[#111111] border border-white/10 shadow-xl shadow-amber-500/5",
                         headerTitle: "text-white text-2xl font-bold tracking-wider",
                         headerSubtitle: "text-gray-400",
-                        socialButtonsBlockButton: "bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all",
-                        socialButtonsBlockButtonText: "text-white font-medium",
+                        socialButtonsBlockButton: "bg-white border border-gray-200 hover:bg-gray-100 transition-all py-3",
+                        socialButtonsProviderIcon: "w-6 h-6",
+                        socialButtonsBlockButtonText: "text-black font-semibold text-base",
                         dividerLine: "bg-white/10",
                         dividerText: "text-gray-500",
                         formFieldLabel: "text-gray-300",

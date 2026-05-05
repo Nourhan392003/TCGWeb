@@ -59,6 +59,7 @@ export default function Navbar() {
     const { checkAuth } = useAuthAction();
     const router = useRouter();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { isSignedIn, isLoaded } = useAuth();
@@ -75,6 +76,15 @@ export default function Navbar() {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+            setIsSearchOpen(false);
+            setSearchQuery('');
+        }
+    };
 
     if (!mounted) return null;
 
@@ -154,6 +164,7 @@ export default function Navbar() {
                             </div>
 
                             <div
+                                id="cart-icon"
                                 onClick={() => checkAuth(() => router.push('/cart'), undefined, '/cart')}
                                 className="relative p-2 text-gray-400 transition-all duration-200 hover:text-amber-400 hover:bg-white/5 rounded-lg group cursor-pointer"
                             >
@@ -231,15 +242,17 @@ export default function Navbar() {
                     className="absolute left-0 right-0 top-full bg-black/80 backdrop-blur-xl border-t border-white/10"
                 >
                     <div className="mx-auto max-w-2xl px-3 sm:px-4 py-3 sm:py-4">
-                        <div className="relative">
+                        <form onSubmit={handleSearchSubmit} className="relative">
                             <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-gray-500" />
                             <input
                                 type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t('search')}
                                 className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 sm:py-3 ltr:pl-9 ltr:sm:pl-10 rtl:pr-9 rtl:sm:pr-10 ltr:pr-4 rtl:pl-4 text-sm sm:text-base text-gray-200 placeholder-gray-500 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                                 autoFocus
                             />
-                        </div>
+                        </form>
                     </div>
                 </motion.div>
             )}

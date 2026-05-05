@@ -13,6 +13,7 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import toast from "react-hot-toast";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText, getLocalizedStringForSearch } from "@/utils/localization";
+import { GAME_OPTIONS } from "@/lib/constants";
 
 type FilterSection = {
     id: string;
@@ -43,12 +44,14 @@ export default function ProductsClient() {
 
     const { checkAuth } = useAuthAction();
     const products = useQuery(api.products.getAllProducts);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-    const [showMoreTypes, setShowMoreTypes] = useState(false);
-
     const searchParams = useSearchParams();
     const initialGame = searchParams.get("game");
+    const initialSearch = searchParams.get("search") || "";
+
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
+
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+    const [showMoreTypes, setShowMoreTypes] = useState(false);
 
     const [availableInStock, setAvailableInStock] = useState<boolean | null>(null);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -56,6 +59,13 @@ export default function ProductsClient() {
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
     const [minPriceInput, setMinPriceInput] = useState("0");
     const [maxPriceInput, setMaxPriceInput] = useState("5000");
+
+    useEffect(() => {
+        const querySearch = searchParams.get("search");
+        if (querySearch !== null) {
+            setSearchQuery(querySearch);
+        }
+    }, [searchParams]);
 
     const [filterSections, setFilterSections] = useState<FilterSection[]>([
         { id: "availability", titleKey: "availability", isOpen: true },
@@ -73,17 +83,10 @@ export default function ProductsClient() {
         );
     };
 
-    const brands = [
-        { value: "pokemon", label: "Pokémon" },
-        { value: "one_piece", label: "One Piece" },
-        { value: "yu_gi_oh", label: "Yu-Gi-Oh!" },
-        { value: "magic", label: "Magic" },
-        { value: "dragon_ball", label: "Dragon Ball" },
-        { value: "naruto", label: "Naruto" },
-        { value: "union_arena", label: "Union Arena" },
-        { value: "riftbound", label: "Riftbound" },
-        { value: "chaos_rising", label: "Chaos Rising" },
-    ];
+    const brands = GAME_OPTIONS.map(g => ({
+        ...g,
+        value: normalizeFilterValue(g.value)
+    }));
     const productTypes = [
         { value: "booster_boxes", labelKey: "booster_boxes" },
         { value: "card_sleeves_small", labelKey: "card_sleeves_small" },
@@ -143,12 +146,14 @@ export default function ProductsClient() {
         if (!products) return [];
 
         return products.filter((product: any) => {
-            // Build searchable name using localized text
-            const productName = getLocalizedText(product.name, locale);
+            // Build searchable names for both languages
+            const nameEn = typeof product.name === 'string' ? product.name : (product.name?.en || "");
+            const nameAr = typeof product.name === 'string' ? "" : (product.name?.ar || "");
             const searchLower = searchQuery.toLowerCase().trim();
 
             const searchMatch = searchQuery === "" ||
-                productName.toLowerCase().includes(searchLower);
+                nameEn.toLowerCase().includes(searchLower) ||
+                nameAr.toLowerCase().includes(searchLower);
 
             const stockMatch = availableInStock === null ||
                 product.inStock === availableInStock;

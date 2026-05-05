@@ -9,6 +9,7 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPriceByLocale } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
+import { useFlyToCart } from "@/hooks/useFlyToCart";
 
 interface ProductHeroProps {
   product: {
@@ -48,6 +49,7 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const tActions = useTranslations('Actions');
   const locale = useLocale();
   const isRTL = locale === 'ar';
+  const { flyToCart } = useFlyToCart();
 
   const { checkAuth } = useAuthAction();
   const router = useRouter();
@@ -58,8 +60,15 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const productImage = product.imageUrl || product.image || "";
   const inWishlist = isInWishlist(product._id.toString());
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Extract target synchronously
+    const targetElement = e.currentTarget;
+    
     checkAuth(() => {
+      flyToCart(targetElement, productImage);
       addItem({
         id: product._id.toString(),
         name: localizedName,

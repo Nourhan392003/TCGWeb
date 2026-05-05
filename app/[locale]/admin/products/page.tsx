@@ -20,6 +20,7 @@ import { formatPrice } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
 import toast from "react-hot-toast";
 import { getLocalizedText } from "@/utils/localization";
+import { GAME_OPTIONS } from "@/lib/constants";
 
 export default function ProductsPage() {
     const t = useTranslations('Admin');
@@ -72,6 +73,7 @@ export default function ProductsPage() {
                 game: editingProduct.game,
                 rarity: editingProduct.rarity,
                 inStock: editingProduct.inStock,
+                isPreorder: editingProduct.isPreorder,
                 description: editingProduct.descriptionEn
                     ? { en: editingProduct.descriptionEn, ar: editingProduct.descriptionAr || undefined }
                     : undefined,
@@ -318,10 +320,9 @@ export default function ProductsPage() {
                                     onChange={(e) => setEditingProduct({ ...editingProduct, game: e.target.value })}
                                     className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
                                 >
-                                    <option value="pokemon">Pokemon</option>
-                                    <option value="yugioh">Yu-Gi-Oh!</option>
-                                    <option value="onepiece">One Piece</option>
-                                    <option value="magic">Magic: The Gathering</option>
+                                    {GAME_OPTIONS.map(option => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
                                 </select>
                             </div>
                             {/* Rarity */}
@@ -385,16 +386,28 @@ export default function ProductsPage() {
                                     placeholder="الوصف بالعربي (اختياري)"
                                 />
                             </div>
-                            {/* In Stock */}
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="inStock"
-                                    checked={editingProduct.inStock}
-                                    onChange={(e) => setEditingProduct({ ...editingProduct, inStock: e.target.checked })}
-                                    className="w-4 h-4 rounded bg-[#1a1a24] border-gray-700 text-amber-500 focus:ring-amber-500"
-                                />
-                                <label htmlFor="inStock" className="text-sm text-gray-300">{t('stock')}</label>
+                            {/* Stock & Preorder */}
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="inStock"
+                                        checked={editingProduct.inStock}
+                                        onChange={(e) => setEditingProduct({ ...editingProduct, inStock: e.target.checked })}
+                                        className="w-4 h-4 rounded bg-[#1a1a24] border-gray-700 text-amber-500 focus:ring-amber-500"
+                                    />
+                                    <label htmlFor="inStock" className="text-sm text-gray-300">{t('stock')}</label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isPreorder"
+                                        checked={editingProduct.isPreorder || false}
+                                        onChange={(e) => setEditingProduct({ ...editingProduct, isPreorder: e.target.checked })}
+                                        className="w-4 h-4 rounded bg-[#1a1a24] border-gray-700 text-emerald-500 focus:ring-emerald-500"
+                                    />
+                                    <label htmlFor="isPreorder" className="text-sm text-gray-300">Preorder</label>
+                                </div>
                             </div>
                             {/* Buttons */}
                             <div className="flex gap-3 pt-4">

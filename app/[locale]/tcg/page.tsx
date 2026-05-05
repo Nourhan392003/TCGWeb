@@ -76,16 +76,7 @@ const TCG_CATEGORIES = [
         themeColor: "fuchsia-500",
         bgHover: "hover:shadow-fuchsia-500/20"
     },
-    {
-        id: "chaos-rising",
-        slug: "chaos-rising",
-        nameKey: "chaosRising",
-        description: "Unleash the shadows. Master the chaos in this intense and strategic new card game.",
-        releaseYear: 2024,
-        bannerImage: "/tcg/chaos-rising.jpg",
-        themeColor: "violet-500",
-        bgHover: "hover:shadow-violet-500/20"
-    }
+
 ];
 
 const containerVariants = {
@@ -130,7 +121,7 @@ export default function TCGPage() {
                         <motion.div key={game.id} variants={itemVariants}>
                             <Link href={`/products?game=${game.slug}`}>
                                 <div className={`relative aspect-[16/9] w-full rounded-2xl overflow-hidden group cursor-pointer border border-white/10 transition-all duration-500 hover:-translate-y-2 ${game.bgHover} hover:shadow-2xl`}>
-                                    
+
                                     {/* Background Image */}
                                     <div
                                         className="absolute inset-0 bg-cover bg-center object-cover transition-transform duration-700 group-hover:scale-110"
