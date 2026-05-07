@@ -1,6 +1,24 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+async function requireAdmin(ctx: any) {
+    const identity = await ctx.auth.getUserIdentity();
 
+    if (!identity) {
+        throw new Error("Unauthenticated");
+    }
+
+    const role =
+        (identity as any).role ??
+        (identity as any).metadata?.role ??
+        (identity as any).publicMetadata?.role ??
+        (identity as any).claims?.metadata?.role;
+
+    if (role !== "admin") {
+        throw new Error("Unauthorized");
+    }
+
+    return identity;
+}
 async function resolveImageUrl(ctx: any, product: any) {
     let finalImageUrl = product.imageUrl || product.image || "";
 
@@ -17,6 +35,8 @@ async function resolveImageUrl(ctx: any, product: any) {
 export const generateUploadUrl = mutation({
     args: {},
     handler: async (ctx) => {
+        await requireAdmin(ctx);
+
         return await ctx.storage.generateUploadUrl();
     },
 });
@@ -27,6 +47,7 @@ export const updateProductImage = mutation({
         storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         const imageUrl = await ctx.storage.getUrl(args.storageId);
 
         await ctx.db.patch(args.productId, {
@@ -57,6 +78,7 @@ export const addProduct = mutation({
         isPreorder: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         let resolvedImageUrl = args.imageUrl || args.image;
 
         if (args.imageId) {
@@ -80,6 +102,7 @@ export const addProduct = mutation({
 export const getAllCards = query({
     args: {},
     handler: async (ctx) => {
+        await requireAdmin(ctx);
         const allProducts = await ctx.db.query("products").order("desc").collect();
 
         const productsWithUrls = await Promise.all(
@@ -116,6 +139,7 @@ export const addCard = mutation({
         isPreorder: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         let resolvedImageUrl = args.imageUrl || args.image;
 
         if (args.imageId) {
@@ -132,6 +156,7 @@ export const addCard = mutation({
             createdAt: Date.now(),
         });
 
+
         return cardId;
     },
 });
@@ -139,6 +164,7 @@ export const addCard = mutation({
 export const deleteCard = mutation({
     args: { id: v.id("products") },
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         await ctx.db.delete(args.id);
     },
 });
@@ -164,6 +190,7 @@ export const updateCard = mutation({
         type: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
+        -await requireAdmin(ctx);
         const { id, ...updates } = args;
 
         let resolvedImageUrl = updates.imageUrl || updates.image;
@@ -206,6 +233,7 @@ export const createOrder = mutation({
         ),
     },
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         const newOrderId = await ctx.db.insert("orders", {
             ...args,
             createdAt: Date.now(),
@@ -216,7 +244,9 @@ export const createOrder = mutation({
 
 export const getProductById = query({
     args: { id: v.id("products") },
+
     handler: async (ctx, args) => {
+        await requireAdmin(ctx);
         const product = await ctx.db.get(args.id);
         if (!product) return null;
 
@@ -283,6 +313,7 @@ export const getAllProducts = query({
 export const migrateToMultilingual = mutation({
     args: {},
     handler: async (ctx) => {
+        await requireAdmin(ctx);
         const products = await ctx.db.query("products").collect();
         let migratedCount = 0;
 
