@@ -8,6 +8,7 @@ import { useAuthAction } from '@/hooks/useAuthAction';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedText } from '@/utils/localization';
+import { useFlyToCart } from '@/hooks/useFlyToCart';
 
 interface Poster {
     id: string;
@@ -22,7 +23,7 @@ interface RecommendSectionProps {
 
 const posterData: Poster[] = [
     { id: '1', name: { en: 'Pirates Party 2026 Vol.1', ar: 'حفلة القراصنة ٢٠٢٦' }, price: 24.99, image: '/cards/card1.png' },
-    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/slider/card2.png' },
+    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/cards/card12.png' },
     { id: '3', name: { en: "Quick Beginner's Guide", ar: 'دليل المبتدئين السريع' }, price: 15.99, image: '/cards/card3.png' },
     { id: '4', name: { en: 'Teaching App', ar: 'تطبيق التعليم' }, price: 22.99, image: '/cards/card4.png' },
     { id: '5', name: { en: 'Championship 26-27', ar: 'البطولة ٢٦-٢٧' }, price: 29.99, image: '/cards/card1.png' },
@@ -42,17 +43,22 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
     const locale = useLocale();
     const { checkAuth } = useAuthAction();
     const router = useRouter();
+    const { flyToCart } = useFlyToCart();
     const addItemToCart = useCartStore((state) => state.addItem);
 
     const cards = featuredCards?.length ? featuredCards : posterData;
 
-    const handleAddToCart = (e: React.MouseEvent, card: Poster) => {
+    const isRealProductId = (id: string) => id.includes(":");
+
+    const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>, card: Poster) => {
         e.preventDefault();
         e.stopPropagation();
 
+        const targetElement = e.currentTarget;
         const localizedName = getLocalizedText(card.name, locale);
 
         checkAuth(() => {
+            flyToCart(targetElement, card.image);
             addItemToCart({
                 id: card.id,
                 name: localizedName,
@@ -65,13 +71,16 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
         });
     };
 
-    const handleProductClick = (e: React.MouseEvent, cardId: string) => {
+    const handleProductClick = (e: React.MouseEvent<HTMLAnchorElement>, cardId: string) => {
         e.preventDefault();
+        e.stopPropagation();
+
+        if (!isRealProductId(cardId)) return;
+
         checkAuth(() => {
             router.push(`/products/${cardId}`);
         }, undefined, `/products/${cardId}`);
     };
-
     return (
         <section className="relative w-full overflow-hidden bg-[#0a0a0f] py-8">
             <div className="w-full overflow-x-auto pb-6 scrollbar-hide">
@@ -87,7 +96,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                         className="absolute inset-0 opacity-15 pointer-events-none"
                         style={{
                             backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 15%, rgba(0,0,0,0.3) 15.1%)',
-                            backgroundSize: '100% 100%'
+                            backgroundSize: '100% 100%',
                         }}
                     />
 
@@ -96,6 +105,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                             <div key={`tm-${i}`} className="w-3 h-3 rounded-full bg-gradient-to-br from-[#c4a65d] via-[#8b6508] to-[#453204] border border-black/40 shadow-md" />
                         ))}
                     </div>
+
                     <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#222] via-[#111] to-[#000] border-t border-white/5 flex justify-around items-center px-4 z-30 shadow-md">
                         {[...Array(20)].map((_, i) => (
                             <div key={`bm-${i}`} className="w-3 h-3 rounded-full bg-gradient-to-br from-[#c4a65d] via-[#8b6508] to-[#453204] border border-black/40 shadow-md" />
@@ -141,9 +151,9 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                                     </div>
 
                                     <Link
-                                        href={`/products/${card.id}`}
+                                        href={isRealProductId(card.id) ? `/products/${card.id}` : '#'}
                                         onClick={(e) => handleProductClick(e, card.id)}
-                                        className="block relative aspect-[4/3] overflow-hidden border border-[#5c3a21]/20 mb-3 bg-[#f5e6d3]"
+                                        className="block relative ..."
                                     >
                                         <img src={card.image} alt={localizedName} className="absolute inset-0 w-full h-full object-cover" />
                                     </Link>
@@ -161,6 +171,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                                                 {formatPriceByLocale(card.price, locale)}
                                             </span>
                                             <button
+                                                type="button"
                                                 onClick={(e) => handleAddToCart(e, card)}
                                                 className="bg-[#2e1a0b] text-[#f4e4c1] px-3 py-1 text-[0.6rem] font-extrabold uppercase tracking-wider rounded-sm"
                                             >
@@ -185,7 +196,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                         className="w-1.5 h-1.5 rounded-full bg-amber-500/80"
                     />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
-                        {locale === 'ar' ? "اسحب للاستكشاف" : "Scroll to Explore"}
+                        {locale === 'ar' ? 'اسحب للاستكشاف' : 'Scroll to Explore'}
                     </span>
                 </div>
             </div>

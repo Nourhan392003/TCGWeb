@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
 import ProductHero from "@/components/product/ProductHero";
 import ProductSpecs from "@/components/product/ProductSpecs";
 import ProductInfoSections from "@/components/product/ProductInfoSections";
@@ -15,7 +16,7 @@ export default function ProductDetailPage() {
     const productId = params?.id as string;
 
     const product = useQuery(api.products.getProductById, {
-        id: productId as any,
+        id: productId as Id<"products">,
     });
 
     if (product === undefined) {
