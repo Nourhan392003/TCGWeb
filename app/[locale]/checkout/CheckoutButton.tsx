@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
-import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 type LocalizedName = {
     en?: string;
@@ -52,6 +53,12 @@ export default function CheckoutButton() {
                 orderReference,
                 paymentStatus: "pending",
                 paymentProvider: "paymob",
+                storeItems: items.map((item) => ({
+                    productId: item.id as Id<"products">,
+                    name: getItemName(item.name),
+                    price: item.price,
+                    quantity: item.quantity,
+                })),
                 shippingAddress: {
                     fullName: user.fullName || "",
                     address: "Riyadh",

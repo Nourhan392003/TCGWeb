@@ -36,6 +36,16 @@ export const updateOrderStatusByPaymobOrderId = mutation({
     args: {
         paymobOrderId: v.string(),
         status: v.string(),
+        storeItems: v.optional(
+            v.array(
+                v.object({
+                    productId: v.id("products"),
+                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    price: v.number(),
+                    quantity: v.number(),
+                })
+            )
+        ),
     },
     handler: async (ctx, args) => {
         const order = await ctx.db
@@ -49,10 +59,16 @@ export const updateOrderStatusByPaymobOrderId = mutation({
             throw new Error("Order not found");
         }
 
-        await ctx.db.patch(order._id, {
+        const updateFields: Record<string, unknown> = {
             status: args.status,
             updatedAt: Date.now(),
-        });
+        };
+
+        if (args.storeItems) {
+            updateFields.storeItems = args.storeItems;
+        }
+
+        await ctx.db.patch(order._id, updateFields);
     },
 });
 
@@ -68,6 +84,16 @@ export const updatePaymentStatus = mutation({
         rawPayload: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymentReference: v.optional(v.string()),
+        storeItems: v.optional(
+            v.array(
+                v.object({
+                    productId: v.id("products"),
+                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    price: v.number(),
+                    quantity: v.number(),
+                })
+            )
+        ),
     },
     handler: async (ctx, args) => {
         const order = await ctx.db
@@ -81,7 +107,7 @@ export const updatePaymentStatus = mutation({
             throw new Error(`Order not found: ${args.orderReference}`);
         }
 
-        await ctx.db.patch(order._id, {
+        const updateFields: Record<string, unknown> = {
             paymentStatus: args.paymentStatus,
             paymentProvider: args.paymentProvider,
             paymentRawPayload: args.rawPayload,
@@ -89,7 +115,13 @@ export const updatePaymentStatus = mutation({
             paymentReference: args.paymentReference ?? order.paymentReference,
             status: args.paymentStatus === "paid" ? "paid" : order.status,
             updatedAt: Date.now(),
-        });
+        };
+
+        if (args.storeItems) {
+            updateFields.storeItems = args.storeItems;
+        }
+
+        await ctx.db.patch(order._id, updateFields);
     },
 });
 export const createOrder = mutation({
@@ -116,25 +148,34 @@ export const createOrder = mutation({
         paymentStatus: v.optional(v.string()),
         paymentProvider: v.optional(v.string()),
         paymentRawPayload: v.optional(v.string()),
+
+        storeItems: v.optional(
+            v.array(
+                v.object({
+                    productId: v.id("products"),
+                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    price: v.number(),
+                    quantity: v.number(),
+                })
+            )
+        ),
+        stockDecremented: v.optional(v.boolean()),
     },
-    returns: v.id("orders"),
     handler: async (ctx, args) => {
         const orderId = await ctx.db.insert("orders", {
             userId: args.userId,
             totalAmount: args.totalAmount,
             status: args.status,
-
             shippingAddress: args.shippingAddress,
-
             orderReference: args.orderReference,
             paymobOrderId: args.paymobOrderId,
             paymobTransactionId: args.paymobTransactionId,
             paymentReference: args.paymentReference,
-
             paymentStatus: args.paymentStatus ?? "pending",
             paymentProvider: args.paymentProvider ?? "paymob",
             paymentRawPayload: args.paymentRawPayload,
-
+            storeItems: args.storeItems,
+            stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
         });

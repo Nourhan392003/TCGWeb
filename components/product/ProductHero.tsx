@@ -107,6 +107,7 @@ export default function ProductHero({ product }: ProductHeroProps) {
         quantity: 1,
         image: productImage,
         rarity: product.rarity || "",
+        stockQuantity: product.stockQuantity,
       });
       toast.success(tActions("addedToCart", { name: localizedName }));
     });

@@ -55,6 +55,7 @@ export default function PreordersClient() {
                 quantity: 1,
                 image: productImage,
                 rarity: product.rarity || "Common",
+                stockQuantity: product.stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
         });

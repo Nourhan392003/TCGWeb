@@ -13,11 +13,13 @@ export default function AddProductForm() {
     const [nameEn, setNameEn] = useState("");
     const [nameAr, setNameAr] = useState("");
     const [price, setPrice] = useState("");
+    const [stockQuantity, setStockQuantity] = useState(0);
     const [descriptionEn, setDescriptionEn] = useState("");
     const [descriptionAr, setDescriptionAr] = useState("");
     const [game, setGame] = useState(GAME_OPTIONS[0].value);
     const [rarity, setRarity] = useState("Common");
     const [condition, setCondition] = useState("Factory Sealed");
+
     const [inStock, setInStock] = useState(true);
     const [isPreorder, setIsPreorder] = useState(false);
 
@@ -63,6 +65,7 @@ export default function AddProductForm() {
                 rarity,
                 condition,
                 inStock,
+                stockQuantity,
                 isPreorder,
                 imageId: storageId,
             });
@@ -72,6 +75,7 @@ export default function AddProductForm() {
             setNameEn("");
             setNameAr("");
             setPrice("");
+            setStockQuantity(0);
             setDescriptionEn("");
             setDescriptionAr("");
             setGame(GAME_OPTIONS[0].value);
@@ -162,6 +166,24 @@ export default function AddProductForm() {
                             placeholder="e.g. 999.99"
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
+                            className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
+                            required
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-300">Stock Quantity *</label>
+                        <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="e.g. 5"
+                            value={stockQuantity}
+                            onChange={(e) => {
+                                const value = Math.max(0, Number(e.target.value));
+                                setStockQuantity(value);
+                                setInStock(value > 0);
+                            }}
                             className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
                             required
                         />

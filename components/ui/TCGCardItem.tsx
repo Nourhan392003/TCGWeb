@@ -18,6 +18,8 @@ interface TCGCardItemProps {
     name: string | { en: string; ar?: string };
     price: number;
     rarity: string;
+    stockQuantity?: number;
+    inStock?: boolean;
 }
 
 export default function TCGCardItem({
@@ -26,6 +28,8 @@ export default function TCGCardItem({
     name,
     price,
     rarity,
+    stockQuantity,
+    inStock = true,
 }: TCGCardItemProps) {
     const stringId = id.toString();
     const { checkAuth } = useAuthAction();
@@ -82,6 +86,7 @@ export default function TCGCardItem({
                 quantity: 1,
                 image,
                 rarity,
+                stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
         });
@@ -151,13 +156,22 @@ export default function TCGCardItem({
                     <button
                         type="button"
                         onClick={handleAddToCart}
-                        className="relative z-10 p-2 rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors"
+                        disabled={!inStock}
+                        className={`relative z-10 p-2 rounded-lg transition-colors ${inStock ? "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black" : "bg-gray-700/50 text-gray-500 cursor-not-allowed"}`}
                         aria-label={`Add ${localizedName} to cart`}
                     >
                         <ShoppingCart className="w-5 h-5" />
                     </button>
                 </div>
             </div>
+            
+            {!inStock && (
+                <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-20 pointer-events-none">
+                    <span className="px-4 py-2 bg-red-500/80 text-white font-bold rounded-lg text-sm rotate-[-10deg] border border-red-400">
+                        {tActions("soldOut") || "SOLD OUT"}
+                    </span>
+                </div>
+            )}
         </div>
     );
 }

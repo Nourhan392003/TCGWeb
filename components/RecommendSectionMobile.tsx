@@ -15,6 +15,8 @@ interface Poster {
     name: string | { en: string; ar?: string };
     price: number;
     image: string;
+    stockQuantity?: number;
+    inStock?: boolean;
 }
 
 interface RecommendSectionProps {
@@ -66,6 +68,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                 quantity: 1,
                 image: card.image,
                 rarity: 'Rare',
+                stockQuantity: card.stockQuantity,
             });
             toast.success(tActions('addedToCart', { name: localizedName }));
         });
@@ -173,9 +176,10 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleAddToCart(e, card)}
-                                                className="bg-[#2e1a0b] text-[#f4e4c1] px-3 py-1 text-[0.6rem] font-extrabold uppercase tracking-wider rounded-sm"
+                                                disabled={card.inStock === false}
+                                                className={`px-3 py-1 text-[0.6rem] font-extrabold uppercase tracking-wider rounded-sm ${card.inStock !== false ? "bg-[#2e1a0b] text-[#f4e4c1]" : "bg-[#2e1a0b]/50 text-[#f4e4c1]/50 cursor-not-allowed"}`}
                                             >
-                                                {tActions('claim')}
+                                                {card.inStock !== false ? tActions('claim') : tActions('soldOut')}
                                             </button>
                                         </div>
                                     </div>

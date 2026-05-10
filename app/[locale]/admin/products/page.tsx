@@ -43,6 +43,7 @@ export default function ProductsPage() {
             nameAr: typeof product.name === 'string' ? '' : (product.name?.ar || ''),
             descriptionEn: typeof product.description === 'string' ? product.description : (product.description?.en || ''),
             descriptionAr: typeof product.description === 'string' ? '' : (product.description?.ar || ''),
+            stockQuantity: product.stockQuantity ?? 0,
         };
         setEditingProduct(normalizedProduct);
     };
@@ -69,10 +70,13 @@ export default function ProductsPage() {
             await updateProduct({
                 id: editingProduct._id as any,
                 name: { en: editingProduct.nameEn, ar: editingProduct.nameAr || undefined },
+
                 price: Number(editingProduct.price),
                 game: editingProduct.game,
+
                 rarity: editingProduct.rarity,
                 inStock: editingProduct.inStock,
+                stockQuantity: editingProduct.stockQuantity ?? 0,
                 isPreorder: editingProduct.isPreorder,
                 description: editingProduct.descriptionEn
                     ? { en: editingProduct.descriptionEn, ar: editingProduct.descriptionAr || undefined }
@@ -213,7 +217,23 @@ export default function ProductsPage() {
                                                     : formatPrice(parseFloat(product.price || 0))}
                                             </span>
                                         </div>
+                                        {/* Stock Status */}
 
+                                        <div className="col-span-1">
+                                            <div className="flex flex-col items-start gap-1">
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+      ${product.inStock ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                                    <Warehouse className="w-3.5 h-3.5" />
+                                                    {product.inStock ? (locale === 'ar' ? 'متوفر' : 'In Stock') : (locale === 'ar' ? 'نفذ' : 'Out of Stock')}
+                                                </span>
+
+                                                <span className="text-xs text-gray-500">
+                                                    {locale === 'ar'
+                                                        ? `الكمية: ${product.stockQuantity ?? 0}`
+                                                        : `Qty: ${product.stockQuantity ?? 0}`}
+                                                </span>
+                                            </div>
+                                        </div>
                                         {/* Stock Status */}
                                         <div className="col-span-1">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
@@ -301,6 +321,7 @@ export default function ProductsPage() {
                                     placeholder="الاسم بالعربي (اختياري)"
                                 />
                             </div>
+
                             {/* Price */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">{t('price')} (SAR)</label>
@@ -312,7 +333,30 @@ export default function ProductsPage() {
                                     className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
                                 />
                             </div>
+                            {/* Stock Quantity */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">
+                                    {t('quantity')}
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={editingProduct.stockQuantity ?? 0}
+                                    onChange={(e) => {
+                                        const value = Math.max(0, Number(e.target.value));
+                                        setEditingProduct({
+                                            ...editingProduct,
+                                            stockQuantity: value,
+                                            inStock: value > 0,
+                                        });
+                                    }}
+                                    className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                />
+                            </div>
+
                             {/* Game */}
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">{t('game')}</label>
                                 <select

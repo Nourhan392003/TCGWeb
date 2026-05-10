@@ -23,7 +23,15 @@ function sortObject(obj: Record<string, unknown>) {
 function verifyHmac(payload: Record<string, unknown>, receivedHmac: string) {
     if (!HMAC_SECRET || !receivedHmac) return false;
 
-    const sortedString = sortObject(payload);
+    // Exclude hmac/HMAC fields from the verification payload —
+    // they are not part of the signed content.
+    const cleanPayload: Record<string, unknown> = {};
+    for (const key of Object.keys(payload)) {
+        if (key.toLowerCase() === "hmac") continue;
+        cleanPayload[key] = payload[key];
+    }
+
+    const sortedString = sortObject(cleanPayload);
     const calculatedHmac = crypto
         .createHmac("sha512", HMAC_SECRET)
         .update(sortedString)
@@ -44,9 +52,13 @@ export async function POST(req: NextRequest) {
 
         const payload = body.obj || body;
 
-        const isVerified = verifyHmac(payload, receivedHmac);
-
-        if (!isVerified) {
+        // HMAC verification: validate callback authenticity
+        const isHmacValid = verifyHmac(payload, receivedHmac);
+        if (!isHmacValid) {
+            console.warn("Paymob callback HMAC verification failed", {
+                receivedHmac: receivedHmac ? receivedHmac.substring(0, 16) + "..." : "missing",
+                hasHmacSecret: !!HMAC_SECRET,
+            });
             return NextResponse.json(
                 { success: false, error: "Invalid HMAC" },
                 { status: 401 }
@@ -65,13 +77,42 @@ export async function POST(req: NextRequest) {
             payload.special_reference ||
             null;
 
-        if (orderReference) {
-            await convex.mutation(api.orders.updatePaymentStatus, {
-                orderReference: String(orderReference),
-                paymentStatus: isPaid ? "paid" : "failed",
-                paymentProvider: "paymob",
-                rawPayload: JSON.stringify(payload),
-            });
+        if (!orderReference) {
+            console.error("Paymac callback: no orderReference found in payload");
+            return NextResponse.json(
+                { success: false, error: "No order reference" },
+                { status: 400 }
+            );
+        }
+
+        const paymobOrderId = payload.id || payload.obj?.id || null;
+
+        // Update payment status and store items on the order
+        await convex.mutation(api.orders.updatePaymentStatus, {
+            orderReference: String(orderReference),
+            paymentStatus: isPaid ? "paid" : "failed",
+            paymentProvider: "paymob",
+            rawPayload: JSON.stringify(payload),
+            paymobOrderId: paymobOrderId ? String(paymobOrderId) : undefined,
+        });
+
+        // On confirmed payment, finalize the order (decrement stock)
+        // This is idempotent — if stockDecremented is already true, it returns early.
+        if (isPaid) {
+            try {
+                const result = await convex.mutation(api.products.finalizeOrder, {
+                    orderReference: String(orderReference),
+                });
+                console.log(`finalizeOrder for ${orderReference}:`, result);
+            } catch (finalizeError: any) {
+                // Log but do not return error to Paymob — we don't want retries
+                // to cause issues. The stockDecremented flag prevents double-decrement.
+                console.error(`Error during finalizeOrder for ${orderReference}:`, finalizeError.message);
+                return NextResponse.json(
+                    { success: false, error: "Finalization failed" },
+                    { status: 500 }
+                );
+            }
         }
 
         return NextResponse.json({ success: true });

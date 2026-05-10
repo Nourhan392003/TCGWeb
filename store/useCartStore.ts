@@ -9,6 +9,7 @@ export interface CartItem {
     image: string;
     quantity: number;
     rarity: string;
+    stockQuantity?: number;
 }
 
 interface CartStore {
@@ -88,6 +89,9 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
             const existingItem = state.items.find((item) => item.id === newItem.id);
 
             if (existingItem) {
+                const maxQty = existingItem.stockQuantity ?? Infinity;
+                if (existingItem.quantity >= maxQty) return state;
+
                 return {
                     items: state.items.map((item) =>
                         item.id === newItem.id
@@ -118,9 +122,13 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
 
     updateQuantity: (id, quantity) => {
         set((state) => ({
-            items: state.items.map((item) =>
-                item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-            ),
+            items: state.items.map((item) => {
+                if (item.id === id) {
+                    const maxQty = item.stockQuantity ?? Infinity;
+                    return { ...item, quantity: Math.min(Math.max(1, quantity), maxQty) };
+                }
+                return item;
+            }),
         }));
     },
 

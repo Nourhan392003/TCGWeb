@@ -60,6 +60,18 @@ export default defineSchema({
         paymentProvider: v.optional(v.string()),
         paymentRawPayload: v.optional(v.string()),
 
+        storeItems: v.optional(
+            v.array(
+                v.object({
+                    productId: v.id("products"),
+                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    price: v.number(),
+                    quantity: v.number(),
+                })
+            )
+        ),
+        stockDecremented: v.optional(v.boolean()),
+
         createdAt: v.number(),
         updatedAt: v.optional(v.number()),
     })

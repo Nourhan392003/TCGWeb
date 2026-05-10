@@ -231,6 +231,7 @@ export default function ProductsClient() {
                 quantity: 1,
                 image: productImage,
                 rarity: product.rarity || "Common",
+                stockQuantity: product.stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
         });
@@ -330,7 +331,291 @@ export default function ProductsClient() {
                                 </div>
                             </div>
 
-                            {/* باقي الفلاتر كما هي */}
+                            {/* Availability Filter */}
+                            <div className="mb-3 sm:mb-4 border-b border-gray-800 pb-3 sm:pb-4">
+                                <button
+                                    onClick={() => toggleSection("availability")}
+                                    className="flex items-center justify-between w-full text-xs sm:text-sm font-medium text-white mb-2 sm:mb-3"
+                                >
+                                    <span>{t("availability")}</span>
+                                    {filterSections.find((s) => s.id === "availability")?.isOpen ? (
+                                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {filterSections.find((s) => s.id === "availability")?.isOpen && (
+                                    <div className="space-y-2">
+                                        <label className="flex items-center justify-between cursor-pointer group">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    onClick={() =>
+                                                        setAvailableInStock(
+                                                            availableInStock === true ? null : true
+                                                        )
+                                                    }
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                                        availableInStock === true
+                                                            ? "bg-amber-500 border-amber-500"
+                                                            : "border-gray-600 group-hover:border-gray-500"
+                                                    }`}
+                                                >
+                                                    {availableInStock === true && (
+                                                        <Check className="w-3 h-3 text-black" />
+                                                    )}
+                                                </div>
+                                                <span className="text-xs sm:text-sm text-gray-300">
+                                                    {t("inStock")}
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-gray-500">
+                                                ({productCounts.inStock})
+                                            </span>
+                                        </label>
+
+                                        <label className="flex items-center justify-between cursor-pointer group">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    onClick={() =>
+                                                        setAvailableInStock(
+                                                            availableInStock === false ? null : false
+                                                        )
+                                                    }
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                                        availableInStock === false
+                                                            ? "bg-amber-500 border-amber-500"
+                                                            : "border-gray-600 group-hover:border-gray-500"
+                                                    }`}
+                                                >
+                                                    {availableInStock === false && (
+                                                        <Check className="w-3 h-3 text-black" />
+                                                    )}
+                                                </div>
+                                                <span className="text-xs sm:text-sm text-gray-300">
+                                                    {t("outOfStock")}
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-gray-500">
+                                                ({productCounts.outOfStock})
+                                            </span>
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Brand Filter */}
+                            <div className="mb-3 sm:mb-4 border-b border-gray-800 pb-3 sm:pb-4">
+                                <button
+                                    onClick={() => toggleSection("brand")}
+                                    className="flex items-center justify-between w-full text-xs sm:text-sm font-medium text-white mb-2 sm:mb-3"
+                                >
+                                    <span>{t("brand")}</span>
+                                    {filterSections.find((s) => s.id === "brand")?.isOpen ? (
+                                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {filterSections.find((s) => s.id === "brand")?.isOpen && (
+                                    <div className="space-y-2">
+                                        {brands.map((brand) => {
+                                            const count = productCounts.brands[brand.value] || 0;
+                                            return (
+                                                <label
+                                                    key={brand.value}
+                                                    className="flex items-center justify-between cursor-pointer group"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            onClick={() => handleBrandToggle(brand.value)}
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                                                selectedBrands.includes(brand.value)
+                                                                    ? "bg-amber-500 border-amber-500"
+                                                                    : "border-gray-600 group-hover:border-gray-500"
+                                                            }`}
+                                                        >
+                                                            {selectedBrands.includes(brand.value) && (
+                                                                <Check className="w-3 h-3 text-black" />
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm text-gray-300">
+                                                            {brand.label}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500">
+                                                        ({count})
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Product Type Filter */}
+                            <div className="mb-3 sm:mb-4 border-b border-gray-800 pb-3 sm:pb-4">
+                                <button
+                                    onClick={() => toggleSection("type")}
+                                    className="flex items-center justify-between w-full text-xs sm:text-sm font-medium text-white mb-2 sm:mb-3"
+                                >
+                                    <span>{t("productType")}</span>
+                                    {filterSections.find((s) => s.id === "type")?.isOpen ? (
+                                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {filterSections.find((s) => s.id === "type")?.isOpen && (
+                                    <div className="space-y-2">
+                                        {(showMoreTypes
+                                            ? productTypes
+                                            : productTypes.slice(0, 5)
+                                        ).map((type) => {
+                                            const count = productCounts.types[type.value] || 0;
+                                            return (
+                                                <label
+                                                    key={type.value}
+                                                    className="flex items-center justify-between cursor-pointer group"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            onClick={() => handleTypeToggle(type.value)}
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                                                selectedTypes.includes(type.value)
+                                                                    ? "bg-amber-500 border-amber-500"
+                                                                    : "border-gray-600 group-hover:border-gray-500"
+                                                            }`}
+                                                        >
+                                                            {selectedTypes.includes(type.value) && (
+                                                                <Check className="w-3 h-3 text-black" />
+                                                            )}
+                                                        </div>
+<span className="text-xs sm:text-sm text-gray-300">
+                                                             {type.labelKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                                                         </span>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500">
+                                                        ({count})
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+
+                                        {productTypes.length > 5 && (
+                                            <button
+                                                onClick={() => setShowMoreTypes(!showMoreTypes)}
+                                                className="text-xs sm:text-sm text-amber-500 hover:text-amber-400 mt-2"
+                                            >
+                                                {showMoreTypes
+                                                    ? t("showLess")
+                                                    : t("showMore")}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Price Range Filter */}
+                            <div className="mb-0">
+                                <button
+                                    onClick={() => toggleSection("price")}
+                                    className="flex items-center justify-between w-full text-xs sm:text-sm font-medium text-white mb-2 sm:mb-3"
+                                >
+                                    <span>{t("priceRange")}</span>
+                                    {filterSections.find((s) => s.id === "price")?.isOpen ? (
+                                        <ChevronUp className="w-4 h-4 text-gray-400" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {filterSections.find((s) => s.id === "price")?.isOpen && (
+                                    <div className="space-y-2 sm:space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <label className="text-xs text-gray-500 mb-1 block ltr:text-left rtl:text-right">
+                                                    {t("from")}
+                                                </label>
+                                                <div className="relative">
+                                                    <span
+                                                        className={`absolute ${
+                                                            isRTL ? "right-2" : "left-2"
+                                                        } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
+                                                    >
+                                                        {isRTL ? "ر.س" : "SAR"}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        value={minPriceInput}
+                                                        onChange={(e) =>
+                                                            setMinPriceInput(e.target.value)
+                                                        }
+                                                        onBlur={handlePriceApply}
+                                                        className={`w-full ${
+                                                            isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
+                                                        } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <span className="text-gray-500 mt-4">-</span>
+                                            <div className="flex-1">
+                                                <label className="text-xs text-gray-500 mb-1 block ltr:text-left rtl:text-right">
+                                                    {t("to")}
+                                                </label>
+                                                <div className="relative">
+                                                    <span
+                                                        className={`absolute ${
+                                                            isRTL ? "right-2" : "left-2"
+                                                        } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
+                                                    >
+                                                        {isRTL ? "ر.س" : "SAR"}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        value={maxPriceInput}
+                                                        onChange={(e) =>
+                                                            setMaxPriceInput(e.target.value)
+                                                        }
+                                                        onBlur={handlePriceApply}
+                                                        className={`w-full ${
+                                                            isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
+                                                        } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
+                                                        placeholder="5000"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="px-0 sm:px-1">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="5000"
+                                                step="50"
+                                                value={priceRange[1]}
+                                                onChange={(e) => {
+                                                    const val = parseInt(e.target.value);
+                                                    setPriceRange([0, val]);
+                                                    setMaxPriceInput(val.toString());
+                                                }}
+                                                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                                            />
+                                            <div className="flex justify-between mt-1 sm:mt-2 text-[10px] text-gray-400">
+                                                <span>
+                                                    {formatPriceByLocale(priceRange[0], locale)}
+                                                </span>
+                                                <span>
+                                                    {formatPriceByLocale(priceRange[1], locale)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </aside>
 

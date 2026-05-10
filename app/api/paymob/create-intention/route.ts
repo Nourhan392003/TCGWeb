@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPaymobIntention, getPaymobCheckoutUrl } from "@/lib/paymob";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+
+const convex = new ConvexHttpClient(
+    process.env.NEXT_PUBLIC_CONVEX_URL || ""
+);
 
 export async function POST(req: NextRequest) {
     try {
@@ -19,7 +25,15 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const paymobItems = items.map((item: any) => ({
+        // Build storeItems from the cart items for order record
+        const storeItems = items.map((item: any) => ({
+            productId: item.productId || "",
+            name: item.name || "Unknown",
+            price: Number(item.price),
+            quantity: Number(item.quantity),
+        }));
+
+        const paymobItems = storeItems.map((item: any) => ({
             name: item.name,
             amount: Math.round(item.price * 100),
             quantity: item.quantity,
@@ -30,6 +44,29 @@ export async function POST(req: NextRequest) {
             (sum: number, item: any) => sum + item.amount * item.quantity,
             0
         );
+
+        const ref = orderReference || `tcg-${Date.now()}`;
+
+        // Create a preliminary unpaid order in Convex with storeItems
+        // This links the orderReference to the purchased items before
+        // the customer is redirected to Paymob.
+        try {
+            await convex.mutation(api.orders.createOrder, {
+                userId: customer.userId || "",
+                totalAmount: totalAmount / 100,
+                status: "pending",
+                storeItems,
+                orderReference: ref,
+                paymentStatus: "pending",
+                paymentProvider: "paymob",
+                stockDecremented: false,
+            });
+            console.log(`Preliminary order created with reference: ${ref}`);
+        } catch (orderError: any) {
+            console.error("Failed to create preliminary order:", orderError.message);
+            // Do not block the Paymob flow on order creation failure —
+            // the webhook can still handle reconciliation.
+        }
 
         const payload = {
             amount: totalAmount,
@@ -44,7 +81,7 @@ export async function POST(req: NextRequest) {
                 city: customer.city || "Riyadh",
                 country: "SA",
             },
-            special_reference: orderReference || `order_${Date.now()}`,
+            special_reference: ref,
         };
 
         console.log("=== Paymob intention payload ===");
@@ -100,7 +137,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             success: true,
             checkoutUrl,
-            orderReference: payload.special_reference,
+            orderReference: ref,
             paymobClientSecret: intention.client_secret,
         });
     } catch (error) {

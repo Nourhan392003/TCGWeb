@@ -16,6 +16,8 @@ interface Poster {
   price: number;
   image: string;
   rarity: string;
+  stockQuantity?: number;
+  inStock?: boolean;
 }
 
 interface RecommendSectionProps {
@@ -95,6 +97,7 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
         quantity: 1,
         image: card.image,
         rarity: card.rarity,
+        stockQuantity: card.stockQuantity,
       });
       toast.success(tActions('addedToCart', { name: localizedName }));
     });
@@ -227,9 +230,10 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
                     <button
                       type="button"
                       onClick={(e) => handleAddToCart(e, card)}
-                      className="bg-[#2e1a0b] hover:bg-black text-[#f4e4c1] px-[clamp(6px,1.2vw,12px)] py-[clamp(2px,0.5vw,6px)] rounded-sm text-[clamp(0.5rem,1vw,0.75rem)] font-black uppercase tracking-wider transition-colors shadow-sm"
+                      disabled={card.inStock === false}
+                      className={`px-[clamp(6px,1.2vw,12px)] py-[clamp(2px,0.5vw,6px)] rounded-sm text-[clamp(0.5rem,1vw,0.75rem)] font-black uppercase tracking-wider shadow-sm transition-colors ${card.inStock !== false ? "bg-[#2e1a0b] hover:bg-black text-[#f4e4c1]" : "bg-[#2e1a0b]/50 text-[#f4e4c1]/50 cursor-not-allowed"}`}
                     >
-                      {tActions('claim')}
+                      {card.inStock !== false ? tActions('claim') : tActions('soldOut')}
                     </button>
                   </div>
                 </div>

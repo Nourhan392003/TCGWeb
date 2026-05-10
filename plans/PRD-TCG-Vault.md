@@ -37,8 +37,8 @@ This Product Requirements Document (PRD) defines the specifications for **TCG Va
 
 ### 1.5 Supported Games (Phase 1)
 
-- Magic: The Gathering (MTG)
-- Pokémon TCG
+
+- PoGatherinkémon TCG
 - Yu-Gi-Oh!
 - One Piece Card Game
 - Future expansion ready
