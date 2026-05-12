@@ -70,10 +70,8 @@ export default function ProductsPage() {
             await updateProduct({
                 id: editingProduct._id as any,
                 name: { en: editingProduct.nameEn, ar: editingProduct.nameAr || undefined },
-
                 price: Number(editingProduct.price),
                 game: editingProduct.game,
-
                 rarity: editingProduct.rarity,
                 inStock: editingProduct.inStock,
                 stockQuantity: editingProduct.stockQuantity ?? 0,
@@ -81,9 +79,8 @@ export default function ProductsPage() {
                 description: editingProduct.descriptionEn
                     ? { en: editingProduct.descriptionEn, ar: editingProduct.descriptionAr || undefined }
                     : undefined,
-                image: editingProduct.image || "",
+                imageId,
             });
-
             setEditingProduct(null);
             setSelectedImage(null);
             setPreviewUrl("");

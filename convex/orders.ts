@@ -129,7 +129,8 @@ export const createOrder = mutation({
         userId: v.string(),
         totalAmount: v.number(),
         status: v.string(),
-
+        shippingFee: v.optional(v.number()),
+        shippingCountry: v.optional(v.string()),
         shippingAddress: v.optional(
             v.object({
                 fullName: v.string(),
@@ -174,6 +175,8 @@ export const createOrder = mutation({
             paymentStatus: args.paymentStatus ?? "pending",
             paymentProvider: args.paymentProvider ?? "paymob",
             paymentRawPayload: args.paymentRawPayload,
+            shippingFee: args.shippingFee ?? 0,
+            shippingCountry: args.shippingCountry ?? "SA",
             storeItems: args.storeItems,
             stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
-import { formatPriceByLocale } from "@/utils/currency";
+import { formatPrice, formatPriceByLocale } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText } from "@/utils/localization";
 
@@ -65,9 +65,9 @@ export default function CheckoutPage() {
         setMounted(true);
     }, []);
 
-    const totalPrice = getTotalPrice();
-    const shipping = 0;
-    const grandTotal = totalPrice + shipping;
+    const subtotal = getTotalPrice();
+    const shipping = 27;
+    const grandTotal = subtotal + shipping;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -103,6 +103,10 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     locale,
                     orderReference,
+                    subtotal,
+                    shippingFee: shipping,
+                    grandTotal,
+                    shippingCountry: "SA",
                     customer: {
                         firstName: formData.firstName,
                         lastName: formData.lastName,
@@ -314,6 +318,22 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
                                 </div>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-sm text-gray-400">
+                                        <span>Subtotal</span>
+                                        <span>{formatPrice(subtotal)}</span>
+                                    </div>
+
+                                    <div className="flex justify-between text-sm text-gray-400">
+                                        <span>Shipping داخل المملكة</span>
+                                        <span>{formatPrice(27)}</span>
+                                    </div>
+
+                                    <div className="flex justify-between text-base font-semibold text-white border-t border-gray-700 pt-2">
+                                        <span>Total</span>
+                                        <span>{formatPrice(subtotal + 27)}</span>
+                                    </div>
+                                </div>
                                 <p className="text-xs sm:text-sm text-[#6a6a7a] text-center">
                                     سيتم اختيار طريقة الدفع في صفحة Paymob الآمنة
                                 </p>
@@ -383,11 +403,11 @@ export default function CheckoutPage() {
                                 <div className="border-t border-[#2a2a38] pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                                     <div className="flex justify-between text-xs sm:text-sm">
                                         <span className="text-[#6a6a7a]">{t('subtotal')}</span>
-                                        <span className="text-[#f0f0f5]">{formatPriceByLocale(totalPrice, locale)}</span>
+                                        <span className="text-[#f0f0f5]">{formatPriceByLocale(subtotal, locale)}</span>
                                     </div>
                                     <div className="flex justify-between text-xs sm:text-sm">
                                         <span className="text-[#6a6a7a]">{t('shipping')}</span>
-                                        <span className="text-green-500 font-medium">{t('free')}</span>
+                                        <span className="text-[#f0f0f5]">{formatPriceByLocale(shipping, locale)}</span>
                                     </div>
                                     <div className="flex justify-between pt-2 sm:pt-3 border-t border-[#2a2a38]">
                                         <span className="text-sm sm:text-base font-semibold text-[#f0f0f5]">{t('total')}</span>

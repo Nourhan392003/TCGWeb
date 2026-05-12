@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPaymobIntention, getPaymobCheckoutUrl } from "@/lib/paymob";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+const SAUDI_DOMESTIC_SHIPPING_FEE = 27;
 
 const convex = new ConvexHttpClient(
     process.env.NEXT_PUBLIC_CONVEX_URL || ""
@@ -39,11 +40,15 @@ export async function POST(req: NextRequest) {
             quantity: item.quantity,
             description: item.name,
         }));
-
-        const totalAmount = paymobItems.reduce(
+        const itemsSubtotal = paymobItems.reduce(
             (sum: number, item: any) => sum + item.amount * item.quantity,
             0
         );
+
+        const shippingFee = SAUDI_DOMESTIC_SHIPPING_FEE;
+        const shippingFeeHalalas = Math.round(shippingFee * 100);
+
+        const totalAmount = itemsSubtotal + shippingFeeHalalas;
 
         const ref = orderReference || `tcg-${Date.now()}`;
 
@@ -59,6 +64,8 @@ export async function POST(req: NextRequest) {
                 orderReference: ref,
                 paymentStatus: "pending",
                 paymentProvider: "paymob",
+                shippingFee,
+                shippingCountry: "SA",
                 stockDecremented: false,
             });
             console.log(`Preliminary order created with reference: ${ref}`);
@@ -67,6 +74,10 @@ export async function POST(req: NextRequest) {
             // Do not block the Paymob flow on order creation failure —
             // the webhook can still handle reconciliation.
         }
+        console.log("Items subtotal (halalas):", itemsSubtotal);
+        console.log("Shipping fee (SAR):", shippingFee);
+        console.log("Shipping fee (halalas):", shippingFeeHalalas);
+        console.log("Final total (halalas):", totalAmount);
 
         const payload = {
             amount: totalAmount,

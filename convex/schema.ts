@@ -49,8 +49,10 @@ export default defineSchema({
                 phone: v.string(),
                 postalCode: v.optional(v.string()),
             })
-        ),
 
+        ),
+        shippingFee: v.optional(v.number()),
+        shippingCountry: v.optional(v.string()),
         orderReference: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymobTransactionId: v.optional(v.string()),

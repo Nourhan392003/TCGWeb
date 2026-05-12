@@ -7,6 +7,8 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
+import { DOMESTIC_SHIPPING_FEE } from "@/lib/shipping";
+
 type LocalizedName = {
     en?: string;
     ar?: string;
@@ -23,10 +25,20 @@ export default function CheckoutButton() {
     const createOrder = useMutation(api.orders.createOrder);
     const [isLoading, setIsLoading] = useState(false);
 
-    const totalPrice = items.reduce(
+    const subtotal = items.reduce(
         (total, item) => total + item.price * item.quantity,
         0
     );
+
+    const shippingFee = DOMESTIC_SHIPPING_FEE;
+    const totalAmount = subtotal + shippingFee;
+
+    const storeItems = items.map((item) => ({
+        productId: item.id as Id<"products">,
+        name: getItemName(item.name),
+        price: item.price,
+        quantity: item.quantity,
+    }));
 
     const handlePaymobCheckout = async () => {
         if (!user) {
@@ -48,17 +60,12 @@ export default function CheckoutButton() {
 
             await createOrder({
                 userId: user.id,
-                totalAmount: totalPrice,
+                totalAmount,
                 status: "pending",
                 orderReference,
                 paymentStatus: "pending",
                 paymentProvider: "paymob",
-                storeItems: items.map((item) => ({
-                    productId: item.id as Id<"products">,
-                    name: getItemName(item.name),
-                    price: item.price,
-                    quantity: item.quantity,
-                })),
+                storeItems,
                 shippingAddress: {
                     fullName: user.fullName || "",
                     address: "Riyadh",
@@ -66,6 +73,9 @@ export default function CheckoutButton() {
                     phone: user.primaryPhoneNumber?.phoneNumber || "",
                     postalCode: "",
                 },
+                shippingFee,
+                shippingCountry: "SA",
+                stockDecremented: false,
             });
 
             const response = await fetch("/api/paymob/create-intention", {
@@ -89,6 +99,8 @@ export default function CheckoutButton() {
                         price: item.price,
                         quantity: item.quantity,
                     })),
+                    shippingFee,
+                    totalAmount,
                 }),
             });
 

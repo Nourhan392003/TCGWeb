@@ -80,6 +80,7 @@ export default function ProductsClient() {
         { id: "brand", titleKey: "brand", isOpen: true },
         { id: "type", titleKey: "productType", isOpen: true },
         { id: "price", titleKey: "priceRange", isOpen: true },
+
     ]);
 
     const addItemToCart = useCartStore((state) => state.addItem);
@@ -355,11 +356,10 @@ export default function ProductsClient() {
                                                             availableInStock === true ? null : true
                                                         )
                                                     }
-                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                        availableInStock === true
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === true
                                                             ? "bg-amber-500 border-amber-500"
                                                             : "border-gray-600 group-hover:border-gray-500"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {availableInStock === true && (
                                                         <Check className="w-3 h-3 text-black" />
@@ -382,11 +382,10 @@ export default function ProductsClient() {
                                                             availableInStock === false ? null : false
                                                         )
                                                     }
-                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                        availableInStock === false
+                                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === false
                                                             ? "bg-amber-500 border-amber-500"
                                                             : "border-gray-600 group-hover:border-gray-500"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {availableInStock === false && (
                                                         <Check className="w-3 h-3 text-black" />
@@ -430,11 +429,10 @@ export default function ProductsClient() {
                                                     <div className="flex items-center gap-2">
                                                         <div
                                                             onClick={() => handleBrandToggle(brand.value)}
-                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                                selectedBrands.includes(brand.value)
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand.value)
                                                                     ? "bg-amber-500 border-amber-500"
                                                                     : "border-gray-600 group-hover:border-gray-500"
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {selectedBrands.includes(brand.value) && (
                                                                 <Check className="w-3 h-3 text-black" />
@@ -483,19 +481,18 @@ export default function ProductsClient() {
                                                     <div className="flex items-center gap-2">
                                                         <div
                                                             onClick={() => handleTypeToggle(type.value)}
-                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                                                selectedTypes.includes(type.value)
+                                                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedTypes.includes(type.value)
                                                                     ? "bg-amber-500 border-amber-500"
                                                                     : "border-gray-600 group-hover:border-gray-500"
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {selectedTypes.includes(type.value) && (
                                                                 <Check className="w-3 h-3 text-black" />
                                                             )}
                                                         </div>
-<span className="text-xs sm:text-sm text-gray-300">
-                                                             {type.labelKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                                                         </span>
+                                                        <span className="text-xs sm:text-sm text-gray-300">
+                                                            {type.labelKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                                                        </span>
                                                     </div>
                                                     <span className="text-xs text-gray-500">
                                                         ({count})
@@ -541,9 +538,8 @@ export default function ProductsClient() {
                                                 </label>
                                                 <div className="relative">
                                                     <span
-                                                        className={`absolute ${
-                                                            isRTL ? "right-2" : "left-2"
-                                                        } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
+                                                        className={`absolute ${isRTL ? "right-2" : "left-2"
+                                                            } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
                                                     >
                                                         {isRTL ? "ر.س" : "SAR"}
                                                     </span>
@@ -554,9 +550,8 @@ export default function ProductsClient() {
                                                             setMinPriceInput(e.target.value)
                                                         }
                                                         onBlur={handlePriceApply}
-                                                        className={`w-full ${
-                                                            isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
-                                                        } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
+                                                        className={`w-full ${isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
+                                                            } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
                                                         placeholder="0"
                                                     />
                                                 </div>
@@ -568,9 +563,8 @@ export default function ProductsClient() {
                                                 </label>
                                                 <div className="relative">
                                                     <span
-                                                        className={`absolute ${
-                                                            isRTL ? "right-2" : "left-2"
-                                                        } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
+                                                        className={`absolute ${isRTL ? "right-2" : "left-2"
+                                                            } top-1/2 -translate-y-1/2 text-gray-500 text-[10px]`}
                                                     >
                                                         {isRTL ? "ر.س" : "SAR"}
                                                     </span>
@@ -581,9 +575,8 @@ export default function ProductsClient() {
                                                             setMaxPriceInput(e.target.value)
                                                         }
                                                         onBlur={handlePriceApply}
-                                                        className={`w-full ${
-                                                            isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
-                                                        } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
+                                                        className={`w-full ${isRTL ? "pr-8 pl-1" : "pl-8 pr-1"
+                                                            } py-1.5 sm:py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500`}
                                                         placeholder="5000"
                                                     />
                                                 </div>
