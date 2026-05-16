@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPaymobIntention, getPaymobCheckoutUrl } from "@/lib/paymob";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+
 const SAUDI_DOMESTIC_SHIPPING_FEE = 27;
 
 const convex = new ConvexHttpClient(
@@ -20,41 +21,63 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: "Missing required customer billing data. Please ensure your profile/checkout form is complete.",
+                    error:
+                        "Missing required customer billing data. Please ensure your profile/checkout form is complete.",
                 },
                 { status: 400 }
             );
         }
 
-        // Build storeItems from the cart items for order record
         const storeItems = items.map((item: any) => ({
-            productId: item.productId || "",
+            productId: item.productId || item.id || "",
             name: item.name || "Unknown",
             price: Number(item.price),
             quantity: Number(item.quantity),
         }));
 
-        const paymobItems = storeItems.map((item: any) => ({
+        const productPaymobItems = storeItems.map((item: any) => ({
             name: item.name,
             amount: Math.round(item.price * 100),
             quantity: item.quantity,
             description: item.name,
         }));
-        const itemsSubtotal = paymobItems.reduce(
+        const requestedShippingOverride =
+            typeof body.shippingFeeOverride === "number"
+                ? body.shippingFeeOverride
+                : undefined;
+
+        const shippingOverrideReason =
+            typeof body.shippingOverrideReason === "string"
+                ? body.shippingOverrideReason
+                : undefined;
+
+        const shippingFee =
+            typeof requestedShippingOverride === "number"
+                ? Math.max(0, requestedShippingOverride)
+                : SAUDI_DOMESTIC_SHIPPING_FEE;
+
+        const shippingFeeHalalas = Math.round(shippingFee * 100);
+
+        const shippingPaymobItem =
+            shippingFee > 0
+                ? {
+                    name: "Domestic Shipping",
+                    amount: shippingFeeHalalas,
+                    quantity: 1,
+                    description: "Shipping داخل المملكة",
+                }
+                : null;
+        const paymobItems = shippingPaymobItem
+            ? [...productPaymobItems, shippingPaymobItem]
+            : productPaymobItems;
+
+        const totalAmount = paymobItems.reduce(
             (sum: number, item: any) => sum + item.amount * item.quantity,
             0
         );
 
-        const shippingFee = SAUDI_DOMESTIC_SHIPPING_FEE;
-        const shippingFeeHalalas = Math.round(shippingFee * 100);
-
-        const totalAmount = itemsSubtotal + shippingFeeHalalas;
-
         const ref = orderReference || `tcg-${Date.now()}`;
 
-        // Create a preliminary unpaid order in Convex with storeItems
-        // This links the orderReference to the purchased items before
-        // the customer is redirected to Paymob.
         try {
             await convex.mutation(api.orders.createOrder, {
                 userId: customer.userId || "",
@@ -66,17 +89,25 @@ export async function POST(req: NextRequest) {
                 paymentProvider: "paymob",
                 shippingFee,
                 shippingCountry: "SA",
+                shippingFeeOverride: requestedShippingOverride,
+                shippingOverrideReason,
                 stockDecremented: false,
             });
             console.log(`Preliminary order created with reference: ${ref}`);
         } catch (orderError: any) {
             console.error("Failed to create preliminary order:", orderError.message);
-            // Do not block the Paymob flow on order creation failure —
-            // the webhook can still handle reconciliation.
         }
-        console.log("Items subtotal (halalas):", itemsSubtotal);
+
+        console.log("Products only items ===");
+        console.log(JSON.stringify(productPaymobItems, null, 2));
+        console.log("Requested shipping override:", requestedShippingOverride);
+        console.log("Shipping override reason:", shippingOverrideReason);
+        console.log("Applied shipping fee (halalas):", shippingFeeHalalas);
         console.log("Shipping fee (SAR):", shippingFee);
-        console.log("Shipping fee (halalas):", shippingFeeHalalas);
+
+        console.log("Final Paymob items ===");
+        console.log(JSON.stringify(paymobItems, null, 2));
+
         console.log("Final total (halalas):", totalAmount);
 
         const payload = {

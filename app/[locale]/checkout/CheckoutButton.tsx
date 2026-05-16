@@ -7,7 +7,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { DOMESTIC_SHIPPING_FEE } from "@/lib/shipping";
+import { getShippingFee } from "@/lib/shipping";
 
 type LocalizedName = {
     en?: string;
@@ -23,21 +23,24 @@ export default function CheckoutButton() {
     const { items } = useCartStore();
     const { user } = useUser();
     const createOrder = useMutation(api.orders.createOrder);
+
     const [isLoading, setIsLoading] = useState(false);
+    const [freeShipping, setFreeShipping] = useState(false);
 
     const subtotal = items.reduce(
-        (total, item) => total + item.price * item.quantity,
+        (total, item) => total + Number(item.price) * Number(item.quantity),
         0
     );
 
-    const shippingFee = DOMESTIC_SHIPPING_FEE;
+    const shippingFee = freeShipping ? 0 : getShippingFee();
+    const shippingFeeOverride = freeShipping ? 0 : undefined;
     const totalAmount = subtotal + shippingFee;
 
     const storeItems = items.map((item) => ({
         productId: item.id as Id<"products">,
         name: getItemName(item.name),
-        price: item.price,
-        quantity: item.quantity,
+        price: Number(item.price),
+        quantity: Number(item.quantity),
     }));
 
     const handlePaymobCheckout = async () => {
@@ -74,8 +77,12 @@ export default function CheckoutButton() {
                     postalCode: "",
                 },
                 shippingFee,
-                shippingCountry: "SA",
+                shippingFeeOverride,
+                shippingOverrideReason: freeShipping
+                    ? "manual free shipping"
+                    : undefined,
                 stockDecremented: false,
+                shippingCountry: "SA",
             });
 
             const response = await fetch("/api/paymob/create-intention", {
@@ -85,6 +92,7 @@ export default function CheckoutButton() {
                     locale: "ar",
                     orderReference,
                     customer: {
+                        userId: user.id,
                         firstName: user.firstName || "",
                         lastName: user.lastName || "",
                         email: user.emailAddresses[0]?.emailAddress || "",
@@ -95,11 +103,16 @@ export default function CheckoutButton() {
                     },
                     items: items.map((item) => ({
                         id: item.id,
+                        productId: item.id,
                         name: getItemName(item.name),
-                        price: item.price,
-                        quantity: item.quantity,
+                        price: Number(item.price),
+                        quantity: Number(item.quantity),
                     })),
                     shippingFee,
+                    shippingFeeOverride,
+                    shippingOverrideReason: freeShipping
+                        ? "manual free shipping"
+                        : undefined,
                     totalAmount,
                 }),
             });
@@ -115,7 +128,10 @@ export default function CheckoutButton() {
 
             if (!response.ok) {
                 throw new Error(
-                    data?.detail || data?.message || data?.error || "Failed to create payment intention"
+                    data?.detail ||
+                    data?.message ||
+                    data?.error ||
+                    "Failed to create payment intention"
                 );
             }
 
@@ -137,12 +153,39 @@ export default function CheckoutButton() {
     };
 
     return (
-        <button
-            onClick={handlePaymobCheckout}
-            disabled={isLoading || items.length === 0}
-            className="w-full bg-yellow-500 text-black py-4 font-bold rounded-xl disabled:opacity-50"
-        >
-            {isLoading ? "جاري التوجيه للدفع..." : "إتمام الدفع عبر Paymob"}
-        </button>
+        <div className="space-y-4">
+            <label className="flex items-center gap-2 text-sm text-white">
+                <input
+                    type="checkbox"
+                    checked={freeShipping}
+                    onChange={(e) => setFreeShipping(e.target.checked)}
+                    className="h-4 w-4"
+                />
+                شحن مجاني لهذا الطلب
+            </label>
+
+            <div className="rounded-lg bg-neutral-900 p-3 text-sm text-gray-300 space-y-1">
+                <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>{subtotal.toFixed(2)} SAR</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>{shippingFee.toFixed(2)} SAR</span>
+                </div>
+                <div className="flex justify-between font-bold text-white border-t border-neutral-700 pt-2">
+                    <span>Total</span>
+                    <span>{totalAmount.toFixed(2)} SAR</span>
+                </div>
+            </div>
+
+            <button
+                onClick={handlePaymobCheckout}
+                disabled={isLoading || items.length === 0}
+                className="w-full bg-yellow-500 text-black py-4 font-bold rounded-xl disabled:opacity-50"
+            >
+                {isLoading ? "جاري التوجيه للدفع..." : `إتمام الدفع عبر Paymob - ${totalAmount.toFixed(2)} SAR`}
+            </button>
+        </div>
     );
 }

@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAdmin } from "./auth";
 
 export const getAllOrders = query({
     args: {},
@@ -32,6 +33,36 @@ export const updateOrderStatus = mutation({
     },
 });
 
+
+export const setOrderShippingOverride = mutation({
+    args: {
+        orderId: v.id("orders"),
+        shippingFeeOverride: v.number(),
+        shippingOverrideReason: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        await requireAdmin(ctx);
+
+        const identity = await ctx.auth.getUserIdentity();
+        const order = await ctx.db.get(args.orderId);
+
+        if (!order) {
+            throw new Error("Order not found");
+        }
+
+        const normalizedShippingFee = Math.max(0, args.shippingFeeOverride);
+
+        await ctx.db.patch(args.orderId, {
+            shippingFee: normalizedShippingFee,
+            shippingFeeOverride: normalizedShippingFee,
+            shippingOverrideReason: args.shippingOverrideReason ?? "admin_manual",
+            shippingOverriddenBy: identity?.subject,
+            updatedAt: Date.now(),
+        });
+
+        return { success: true };
+    },
+});
 export const updateOrderStatusByPaymobOrderId = mutation({
     args: {
         paymobOrderId: v.string(),
@@ -124,12 +155,16 @@ export const updatePaymentStatus = mutation({
         await ctx.db.patch(order._id, updateFields);
     },
 });
+
 export const createOrder = mutation({
     args: {
+
         userId: v.string(),
         totalAmount: v.number(),
         status: v.string(),
         shippingFee: v.optional(v.number()),
+        shippingFeeOverride: v.optional(v.number()),
+        shippingOverrideReason: v.optional(v.string()),
         shippingCountry: v.optional(v.string()),
         shippingAddress: v.optional(
             v.object({
@@ -175,13 +210,17 @@ export const createOrder = mutation({
             paymentStatus: args.paymentStatus ?? "pending",
             paymentProvider: args.paymentProvider ?? "paymob",
             paymentRawPayload: args.paymentRawPayload,
-            shippingFee: args.shippingFee ?? 0,
+
             shippingCountry: args.shippingCountry ?? "SA",
             storeItems: args.storeItems,
             stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            shippingFee: args.shippingFee ?? 27,
+            shippingFeeOverride: args.shippingFeeOverride,
+            shippingOverrideReason: args.shippingOverrideReason,
         });
+
 
         return orderId;
     },

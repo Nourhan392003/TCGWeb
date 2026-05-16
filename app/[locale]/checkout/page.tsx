@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/useCartStore";
-import { api } from "@/convex/_generated/api";
 import { useRouter } from "@/i18n/navigation";
 import {
     CreditCard,
     ShieldCheck,
     Lock,
     ChevronLeft,
-    CheckCircle2
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
@@ -35,21 +33,22 @@ const getRarityColor = (rarity: string) => {
         super_rare: "bg-purple-500",
         ultra_rare: "bg-yellow-500",
         secret_rare: "bg-gradient-to-r from-pink-500 to-purple-500",
-        mythic: "bg-red-500"
+        mythic: "bg-red-500",
     };
     return colors[rarity?.toLowerCase()] || "bg-gray-500";
 };
 
 export default function CheckoutPage() {
-    const t = useTranslations('Checkout');
+    const t = useTranslations("Checkout");
     const locale = useLocale();
-    const isRTL = locale === 'ar';
+    const isRTL = locale === "ar";
 
-    const { items, getTotalPrice, clearCart } = useCartStore();
+    const { items } = useCartStore();
     const router = useRouter();
 
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [freeShipping, setFreeShipping] = useState(false);
 
     const [formData, setFormData] = useState<CheckoutFormData>({
         firstName: "",
@@ -65,8 +64,14 @@ export default function CheckoutPage() {
         setMounted(true);
     }, []);
 
-    const subtotal = getTotalPrice();
-    const shipping = 27;
+    const subtotal = items.reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.quantity),
+        0
+    );
+
+    const shipping = freeShipping ? 0 : 27;
+    const shippingFeeOverride = freeShipping ? 0 : undefined;
+    const shippingOverrideReason = freeShipping ? "manual" : undefined;
     const grandTotal = subtotal + shipping;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +92,7 @@ export default function CheckoutPage() {
             !formData.city ||
             !formData.zipCode
         ) {
-            toast.error(t('fillRequired'));
+            toast.error(t("fillRequired"));
             setIsLoading(false);
             return;
         }
@@ -105,6 +110,8 @@ export default function CheckoutPage() {
                     orderReference,
                     subtotal,
                     shippingFee: shipping,
+                    shippingFeeOverride,
+                    shippingOverrideReason,
                     grandTotal,
                     shippingCountry: "SA",
                     customer: {
@@ -137,6 +144,7 @@ export default function CheckoutPage() {
             } catch {
                 throw new Error(`Server returned non-JSON response: ${text.slice(0, 200)}`);
             }
+
             if (!response.ok || !data?.checkoutUrl) {
                 throw new Error(data?.error || "Failed to initialize payment");
             }
@@ -165,7 +173,6 @@ export default function CheckoutPage() {
         );
     }
 
-
     return (
         <div className="min-h-screen bg-[#0a0a0f]">
             <div className="border-b border-[#2a2a38] bg-[#12121a]/50 backdrop-blur-xl sticky top-0 z-50">
@@ -179,7 +186,7 @@ export default function CheckoutPage() {
                         </Link>
                         <div className="flex items-center gap-1.5 sm:gap-2 text-[#4a4a5a]">
                             <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm">{t('secure')}</span>
+                            <span className="text-xs sm:text-sm">{t("secure")}</span>
                         </div>
                     </div>
                 </div>
@@ -191,20 +198,22 @@ export default function CheckoutPage() {
                     className="inline-flex items-center gap-1.5 sm:gap-2 text-[#a0a0b0] hover:text-[#f0f0f5] transition-colors mb-4 sm:mb-6 text-sm"
                 >
                     <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 rtl:rotate-180" />
-                    <span>{t('back')}</span>
+                    <span>{t("back")}</span>
                 </Link>
 
-                <h1 className="text-xl sm:text-2xl sm:text-3xl font-bold text-[#f0f0f5] mb-6 sm:mb-8">{t('title')}</h1>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#f0f0f5] mb-6 sm:mb-8">
+                    {t("title")}
+                </h1>
 
                 {items.length === 0 ? (
                     <div className="text-center py-12 sm:py-16 bg-[#12121a]/50 backdrop-blur-xl rounded-2xl border border-[#2a2a38] px-4">
                         <CreditCard className="w-10 h-10 sm:w-12 sm:h-12 text-[#4a4a5a] mx-auto mb-3 sm:mb-4" />
-                        <p className="text-[#a0a0b0] mb-3 sm:mb-4 text-sm sm:text-base">{t('empty')}</p>
+                        <p className="text-[#a0a0b0] mb-3 sm:mb-4 text-sm sm:text-base">{t("empty")}</p>
                         <Link
                             href="/"
                             className="inline-block px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[#eab308] to-[#ca8a04] text-black font-medium text-sm sm:text-base rounded-lg hover:from-[#facc15] hover:to-[#eab308] transition-all"
                         >
-                            {t('continueShopping')}
+                            {t("continueShopping")}
                         </Link>
                     </div>
                 ) : (
@@ -214,13 +223,16 @@ export default function CheckoutPage() {
                                 <div className="bg-[#12121a]/80 backdrop-blur-xl border border-[#2a2a38] rounded-xl sm:rounded-2xl p-4 sm:p-6">
                                     <div className="flex items-center gap-2 mb-4 sm:mb-6">
                                         <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#eab308]" />
-                                        <h2 className="text-base sm:text-xl font-semibold text-[#f0f0f5]">{t('billingShipping')}</h2>
+                                        <h2 className="text-base sm:text-xl font-semibold text-[#f0f0f5]">
+                                            {t("billingShipping")}
+                                        </h2>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('firstName')} <span className="text-red-500">{t('required')}</span>
+                                                {t("firstName")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -229,12 +241,13 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder={isRTL ? "أحمد" : "John"}
+                                                placeholder={locale === "ar" ? "أحمد" : "John"}
                                             />
                                         </div>
+
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('lastName')} <span className="text-red-500">{t('required')}</span>
+                                                {t("lastName")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -243,12 +256,13 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder={isRTL ? "محمد" : "Doe"}
+                                                placeholder={locale === "ar" ? "محمد" : "Doe"}
                                             />
                                         </div>
+
                                         <div className="sm:col-span-2">
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('email')} <span className="text-red-500">{t('required')}</span>
+                                                {t("email")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="email"
@@ -260,9 +274,10 @@ export default function CheckoutPage() {
                                                 placeholder="example@mail.com"
                                             />
                                         </div>
+
                                         <div className="sm:col-span-2">
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('phone')} <span className="text-red-500">{t('required')}</span>
+                                                {t("phone")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="tel"
@@ -271,12 +286,13 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder="+1234567890"
+                                                placeholder="+966500000000"
                                             />
                                         </div>
+
                                         <div className="sm:col-span-2">
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('address')} <span className="text-red-500">{t('required')}</span>
+                                                {t("address")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -285,12 +301,13 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder={isRTL ? "شارع الملك فيصل، الحي الأول" : "123 Main Street, Apt 4"}
+                                                placeholder={locale === "ar" ? "العنوان بالتفصيل" : "Full address"}
                                             />
                                         </div>
+
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('city')} <span className="text-red-500">{t('required')}</span>
+                                                {t("city")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -299,12 +316,13 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder={isRTL ? "القاهرة" : "New York"}
+                                                placeholder={locale === "ar" ? "الرياض" : "Riyadh"}
                                             />
                                         </div>
+
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t('zipCode')} <span className="text-red-500">{t('required')}</span>
+                                                {t("zipCode")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -313,29 +331,42 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder="10001"
+                                                placeholder="11564"
                                             />
                                         </div>
+
                                     </div>
                                 </div>
+
+
+
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm text-gray-400">
-                                        <span>Subtotal</span>
+                                        <span>{locale === "ar" ? "المجموع الفرعي" : "Subtotal"}</span>
                                         <span>{formatPrice(subtotal)}</span>
                                     </div>
 
                                     <div className="flex justify-between text-sm text-gray-400">
-                                        <span>Shipping داخل المملكة</span>
-                                        <span>{formatPrice(27)}</span>
+                                        <span>{locale === "ar" ? "الشحن داخل المملكة" : "Shipping داخل المملكة"}</span>
+                                        <span>
+                                            {shipping === 0
+                                                ? locale === "ar"
+                                                    ? "مجاني"
+                                                    : "Free"
+                                                : formatPrice(shipping)}
+                                        </span>
                                     </div>
 
                                     <div className="flex justify-between text-base font-semibold text-white border-t border-gray-700 pt-2">
-                                        <span>Total</span>
-                                        <span>{formatPrice(subtotal + 27)}</span>
+                                        <span>{locale === "ar" ? "الإجمالي" : "Total"}</span>
+                                        <span>{formatPrice(grandTotal)}</span>
                                     </div>
                                 </div>
+
                                 <p className="text-xs sm:text-sm text-[#6a6a7a] text-center">
-                                    سيتم اختيار طريقة الدفع في صفحة Paymob الآمنة
+                                    {locale === "ar"
+                                        ? "سيتم اختيار طريقة الدفع في صفحة Paymob الآمنة"
+                                        : "Payment method will be selected on the secure Paymob page"}
                                 </p>
 
                                 <button
@@ -346,12 +377,14 @@ export default function CheckoutPage() {
                                     {isLoading ? (
                                         <>
                                             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                            <span className="text-sm sm:text-base">{t('processing')}</span>
+                                            <span className="text-sm sm:text-base">{t("processing")}</span>
                                         </>
                                     ) : (
                                         <>
                                             <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            <span className="text-sm sm:text-base">{t('placeOrder', { amount: formatPriceByLocale(grandTotal, locale) })}</span>
+                                            <span className="text-sm sm:text-base">
+                                                {t("placeOrder", { amount: formatPriceByLocale(grandTotal, locale) })}
+                                            </span>
                                         </>
                                     )}
                                 </button>
@@ -360,7 +393,9 @@ export default function CheckoutPage() {
 
                         <div className="order-1 lg:order-2">
                             <div className="bg-[#12121a]/80 backdrop-blur-xl border border-[#2a2a38] rounded-xl sm:rounded-2xl p-4 sm:p-6 sticky top-20">
-                                <h2 className="text-base sm:text-xl font-semibold text-[#f0f0f5] mb-4 sm:mb-6">{t('orderSummary')}</h2>
+                                <h2 className="text-base sm:text-xl font-semibold text-[#f0f0f5] mb-4 sm:mb-6">
+                                    {t("orderSummary")}
+                                </h2>
 
                                 <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#2a2a38] scrollbar-track-transparent">
                                     {items.map((item) => {
@@ -383,34 +418,45 @@ export default function CheckoutPage() {
                                                         </div>
                                                     )}
                                                 </div>
+
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="text-xs sm:text-sm font-medium text-[#f0f0f5] truncate">{localizedName}</h4>
+                                                    <h4 className="text-xs sm:text-sm font-medium text-[#f0f0f5] truncate">
+                                                        {localizedName}
+                                                    </h4>
                                                     <span className={`inline-block px-1.5 py-0.5 text-[10px] sm:text-xs text-white rounded mt-1 ${getRarityColor(item.rarity)}`}>
                                                         {item.rarity?.replace("_", " ")}
                                                     </span>
                                                     <div className="flex justify-between items-center mt-1.5 sm:mt-2">
-                                                        <span className="text-[10px] sm:text-xs text-[#6a6a7a]">{t('qty', { count: item.quantity })}</span>
+                                                        <span className="text-[10px] sm:text-xs text-[#6a6a7a]">
+                                                            {t("qty", { count: item.quantity })}
+                                                        </span>
                                                         <span className="text-xs sm:text-sm font-semibold text-[#eab308]">
                                                             {formatPriceByLocale(item.price * item.quantity, locale)}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
-                                        )
+                                        );
                                     })}
                                 </div>
 
                                 <div className="border-t border-[#2a2a38] pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                                     <div className="flex justify-between text-xs sm:text-sm">
-                                        <span className="text-[#6a6a7a]">{t('subtotal')}</span>
+                                        <span className="text-[#6a6a7a]">{t("subtotal")}</span>
                                         <span className="text-[#f0f0f5]">{formatPriceByLocale(subtotal, locale)}</span>
                                     </div>
                                     <div className="flex justify-between text-xs sm:text-sm">
-                                        <span className="text-[#6a6a7a]">{t('shipping')}</span>
-                                        <span className="text-[#f0f0f5]">{formatPriceByLocale(shipping, locale)}</span>
+                                        <span className="text-[#6a6a7a]">{t("shipping")}</span>
+                                        <span className="text-[#f0f0f5]">
+                                            {shipping === 0
+                                                ? locale === "ar"
+                                                    ? "مجاني"
+                                                    : "Free"
+                                                : formatPriceByLocale(shipping, locale)}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between pt-2 sm:pt-3 border-t border-[#2a2a38]">
-                                        <span className="text-sm sm:text-base font-semibold text-[#f0f0f5]">{t('total')}</span>
+                                        <span className="text-sm sm:text-base font-semibold text-[#f0f0f5]">{t("total")}</span>
                                         <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#eab308] to-[#facc15] bg-clip-text text-transparent">
                                             {formatPriceByLocale(grandTotal, locale)}
                                         </span>
@@ -419,7 +465,7 @@ export default function CheckoutPage() {
 
                                 <div className="mt-4 sm:mt-6 flex items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-[#4a4a5a]">
                                     <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    <span>{t('ssl')}</span>
+                                    <span>{t("ssl")}</span>
                                 </div>
                             </div>
                         </div>

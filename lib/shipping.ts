@@ -1,7 +1,8 @@
-export const DOMESTIC_SHIPPING_FEE = 27;
-export function getShippingFee(country?: string) {
-    if (!country || country === "SA" || country === "Saudi Arabia" || country === "KSA") {
-        return DOMESTIC_SHIPPING_FEE;
+export const DEFAULT_SHIPPING_FEE = 27;
+
+export function getShippingFee(shippingFeeOverride?: number | null) {
+    if (typeof shippingFeeOverride === "number") {
+        return Math.max(0, shippingFeeOverride);
     }
-    return 27;
+    return DEFAULT_SHIPPING_FEE;
 }

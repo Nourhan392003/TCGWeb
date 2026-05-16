@@ -40,6 +40,10 @@ export default defineSchema({
         userId: v.string(),
         totalAmount: v.number(),
         status: v.string(),
+        shippingFee: v.number(),
+        shippingFeeOverride: v.optional(v.number()),
+        shippingOverrideReason: v.optional(v.string()),
+        shippingOverriddenBy: v.optional(v.string()),
 
         shippingAddress: v.optional(
             v.object({
@@ -51,7 +55,6 @@ export default defineSchema({
             })
 
         ),
-        shippingFee: v.optional(v.number()),
         shippingCountry: v.optional(v.string()),
         orderReference: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),

@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+
 async function requireAdmin(ctx: any) {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -12,7 +13,8 @@ async function requireAdmin(ctx: any) {
         (identity as any).role ??
         (identity as any).metadata?.role ??
         (identity as any).publicMetadata?.role ??
-        (identity as any).claims?.metadata?.role;
+        (identity as any).claims?.metadata?.role ??
+        (identity as any).claims?.publicMetadata?.role;
 
     if (role !== "admin") {
         throw new Error("Unauthorized");
@@ -20,6 +22,7 @@ async function requireAdmin(ctx: any) {
 
     return identity;
 }
+
 async function resolveImageUrl(ctx: any, product: any) {
     let finalImageUrl = product.imageUrl || product.image || "";
 
@@ -37,7 +40,6 @@ export const generateUploadUrl = mutation({
     args: {},
     handler: async (ctx) => {
         await requireAdmin(ctx);
-
         return await ctx.storage.generateUploadUrl();
     },
 });
@@ -49,6 +51,7 @@ export const updateProductImage = mutation({
     },
     handler: async (ctx, args) => {
         await requireAdmin(ctx);
+
         const imageUrl = await ctx.storage.getUrl(args.storageId);
 
         await ctx.db.patch(args.productId, {
@@ -58,11 +61,14 @@ export const updateProductImage = mutation({
         });
     },
 });
+
 export const addProduct = mutation({
     args: {
         name: v.object({ en: v.string(), ar: v.optional(v.string()) }),
         price: v.number(),
-        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
+        description: v.optional(
+            v.object({ en: v.string(), ar: v.optional(v.string()) })
+        ),
         imageId: v.optional(v.id("_storage")),
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
@@ -80,6 +86,7 @@ export const addProduct = mutation({
     },
     handler: async (ctx, args) => {
         await requireAdmin(ctx);
+
         let resolvedImageUrl = args.imageUrl || args.image;
 
         if (args.imageId) {
@@ -104,6 +111,7 @@ export const getAllCards = query({
     args: {},
     handler: async (ctx) => {
         await requireAdmin(ctx);
+
         const allProducts = await ctx.db.query("products").order("desc").collect();
 
         const productsWithUrls = await Promise.all(
@@ -124,7 +132,9 @@ export const getAllCards = query({
 export const addCard = mutation({
     args: {
         name: v.object({ en: v.string(), ar: v.optional(v.string()) }),
-        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
+        description: v.optional(
+            v.object({ en: v.string(), ar: v.optional(v.string()) })
+        ),
         price: v.number(),
         imageUrl: v.optional(v.string()),
         image: v.optional(v.string()),
@@ -141,6 +151,7 @@ export const addCard = mutation({
     },
     handler: async (ctx, args) => {
         await requireAdmin(ctx);
+
         let resolvedImageUrl = args.imageUrl || args.image;
 
         if (args.imageId) {
@@ -156,7 +167,6 @@ export const addCard = mutation({
             imageUrl: resolvedImageUrl,
             createdAt: Date.now(),
         });
-
 
         return cardId;
     },
@@ -174,7 +184,9 @@ export const updateCard = mutation({
     args: {
         id: v.id("products"),
         name: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
-        description: v.optional(v.object({ en: v.string(), ar: v.optional(v.string()) })),
+        description: v.optional(
+            v.object({ en: v.string(), ar: v.optional(v.string()) })
+        ),
         price: v.optional(v.number()),
         imageUrl: v.optional(v.string()),
         image: v.optional(v.string()),
@@ -192,8 +204,8 @@ export const updateCard = mutation({
     },
     handler: async (ctx, args) => {
         await requireAdmin(ctx);
-        const { id, ...updates } = args;
 
+        const { id, ...updates } = args;
         let resolvedImageUrl = updates.imageUrl || updates.image;
 
         if (updates.imageId) {
@@ -227,25 +239,41 @@ export const createOrder = mutation({
         items: v.array(
             v.object({
                 productId: v.id("products"),
-                name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                name: v.union(
+                    v.string(),
+                    v.object({ en: v.string(), ar: v.optional(v.string()) })
+                ),
                 price: v.number(),
                 quantity: v.number(),
             })
         ),
-
+        orderReference: v.optional(v.string()),
+        paymentStatus: v.optional(v.string()),
+        shippingFee: v.optional(v.number()),
+        stockDecremented: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        await requireAdmin(ctx);
+        const productUpdates: Array<{
+            id: Id<"products">;
+            currentStock?: number;
+        }> = [];
 
-        const productUpdates = [];
         for (const item of args.items) {
-            const product = await ctx.db.get(item.productId); const itemName = typeof item.name === 'string' ? item.name : (item.name.en || 'Unknown');
+            const product = await ctx.db.get(item.productId);
+            const itemName =
+                typeof item.name === "string" ? item.name : (item.name.en || "Unknown");
+
             if (!product) {
                 throw new Error(`Product not found: ${itemName}`);
             }
-            if (product.stockQuantity !== undefined && item.quantity > product.stockQuantity) {
+
+            if (
+                product.stockQuantity !== undefined &&
+                item.quantity > product.stockQuantity
+            ) {
                 throw new Error(`Insufficient stock for ${itemName}`);
             }
+
             productUpdates.push({
                 id: product._id,
                 currentStock: product.stockQuantity,
@@ -253,13 +281,23 @@ export const createOrder = mutation({
         }
 
         const newOrderId = await ctx.db.insert("orders", {
-            ...args,
+            userId: args.userId,
+            totalAmount: args.totalAmount,
+            status: args.status,
+            shippingAddress: args.shippingAddress,
+            storeItems: args.items,
+            orderReference: args.orderReference,
+            paymentStatus: args.paymentStatus ?? "pending",
+            shippingFee: args.shippingFee ?? 27,
+            stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),
+            updatedAt: Date.now(),
         });
 
         for (let i = 0; i < args.items.length; i++) {
             const item = args.items[i];
             const update = productUpdates[i];
+
             if (update.currentStock !== undefined) {
                 const newStock = Math.max(0, update.currentStock - item.quantity);
                 await ctx.db.patch(update.id, {
@@ -273,12 +311,6 @@ export const createOrder = mutation({
     },
 });
 
-/**
- * Finalize an order after confirmed payment.
- * Decrements stockQuantity and sets inStock = false when stock reaches 0.
- * Idempotent: safe to call multiple times (checks stockDecremented flag).
- * Does NOT require admin auth — callable from the Paymob callback server route.
- */
 export const finalizeOrder = mutation({
     args: {
         orderReference: v.string(),
@@ -292,50 +324,60 @@ export const finalizeOrder = mutation({
             .first();
 
         if (!order) {
-            throw new Error(`Order not found for finalization: ${args.orderReference}`);
+            throw new Error(
+                `Order not found for finalization: ${args.orderReference}`
+            );
         }
 
-        // Idempotency guard: if stock was already decremented, skip
         if (order.stockDecremented === true) {
             return { success: true, message: "Already finalized" };
         }
 
-        // Only finalize orders that are in "paid" status
         if (order.status !== "paid" && order.paymentStatus !== "paid") {
-            throw new Error(`Order ${args.orderReference} is not paid (status: ${order.status}, paymentStatus: ${order.paymentStatus})`);
+            throw new Error(
+                `Order ${args.orderReference} is not paid (status: ${order.status}, paymentStatus: ${order.paymentStatus})`
+            );
         }
 
-        const storeItems: Array<{ productId: string; quantity: number }> =
-            (order.storeItems as Array<{ productId: string; quantity: number }>) ?? [];
-        if (storeItems.length === 0) {
-            // No items to decrement — just mark as finalized
+        const orderItems =
+            ((order.storeItems as Array<{ productId: Id<"products">; quantity: number }>) ??
+                []) as Array<{ productId: Id<"products">; quantity: number }>;
+
+        if (orderItems.length === 0) {
             await ctx.db.patch(order._id, { stockDecremented: true });
-            return { success: true, message: "No items to decrement, marked as finalized" };
+            return {
+                success: true,
+                message: "No items to decrement, marked as finalized",
+            };
         }
 
-        // Validate and decrement stock for each product
         const productUpdates: Array<{ id: Id<"products">; newStock: number }> = [];
-        for (const item of storeItems) {
-            const product = await ctx.db.get(item.productId as Id<"products">);
+
+        for (const item of orderItems) {
+            const product = await ctx.db.get(item.productId);
+
             if (!product) {
-                throw new Error(`Product not found during finalization: ${item.productId}`);
+                throw new Error(
+                    `Product not found during finalization: ${String(item.productId)}`
+                );
             }
 
-            const currentStock: number = (product as { stockQuantity?: number }).stockQuantity ?? 0;
+            const currentStock = product.stockQuantity ?? 0;
+
             if (currentStock < item.quantity) {
                 throw new Error(
-                    `Insufficient stock for product ${item.productId}: ` +
-                    `requested ${item.quantity}, available ${currentStock}`
+                    `Insufficient stock for product ${String(
+                        item.productId
+                    )}: requested ${item.quantity}, available ${currentStock}`
                 );
             }
 
             productUpdates.push({
-                id: product._id as Id<"products">,
+                id: product._id,
                 newStock: Math.max(0, currentStock - item.quantity),
             });
         }
 
-        // Apply stock decrements
         for (const update of productUpdates) {
             await ctx.db.patch(update.id, {
                 stockQuantity: update.newStock,
@@ -343,8 +385,10 @@ export const finalizeOrder = mutation({
             });
         }
 
-        // Mark order as finalized to prevent duplicate decrements
-        await ctx.db.patch(order._id, { stockDecremented: true });
+        await ctx.db.patch(order._id, {
+            stockDecremented: true,
+            updatedAt: Date.now(),
+        });
 
         return { success: true, message: "Stock finalized" };
     },
@@ -352,9 +396,9 @@ export const finalizeOrder = mutation({
 
 export const getProductById = query({
     args: { id: v.id("products") },
-
     handler: async (ctx, args) => {
         await requireAdmin(ctx);
+
         const product = await ctx.db.get(args.id);
         if (!product) return null;
 
@@ -386,6 +430,7 @@ export const getFeaturedCards = query({
         return productsWithUrls;
     },
 });
+
 export const getPreorderProducts = query({
     args: {},
     handler: async (ctx) => {
@@ -397,6 +442,7 @@ export const getPreorderProducts = query({
         const productsWithUrls = await Promise.all(
             products.map(async (product) => {
                 const finalImageUrl = await resolveImageUrl(ctx, product);
+
                 return {
                     ...product,
                     imageUrl: finalImageUrl,
@@ -415,29 +461,28 @@ export const getAllProducts = query({
     },
 });
 
-/**
- * One-off migration mutation to convert flat strings to multilingual objects
- */
 export const migrateToMultilingual = mutation({
     args: {},
     handler: async (ctx) => {
         await requireAdmin(ctx);
+
         const products = await ctx.db.query("products").collect();
         let migratedCount = 0;
 
         for (const product of products) {
-            let updates: any = {};
+            const updates: Record<string, any> = {};
             let hasUpdate = false;
 
-            // Migrate name
             if (typeof product.name === "string") {
                 updates.name = { en: product.name, ar: product.name };
                 hasUpdate = true;
             }
 
-            // Migrate description
             if (product.description && typeof product.description === "string") {
-                updates.description = { en: product.description, ar: product.description };
+                updates.description = {
+                    en: product.description,
+                    ar: product.description,
+                };
                 hasUpdate = true;
             }
 

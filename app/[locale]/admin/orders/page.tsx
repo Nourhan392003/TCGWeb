@@ -20,6 +20,7 @@ import {
 import { formatPrice } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
 
+
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
 const statusColors: Record<OrderStatus, { color: string; icon: typeof Clock }> = {
@@ -45,6 +46,7 @@ export default function OrdersPage() {
         cancelled: { label: t('status.cancelled'), ...statusColors.cancelled },
     };
     const updateStatus = useMutation(api.orders.updateOrderStatus);
+    const updateShippingOverride = useMutation(api.orders.setOrderShippingOverride);
     const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -249,6 +251,42 @@ export default function OrdersPage() {
                                                                 <span className="text-gray-400">Address:</span>
                                                                 <span className="text-white">{order.shippingAddress?.city || "N/A"}</span>
                                                             </div>
+                                                            <button
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        await updateShippingOverride({
+                                                                            orderId: order._id,
+                                                                            shippingFeeOverride: 0,
+                                                                            shippingOverrideReason: "admin_manual",
+                                                                        });
+                                                                        console.log("Shipping set to free");
+                                                                    } catch (error) {
+                                                                        console.error("Failed to update shipping:", error);
+                                                                    }
+                                                                }}
+                                                                className="px-3 py-2 rounded-lg text-sm font-medium border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+                                                            >
+                                                                Make shipping free
+                                                            </button>
+                                                            <button
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        await updateShippingOverride({
+                                                                            orderId: order._id,
+                                                                            shippingFeeOverride: 27,
+                                                                            shippingOverrideReason: "restore_default",
+                                                                        });
+                                                                        console.log("Shipping restored");
+                                                                    } catch (error) {
+                                                                        console.error("Failed to restore shipping:", error);
+                                                                    }
+                                                                }}
+                                                                className="px-3 py-2 rounded-lg text-sm font-medium border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+                                                            >
+                                                                Restore shipping
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
