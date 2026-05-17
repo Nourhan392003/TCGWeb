@@ -1,6 +1,7 @@
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Metadata } from 'next';
+import { ConvexClientProvider } from "@/components/convex-client-provider";
 
 export const metadata: Metadata = {
     icons: {
@@ -8,15 +9,20 @@ export const metadata: Metadata = {
     },
 };
 
+
 export default function RootLayout({
-    children
+    children,
 }: {
     children: React.ReactNode;
 }) {
     return (
         <ClerkProvider>
-            <html suppressHydrationWarning>
-                <body>{children}</body>
+            <html lang="en">
+                <body>
+                    <ConvexClientProvider>
+                        {children}
+                    </ConvexClientProvider>
+                </body>
             </html>
         </ClerkProvider>
     );

@@ -11,7 +11,6 @@ import {
     CheckCircle,
     Clock,
     ShoppingCart,
-    Coins,
     User,
     Mail,
     Calendar,
@@ -19,7 +18,6 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
-
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
@@ -34,20 +32,51 @@ const statusColors: Record<OrderStatus, { color: string; icon: typeof Clock }> =
 const statusOptions: OrderStatus[] = ["pending", "processing", "shipped", "delivered", "cancelled"];
 
 export default function OrdersPage() {
-    const t = useTranslations('Admin');
+    const t = useTranslations("Admin");
     const locale = useLocale();
     const orders = useQuery(api.orders.getAllOrders);
 
     const statusConfig = {
-        pending: { label: t('status.pending'), ...statusColors.pending },
-        processing: { label: t('status.processing'), ...statusColors.processing },
-        shipped: { label: t('status.shipped'), ...statusColors.shipped },
-        delivered: { label: t('status.delivered'), ...statusColors.delivered },
-        cancelled: { label: t('status.cancelled'), ...statusColors.cancelled },
+        pending: { label: t("status.pending"), ...statusColors.pending },
+        processing: { label: t("status.processing"), ...statusColors.processing },
+        shipped: { label: t("status.shipped"), ...statusColors.shipped },
+        delivered: { label: t("status.delivered"), ...statusColors.delivered },
+        cancelled: { label: t("status.cancelled"), ...statusColors.cancelled },
     };
+
     const updateStatus = useMutation(api.orders.updateOrderStatus);
     const updateShippingOverride = useMutation(api.orders.setOrderShippingOverride);
+
     const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+    const [updatingShippingId, setUpdatingShippingId] = useState<string | null>(null);
+
+    const handleShippingOverride = async (
+        e: React.MouseEvent,
+        orderId: string,
+        shippingFeeOverride: number,
+        reason: string
+    ) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (updatingShippingId === orderId) return;
+
+        try {
+            setUpdatingShippingId(orderId);
+
+            const result = await updateShippingOverride({
+                orderId: orderId as any,
+                shippingFeeOverride,
+                shippingOverrideReason: reason,
+            });
+
+            console.log("Shipping updated:", result);
+        } catch (error) {
+            console.error("Failed to update shipping:", error);
+        } finally {
+            setUpdatingShippingId(null);
+        }
+    };
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         try {
@@ -62,7 +91,7 @@ export default function OrdersPage() {
     };
 
     const formatDate = (timestamp: number) => {
-        return new Date(timestamp).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+        return new Date(timestamp).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
             year: "numeric",
             month: "short",
             day: "numeric",
@@ -87,27 +116,25 @@ export default function OrdersPage() {
     return (
         <div className="min-h-screen bg-[#0a0a0f] p-6 md:p-8">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white">
-                            {t('orders')}
-                        </h1>
+                        <h1 className="text-3xl md:text-4xl font-bold text-white">{t("orders")}</h1>
                         <p className="text-gray-400 mt-1">
-                            {locale === 'ar' ? 'إدارة ومتابعة طلبات العملاء' : 'Manage and track customer orders'}
+                            {locale === "ar" ? "إدارة ومتابعة طلبات العملاء" : "Manage and track customer orders"}
                         </p>
                     </div>
+
                     <div className="flex items-center gap-4">
                         <div className="px-4 py-2 bg-[#1a1a24] rounded-lg border border-gray-800">
-                            <p className="text-gray-400 text-sm">{locale === 'ar' ? 'إجمالي الطلبات' : 'Total Orders'}</p>
+                            <p className="text-gray-400 text-sm">
+                                {locale === "ar" ? "إجمالي الطلبات" : "Total Orders"}
+                            </p>
                             <p className="text-white text-2xl font-bold">{orders.length}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Orders Table */}
                 <div className="bg-[#12121a] rounded-xl border border-gray-800 overflow-hidden">
-                    {/* Desktop Table Header */}
                     <div className="hidden md:grid md:grid-cols-6 gap-4 p-4 bg-[#1a1a24] border-b border-gray-800 text-sm font-medium text-gray-400">
                         <div className="col-span-1">Order ID</div>
                         <div className="col-span-2">Customer</div>
@@ -116,13 +143,16 @@ export default function OrdersPage() {
                         <div className="col-span-1">Status</div>
                     </div>
 
-                    {/* Orders List */}
                     {orders.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 px-4">
                             <ShoppingCart className="w-16 h-16 text-gray-600 mb-4" />
-                            <p className="text-gray-400 text-lg mb-2">{locale === 'ar' ? 'لا توجد طلبات' : 'No orders found'}</p>
+                            <p className="text-gray-400 text-lg mb-2">
+                                {locale === "ar" ? "لا توجد طلبات" : "No orders found"}
+                            </p>
                             <p className="text-gray-500 text-sm">
-                                {locale === 'ar' ? 'ستظهر الطلبات هنا عند إتمام العملاء لمشترياتهم' : 'Orders will appear here when customers make purchases'}
+                                {locale === "ar"
+                                    ? "ستظهر الطلبات هنا عند إتمام العملاء لمشترياتهم"
+                                    : "Orders will appear here when customers make purchases"}
                             </p>
                         </div>
                     ) : (
@@ -133,12 +163,10 @@ export default function OrdersPage() {
 
                                 return (
                                     <div key={order._id}>
-                                        {/* Main Order Row */}
                                         <div
                                             className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 items-center hover:bg-[#1a1a24] transition-colors duration-150 cursor-pointer"
                                             onClick={() => setSelectedOrder(isExpanded ? null : order._id)}
                                         >
-                                            {/* Order ID */}
                                             <div className="col-span-1">
                                                 <div className="flex items-center gap-2">
                                                     <Package className="w-4 h-4 text-gray-500" />
@@ -148,7 +176,6 @@ export default function OrdersPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Customer */}
                                             <div className="col-span-2">
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2">
@@ -160,13 +187,14 @@ export default function OrdersPage() {
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <Mail className="w-3 h-3 text-gray-500" />
                                                         <span className="text-gray-400 text-sm">
-                                                            {order.shippingAddress?.email || order.shippingAddress?.address || "N/A"}
+                                                            {order.shippingAddress?.email ||
+                                                                order.shippingAddress?.address ||
+                                                                "N/A"}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Date */}
                                             <div className="col-span-1">
                                                 <div className="flex items-center gap-2">
                                                     <Calendar className="w-4 h-4 text-gray-500" />
@@ -176,7 +204,6 @@ export default function OrdersPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Total */}
                                             <div className="col-span-1">
                                                 <div className="flex items-center gap-2">
                                                     <DollarSign className="w-4 h-4 text-green-500" />
@@ -186,10 +213,11 @@ export default function OrdersPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Status */}
                                             <div className="col-span-1">
                                                 <div
-                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color || statusConfig.pending.color}`}
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color ||
+                                                        statusConfig.pending.color
+                                                        }`}
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <StatusIcon className="w-3.5 h-3.5" />
@@ -198,11 +226,9 @@ export default function OrdersPage() {
                                             </div>
                                         </div>
 
-                                        {/* Expanded Order Details */}
                                         {isExpanded && (
                                             <div className="bg-[#1a1a24] p-6 border-t border-gray-800">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {/* Order Information */}
                                                     <div>
                                                         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                             <Package className="w-5 h-5" />
@@ -226,12 +252,12 @@ export default function OrdersPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Shipping Information */}
                                                     <div>
                                                         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                             <Truck className="w-5 h-5" />
                                                             Shipping Information
                                                         </h3>
+
                                                         <div className="space-y-3">
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Name:</span>
@@ -239,64 +265,88 @@ export default function OrdersPage() {
                                                                     {order.shippingAddress?.fullName || "N/A"}
                                                                 </span>
                                                             </div>
+
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Email:</span>
-                                                                <span className="text-white">{order.shippingAddress?.address || "N/A"}</span>
+                                                                <span className="text-white">
+                                                                    {order.shippingAddress?.email ||
+                                                                        order.shippingAddress?.address ||
+                                                                        "N/A"}
+                                                                </span>
                                                             </div>
+
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Phone:</span>
-                                                                <span className="text-white">{order.shippingAddress?.phone || "N/A"}</span>
+                                                                <span className="text-white">
+                                                                    {order.shippingAddress?.phone || "N/A"}
+                                                                </span>
                                                             </div>
+
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Address:</span>
-                                                                <span className="text-white">{order.shippingAddress?.city || "N/A"}</span>
+                                                                <span className="text-white">
+                                                                    {order.shippingAddress?.city || "N/A"}
+                                                                </span>
                                                             </div>
-                                                            <button
-                                                                onClick={async (e) => {
-                                                                    e.stopPropagation();
-                                                                    try {
-                                                                        await updateShippingOverride({
-                                                                            orderId: order._id,
-                                                                            shippingFeeOverride: 0,
-                                                                            shippingOverrideReason: "admin_manual",
-                                                                        });
-                                                                        console.log("Shipping set to free");
-                                                                    } catch (error) {
-                                                                        console.error("Failed to update shipping:", error);
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-400">Shipping Fee:</span>
+                                                                <span className="text-yellow-400 font-medium">
+                                                                    {order.shippingFee !== undefined
+                                                                        ? formatPrice(order.shippingFee)
+                                                                        : "N/A"}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-400">Override Reason:</span>
+                                                                <span className="text-white">
+                                                                    {order.shippingOverrideReason || "N/A"}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex gap-2 pt-2">
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={updatingShippingId === order._id}
+                                                                    onClick={(e) =>
+                                                                        handleShippingOverride(e, order._id, 0, "admin_manual")
                                                                     }
-                                                                }}
-                                                                className="px-3 py-2 rounded-lg text-sm font-medium border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
-                                                            >
-                                                                Make shipping free
-                                                            </button>
-                                                            <button
-                                                                onClick={async (e) => {
-                                                                    e.stopPropagation();
-                                                                    try {
-                                                                        await updateShippingOverride({
-                                                                            orderId: order._id,
-                                                                            shippingFeeOverride: 27,
-                                                                            shippingOverrideReason: "restore_default",
-                                                                        });
-                                                                        console.log("Shipping restored");
-                                                                    } catch (error) {
-                                                                        console.error("Failed to restore shipping:", error);
+                                                                    className="px-3 py-2 rounded-lg text-sm font-medium border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    {updatingShippingId === order._id
+                                                                        ? "Updating..."
+                                                                        : "Make shipping free"}
+                                                                </button>
+
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={updatingShippingId === order._id}
+                                                                    onClick={(e) =>
+                                                                        handleShippingOverride(
+                                                                            e,
+                                                                            order._id,
+                                                                            order.originalShippingFee ?? order.shippingFee ?? 0,
+                                                                            "restore_default"
+                                                                        )
                                                                     }
-                                                                }}
-                                                                className="px-3 py-2 rounded-lg text-sm font-medium border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors"
-                                                            >
-                                                                Restore shipping
-                                                            </button>
+                                                                    className="px-3 py-2 rounded-lg text-sm font-medium border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    {updatingShippingId === order._id
+                                                                        ? "Updating..."
+                                                                        : "Restore shipping"}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Order Items */}
                                                 <div className="mt-6">
                                                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                         <ShoppingCart className="w-5 h-5" />
                                                         Order Items
                                                     </h3>
+
                                                     <div className="bg-[#12121a] rounded-lg border border-gray-700 overflow-hidden">
                                                         <div className="grid grid-cols-4 gap-4 p-3 bg-[#1a1a24] text-sm font-medium text-gray-400">
                                                             <div className="col-span-1">Item</div>
@@ -304,53 +354,62 @@ export default function OrdersPage() {
                                                             <div className="col-span-1">Qty</div>
                                                             <div className="col-span-1">Subtotal</div>
                                                         </div>
-                                                        <div className="divide-y divide-gray-700">
-                                                            {order.items?.map((item: any, index: number) => {
-                                                                const localizedItemName = getLocalizedText(item.name, locale);
 
-                                                                return (
-                                                                    <div key={index} className="grid grid-cols-4 gap-4 p-3">
-                                                                        <div className="col-span-1">
-                                                                            <div className="flex items-center gap-2">
-                                                                                {item.image && (
-                                                                                    <img
-                                                                                        src={item.image}
-                                                                                        alt={localizedItemName}
-                                                                                        className="w-10 h-10 rounded object-cover"
-                                                                                    />
-                                                                                )}
-                                                                                <span className="text-white text-sm">{localizedItemName}</span>
+                                                        <div className="divide-y divide-gray-700">
+                                                            {order.items?.length ? (
+                                                                order.items.map((item: any, index: number) => {
+                                                                    const localizedItemName = getLocalizedText(item.name, locale);
+
+                                                                    return (
+                                                                        <div key={`${order._id}-${index}`} className="grid grid-cols-4 gap-4 p-3">
+                                                                            <div className="col-span-1">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    {item.image && (
+                                                                                        <img
+                                                                                            src={item.image}
+                                                                                            alt={localizedItemName}
+                                                                                            className="w-10 h-10 rounded object-cover"
+                                                                                        />
+                                                                                    )}
+                                                                                    <span className="text-white text-sm">
+                                                                                        {localizedItemName}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div className="col-span-1">
+                                                                                <span className="text-gray-300">
+                                                                                    {formatPrice(item.price)}
+                                                                                </span>
+                                                                            </div>
+
+                                                                            <div className="col-span-1">
+                                                                                <span className="text-gray-300">×{item.quantity}</span>
+                                                                            </div>
+
+                                                                            <div className="col-span-1">
+                                                                                <span className="text-green-400 font-medium">
+                                                                                    {formatPrice(item.price * item.quantity)}
+                                                                                </span>
                                                                             </div>
                                                                         </div>
-
-                                                                        <div className="col-span-1">
-                                                                            <span className="text-gray-300">
-                                                                                {formatPrice(item.price)}
-                                                                            </span>
-                                                                        </div>
-
-                                                                        <div className="col-span-1">
-                                                                            <span className="text-gray-300">×{item.quantity}</span>
-                                                                        </div>
-
-                                                                        <div className="col-span-1">
-                                                                            <span className="text-green-400 font-medium">
-                                                                                {formatPrice(item.price * item.quantity)}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            })}
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <div className="p-4 text-gray-400 text-sm">
+                                                                    No items found for this order.
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Update Status */}
                                                 <div className="mt-6">
                                                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                         <CheckCircle className="w-5 h-5" />
                                                         Update Status
                                                     </h3>
+
                                                     <div className="flex flex-wrap gap-3">
                                                         {statusOptions.map((status) => (
                                                             <button
@@ -358,8 +417,8 @@ export default function OrdersPage() {
                                                                 onClick={() => handleStatusChange(order._id, status)}
                                                                 disabled={order.status === status}
                                                                 className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${order.status === status
-                                                                    ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
-                                                                    : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
+                                                                        ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
+                                                                        : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
                                                                     }`}
                                                             >
                                                                 {statusConfig[status].label}

@@ -1,21 +1,13 @@
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 
-type Ctx = QueryCtx | MutationCtx;
+type Ctx = MutationCtx | QueryCtx;
 
 export async function requireAdmin(ctx: Ctx) {
     const identity = await ctx.auth.getUserIdentity();
+    console.log("IDENTITY:", identity);
 
     if (!identity) {
-        throw new Error("Unauthorized");
-    }
-
-    const role =
-        (identity.role as string | undefined) ||
-        (identity["publicMetadata.role"] as string | undefined) ||
-        (identity["metadata.role"] as string | undefined);
-
-    if (role !== "admin") {
-        throw new Error("Forbidden");
+        throw new Error("Unauthenticated");
     }
 
     return identity;

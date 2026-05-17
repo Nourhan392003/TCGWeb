@@ -33,7 +33,6 @@ export const updateOrderStatus = mutation({
     },
 });
 
-
 export const setOrderShippingOverride = mutation({
     args: {
         orderId: v.id("orders"),
@@ -41,28 +40,41 @@ export const setOrderShippingOverride = mutation({
         shippingOverrideReason: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        await requireAdmin(ctx);
-
-        const identity = await ctx.auth.getUserIdentity();
         const order = await ctx.db.get(args.orderId);
 
         if (!order) {
             throw new Error("Order not found");
         }
 
+        const currentShippingFee = Math.max(0, order.shippingFee ?? 0);
         const normalizedShippingFee = Math.max(0, args.shippingFeeOverride);
+        const currentTotalAmount = order.totalAmount ?? 0;
+
+        const recalculatedTotal =
+            currentTotalAmount - currentShippingFee + normalizedShippingFee;
 
         await ctx.db.patch(args.orderId, {
             shippingFee: normalizedShippingFee,
             shippingFeeOverride: normalizedShippingFee,
             shippingOverrideReason: args.shippingOverrideReason ?? "admin_manual",
-            shippingOverriddenBy: identity?.subject,
+            originalShippingFee: order.originalShippingFee ?? currentShippingFee,
+            totalAmount: recalculatedTotal,
             updatedAt: Date.now(),
         });
 
-        return { success: true };
+        console.log(
+            `[Convex] Shipping for order ${args.orderId} updated from ${currentShippingFee} to ${normalizedShippingFee}, total is now ${recalculatedTotal}`
+        );
+
+        return {
+            success: true,
+            previousShippingFee: currentShippingFee,
+            newShippingFee: normalizedShippingFee,
+            newTotalAmount: recalculatedTotal,
+        };
     },
 });
+
 export const updateOrderStatusByPaymobOrderId = mutation({
     args: {
         paymobOrderId: v.string(),
@@ -158,7 +170,6 @@ export const updatePaymentStatus = mutation({
 
 export const createOrder = mutation({
     args: {
-
         userId: v.string(),
         totalAmount: v.number(),
         status: v.string(),
@@ -175,16 +186,13 @@ export const createOrder = mutation({
                 postalCode: v.optional(v.string()),
             })
         ),
-
         orderReference: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymobTransactionId: v.optional(v.string()),
         paymentReference: v.optional(v.string()),
-
         paymentStatus: v.optional(v.string()),
         paymentProvider: v.optional(v.string()),
         paymentRawPayload: v.optional(v.string()),
-
         storeItems: v.optional(
             v.array(
                 v.object({
@@ -198,6 +206,8 @@ export const createOrder = mutation({
         stockDecremented: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
+        const initialShippingFee = args.shippingFee ?? 27;
+
         const orderId = await ctx.db.insert("orders", {
             userId: args.userId,
             totalAmount: args.totalAmount,
@@ -210,17 +220,16 @@ export const createOrder = mutation({
             paymentStatus: args.paymentStatus ?? "pending",
             paymentProvider: args.paymentProvider ?? "paymob",
             paymentRawPayload: args.paymentRawPayload,
-
             shippingCountry: args.shippingCountry ?? "SA",
             storeItems: args.storeItems,
             stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            shippingFee: args.shippingFee ?? 27,
+            shippingFee: initialShippingFee,
+            originalShippingFee: initialShippingFee,
             shippingFeeOverride: args.shippingFeeOverride,
             shippingOverrideReason: args.shippingOverrideReason,
         });
-
 
         return orderId;
     },

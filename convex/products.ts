@@ -397,6 +397,20 @@ export const finalizeOrder = mutation({
 export const getProductById = query({
     args: { id: v.id("products") },
     handler: async (ctx, args) => {
+        const product = await ctx.db.get(args.id);
+        if (!product) return null;
+
+        const finalImageUrl = await resolveImageUrl(ctx, product);
+
+        return {
+            ...product,
+            imageUrl: finalImageUrl,
+        };
+    },
+});
+export const getAdminProductById = query({
+    args: { id: v.id("products") },
+    handler: async (ctx, args) => {
         await requireAdmin(ctx);
 
         const product = await ctx.db.get(args.id);

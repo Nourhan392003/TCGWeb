@@ -44,7 +44,7 @@ export default defineSchema({
         shippingFeeOverride: v.optional(v.number()),
         shippingOverrideReason: v.optional(v.string()),
         shippingOverriddenBy: v.optional(v.string()),
-
+        originalShippingFee: v.optional(v.number()),
         shippingAddress: v.optional(
             v.object({
                 fullName: v.string(),
