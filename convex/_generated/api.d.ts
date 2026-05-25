@@ -13,6 +13,7 @@ import type * as cards from "../cards.js";
 import type * as contact from "../contact.js";
 import type * as orders from "../orders.js";
 import type * as products from "../products.js";
+import type * as promoCodes from "../promoCodes.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   contact: typeof contact;
   orders: typeof orders;
   products: typeof products;
+  promoCodes: typeof promoCodes;
 }>;
 
 /**

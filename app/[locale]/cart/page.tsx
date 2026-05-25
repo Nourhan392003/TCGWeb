@@ -8,7 +8,9 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import Image from "next/image";
 import { getLocalizedText } from "@/utils/localization";
-
+import { getShippingFee } from "@/lib/shipping";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 const getRarityColor = (rarity: string) => {
     const colors: Record<string, string> = {
         common: "bg-gray-500",
@@ -127,40 +129,131 @@ function EmptyCartState() {
         </div>
     );
 }
-
 function OrderSummary() {
-    const t = useTranslations('Cart');
-    const tActions = useTranslations('Actions');
+    const t = useTranslations("Cart");
+    const tActions = useTranslations("Actions");
     const locale = useLocale();
-    const { items, getTotalPrice, clearCart } = useCartStore();
+    const {
+        items,
+        getTotalPrice,
+        clearCart,
+        freeShipping,
+        setFreeShipping,
+    } = useCartStore();
+
+    const [couponCode, setCouponCode] = useState("");
+    const [couponStatus, setCouponStatus] = useState<string | null>(null);
+    const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
     const subtotal = getTotalPrice();
-    const shipping = 0;
+
+    const validateCoupon = useQuery(
+        api.promoCodes.validateCoupon,
+        couponCode.trim()
+            ? { code: couponCode.trim(), subtotal }
+            : "skip"
+    );
+
+    const shipping = freeShipping ? 0 : getShippingFee();
     const total = subtotal + shipping;
 
     const handleClearCart = () => {
         clearCart();
     };
 
+    const handleApplyCoupon = () => {
+        if (!couponCode.trim()) {
+            setCouponStatus("Please enter a promo code");
+            setFreeShipping(false);
+            setAppliedCoupon(null);
+            return;
+        }
+
+        if (!validateCoupon) {
+            setCouponStatus("Checking coupon...");
+            return;
+        }
+
+        if (!validateCoupon.valid) {
+            setCouponStatus(validateCoupon.message);
+            setFreeShipping(false);
+            setAppliedCoupon(null);
+            return;
+        }
+
+        if (validateCoupon.type === "free_shipping") {
+            setFreeShipping(true);
+            setAppliedCoupon(validateCoupon.code);
+            setCouponStatus("Free shipping applied");
+            return;
+        }
+
+        setCouponStatus("Coupon is valid, but not supported yet");
+    };
+
     return (
         <div className="bg-[#12121a]/80 backdrop-blur-lg border border-[#2a2a38] rounded-xl p-4 sm:p-6 sticky top-4">
-            <h3 className="text-base sm:text-lg font-bold text-white mb-4 sm:mb-6">{t('summary')}</h3>
+            <h3 className="text-base sm:text-lg font-bold text-white mb-4 sm:mb-6">
+                {t("summary")}
+            </h3>
 
             <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">{t('subtotal')}</span>
-                    <span className="text-sm sm:text-base text-white font-medium">{formatPriceByLocale(subtotal, locale)}</span>
+                    <span className="text-sm text-gray-400">{t("subtotal")}</span>
+                    <span className="text-sm sm:text-base text-white font-medium">
+                        {formatPriceByLocale(subtotal, locale)}
+                    </span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">{t('shipping')}</span>
-                    <span className="text-sm text-green-400 font-medium">{t('free')}</span>
+                    <span className="text-sm text-gray-400">{t("shipping")}</span>
+                    <span
+                        className={`text-sm font-medium ${shipping === 0 ? "text-green-400" : "text-white"
+                            }`}
+                    >
+                        {shipping === 0 ? t("free") : formatPriceByLocale(shipping, locale)}
+                    </span>
                 </div>
+
                 <div className="border-t border-[#2a2a38] pt-3 sm:pt-4">
                     <div className="flex justify-between items-center">
-                        <span className="text-sm sm:text-base text-white font-bold">{t('total')}</span>
-                        <span className="text-lg sm:text-xl font-bold text-amber-500">{formatPriceByLocale(total, locale)}</span>
+                        <span className="text-sm sm:text-base text-white font-bold">
+                            {t("total")}
+                        </span>
+                        <span className="text-lg sm:text-xl font-bold text-amber-500">
+                            {formatPriceByLocale(total, locale)}
+                        </span>
                     </div>
                 </div>
+            </div>
+
+            <div className="mb-4 space-y-2">
+                <div className="flex gap-2">
+                    <input
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        className="flex-1 rounded-lg border border-[#2a2a38] bg-[#1a1a24] px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button
+                        onClick={handleApplyCoupon}
+                        className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-400 transition-all"
+                    >
+                        Apply
+                    </button>
+                </div>
+
+                {couponStatus && (
+                    <p className={`text-xs ${freeShipping ? "text-green-400" : "text-red-400"}`}>
+                        {couponStatus}
+                    </p>
+                )}
+
+                {appliedCoupon && (
+                    <p className="text-xs text-amber-400">
+                        Applied: {appliedCoupon}
+                    </p>
+                )}
             </div>
 
             <div className="space-y-2.5 sm:space-y-3">
@@ -169,13 +262,14 @@ function OrderSummary() {
                     disabled={items.length === 0}
                     className="w-full py-2.5 sm:py-3 px-3 sm:px-4 border border-[#2a2a38] text-gray-400 hover:text-red-400 hover:border-red-400/50 font-medium text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {t('clearCart')}
+                    {t("clearCart")}
                 </button>
+
                 <Link
                     href="/checkout"
                     className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all"
                 >
-                    {tActions('checkout')}
+                    {tActions("checkout")}
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" />
                 </Link>
             </div>

@@ -14,6 +14,9 @@ export interface CartItem {
 
 interface CartStore {
     items: CartItem[];
+    freeShipping: boolean;
+    setFreeShipping: (value: boolean) => void;
+    resetFreeShipping: () => void;
     addItem: (item: CartItem) => void;
     removeItem: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
@@ -23,6 +26,7 @@ interface CartStore {
 
 type CartPersist = {
     items: CartItem[];
+    freeShipping: boolean;
 };
 
 function normalizeStoredName(value: unknown): string {
@@ -55,7 +59,7 @@ function normalizeStoredName(value: unknown): string {
 function migrateCartState(persistedState: unknown, version: number): CartPersist {
     const state =
         persistedState && typeof persistedState === 'object'
-            ? (persistedState as { items?: unknown })
+            ? (persistedState as { items?: unknown; freeShipping?: unknown })
             : {};
 
     const normalizedItems = Array.isArray(state.items)
@@ -71,19 +75,37 @@ function migrateCartState(persistedState: unknown, version: number): CartPersist
                         ? item.quantity
                         : 1,
                 rarity: typeof item.rarity === 'string' ? item.rarity : '',
+                stockQuantity:
+                    typeof item.stockQuantity === 'number' ? item.stockQuantity : undefined,
             }))
         : [];
 
-    if (version < 1) {
-        return { items: normalizedItems };
+    const normalizedFreeShipping =
+        typeof state.freeShipping === 'boolean' ? state.freeShipping : false;
+
+    if (version < 2) {
+        return {
+            items: normalizedItems,
+            freeShipping: normalizedFreeShipping,
+        };
     }
 
-    return { items: normalizedItems };
+    return {
+        items: normalizedItems,
+        freeShipping: normalizedFreeShipping,
+    };
 }
 
 const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) => ({
     items: [],
+    freeShipping: false,
 
+    setFreeShipping: (value) => {
+        set({ freeShipping: value });
+    },
+    resetFreeShipping: () => {
+        set({ freeShipping: false });
+    },
     addItem: (newItem) => {
         set((state) => {
             const existingItem = state.items.find((item) => item.id === newItem.id);
@@ -133,7 +155,7 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
     },
 
     clearCart: () => {
-        set({ items: [] });
+        set({ items: [], freeShipping: false });
     },
 
     getTotalPrice: () => {
@@ -144,8 +166,12 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
 
 const cartPersistOptions: PersistOptions<CartStore, CartPersist> = {
     name: 'tcg-cart-storage',
-    version: 1,
+    version: 2,
     migrate: (persistedState, version) => migrateCartState(persistedState, version),
+    partialize: (state) => ({
+        items: state.items,
+        freeShipping: state.freeShipping,
+    }),
 };
 
 export const useCartStore = create<CartStore>()(

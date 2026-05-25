@@ -53,36 +53,50 @@ export default defineSchema({
                 phone: v.string(),
                 postalCode: v.optional(v.string()),
             })
-
         ),
         shippingCountry: v.optional(v.string()),
         orderReference: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymobTransactionId: v.optional(v.string()),
         paymentReference: v.optional(v.string()),
-
         paymentStatus: v.optional(v.string()),
         paymentProvider: v.optional(v.string()),
         paymentRawPayload: v.optional(v.string()),
-
         storeItems: v.optional(
             v.array(
                 v.object({
                     productId: v.id("products"),
-                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    name: v.union(
+                        v.string(),
+                        v.object({
+                            en: v.string(),
+                            ar: v.optional(v.string()),
+                        })
+                    ),
                     price: v.number(),
                     quantity: v.number(),
                 })
             )
         ),
         stockDecremented: v.optional(v.boolean()),
-
+        couponCode: v.optional(v.string()),
+        couponType: v.optional(v.string()),
         createdAt: v.number(),
         updatedAt: v.optional(v.number()),
     })
         .index("by_user", ["userId"])
         .index("by_order_reference", ["orderReference"])
         .index("by_paymob_order_id", ["paymobOrderId"])
-        .index("by_payment_reference", ["paymentReference"])
+        .index("by_payment_reference", ["paymentReference"]),
 
+    promoCodes: defineTable({
+        code: v.string(),
+        type: v.string(),
+        isActive: v.boolean(),
+        minOrderAmount: v.optional(v.number()),
+        expiresAt: v.optional(v.number()),
+        usageLimit: v.optional(v.number()),
+        usedCount: v.optional(v.number()),
+        createdAt: v.optional(v.number()),
+    }).index("by_code", ["code"]),
 });

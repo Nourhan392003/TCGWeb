@@ -78,25 +78,6 @@ export async function POST(req: NextRequest) {
 
         const ref = orderReference || `tcg-${Date.now()}`;
 
-        try {
-            await convex.mutation(api.orders.createOrder, {
-                userId: customer.userId || "",
-                totalAmount: totalAmount / 100,
-                status: "pending",
-                storeItems,
-                orderReference: ref,
-                paymentStatus: "pending",
-                paymentProvider: "paymob",
-                shippingFee,
-                shippingCountry: "SA",
-                shippingFeeOverride: requestedShippingOverride,
-                shippingOverrideReason,
-                stockDecremented: false,
-            });
-            console.log(`Preliminary order created with reference: ${ref}`);
-        } catch (orderError: any) {
-            console.error("Failed to create preliminary order:", orderError.message);
-        }
 
         console.log("Products only items ===");
         console.log(JSON.stringify(productPaymobItems, null, 2));

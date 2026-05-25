@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/useCartStore";
-import { useRouter } from "@/i18n/navigation";
 import {
     CreditCard,
     ShieldCheck,
@@ -12,6 +11,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { formatPrice, formatPriceByLocale } from "@/utils/currency";
+import { getShippingFee } from "@/lib/shipping";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText } from "@/utils/localization";
 
@@ -41,14 +41,11 @@ const getRarityColor = (rarity: string) => {
 export default function CheckoutPage() {
     const t = useTranslations("Checkout");
     const locale = useLocale();
-    const isRTL = locale === "ar";
 
-    const { items } = useCartStore();
-    const router = useRouter();
+    const { items, freeShipping } = useCartStore();
 
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [freeShipping, setFreeShipping] = useState(false);
 
     const [formData, setFormData] = useState<CheckoutFormData>({
         firstName: "",
@@ -69,16 +66,18 @@ export default function CheckoutPage() {
         0
     );
 
-    const shipping = freeShipping ? 0 : 27;
+    const shipping = freeShipping ? 0 : getShippingFee();
     const shippingFeeOverride = freeShipping ? 0 : undefined;
-    const shippingOverrideReason = freeShipping ? "manual" : undefined;
+    const shippingOverrideReason = freeShipping ? "manual free shipping" : undefined;
     const grandTotal = subtotal + shipping;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
-
+    function getItemName(name: string | { en?: string; ar?: string }) {
+        return typeof name === "string" ? name : name?.en || name?.ar || "";
+    }
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -123,12 +122,10 @@ export default function CheckoutPage() {
                         city: formData.city,
                         zipCode: formData.zipCode,
                     },
+
                     items: items.map((item) => ({
                         id: item.id,
-                        name:
-                            typeof item.name === "string"
-                                ? item.name
-                                : (item.name as any)?.en || (item.name as any)?.ar || "",
+                        name: getItemName(item.name),
                         price: item.price,
                         quantity: item.quantity,
                     })),
@@ -229,7 +226,6 @@ export default function CheckoutPage() {
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
                                                 {t("firstName")} <span className="text-red-500">*</span>
@@ -334,11 +330,8 @@ export default function CheckoutPage() {
                                                 placeholder="11564"
                                             />
                                         </div>
-
                                     </div>
                                 </div>
-
-
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm text-gray-400">
