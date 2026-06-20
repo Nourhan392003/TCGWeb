@@ -1,4 +1,5 @@
-import { getMessages } from 'next-intl/server';
+import { Suspense } from "react";
+import { getMessages } from "next-intl/server";
 import ProductsClient from "@/components/pages/ProductsClient";
 
 export async function generateMetadata({
@@ -22,5 +23,10 @@ export default async function ProductsPage({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
-    return <ProductsClient />;
+
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f]" />}>
+            <ProductsClient />
+        </Suspense>
+    );
 }

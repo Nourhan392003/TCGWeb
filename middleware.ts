@@ -3,13 +3,11 @@ import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher([
   "/admin(.*)",
-  "/:locale/admin(.*)"
+  "/:locale/admin(.*)",
 ]);
 
-type ClaimsWithMetadata = {
-  metadata?: {
-    role?: string;
-  };
+type SessionClaimsWithRole = {
+  role?: string;
 };
 
 export default clerkMiddleware(async (auth, req) => {
@@ -22,7 +20,7 @@ export default clerkMiddleware(async (auth, req) => {
       return session.redirectToSignIn();
     }
 
-    const role = (session.sessionClaims as ClaimsWithMetadata | undefined)?.metadata?.role;
+    const role = (session.sessionClaims as SessionClaimsWithRole | undefined)?.role;
 
     if (role !== "admin") {
       return NextResponse.redirect(new URL("/", req.url));

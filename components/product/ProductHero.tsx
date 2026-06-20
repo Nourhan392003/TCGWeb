@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, Link } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
@@ -73,35 +73,35 @@ const gameIcons: Record<string, string> = {
 };
 
 export default function ProductHero({ product }: ProductHeroProps) {
-  const t = useTranslations("ProductHero");
-  const tActions = useTranslations("Actions");
   const locale = useLocale();
   const isRTL = locale === "ar";
-  const { flyToCart } = useFlyToCart();
+  const t = useTranslations("ProductHero");
+  const tActions = useTranslations("Actions");
 
-  const { checkAuth } = useAuthAction();
-  const router = useRouter();
+  const { flyToCart } = useFlyToCart();
+  const { checkAuth, isLoaded } = useAuthAction();
   const addItem = useCartStore((state) => state.addItem);
   const {
     addItem: addWishlistItem,
     removeItem: removeWishlistItem,
     isInWishlist,
   } = useWishlistStore();
-
   const localizedName = getLocalizedText(product.name, locale);
   const productImage = product.imageUrl || product.image || "";
-  const inWishlist = isInWishlist(product._id.toString());
+  const productId = product._id.toString();
+  const inWishlist = isInWishlist(productId);
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("ADD TO CART CLICKED");
 
     const targetElement = e.currentTarget;
 
     checkAuth(() => {
       flyToCart(targetElement, productImage);
       addItem({
-        id: product._id.toString(),
+        id: productId,
         name: localizedName,
         price: product.price,
         quantity: 1,
@@ -117,13 +117,14 @@ export default function ProductHero({ product }: ProductHeroProps) {
     e.preventDefault();
     e.stopPropagation();
 
+    console.log("WISHLIST CLICKED");
     checkAuth(() => {
       if (inWishlist) {
-        removeWishlistItem(product._id.toString());
+        removeWishlistItem(productId);
         toast.success(tActions("removedFromWishlist", { name: localizedName }));
       } else {
         addWishlistItem({
-          id: product._id.toString(),
+          id: productId,
           name: localizedName,
           price: product.price,
           image: productImage,
@@ -133,6 +134,9 @@ export default function ProductHero({ product }: ProductHeroProps) {
       }
     });
   };
+
+
+
 
   const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");
   const rarityStyle = rarityConfig[rarityKey] || rarityConfig.common;
@@ -195,8 +199,8 @@ export default function ProductHero({ product }: ProductHeroProps) {
             <div className={`absolute top-5 ${isRTL ? "left-5" : "right-5"}`}>
               <span
                 className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold tracking-wide ${product.inStock
-                    ? "bg-green-500/30 text-green-300 border border-green-500/50"
-                    : "bg-red-500/30 text-red-300 border border-red-500/50"
+                  ? "bg-green-500/30 text-green-300 border border-green-500/50"
+                  : "bg-red-500/30 text-red-300 border border-red-500/50"
                   }`}
               >
                 {product.inStock ? t("inStock") : t("outOfStock")}
@@ -301,8 +305,8 @@ export default function ProductHero({ product }: ProductHeroProps) {
               onClick={handleAddToCart}
               disabled={!product.inStock}
               className={`flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all active:scale-95 ${product.inStock
-                  ? "bg-amber-500 text-black hover:bg-amber-400 shadow-lg shadow-amber-500/10"
-                  : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                ? "bg-amber-500 text-black hover:bg-amber-400 shadow-lg shadow-amber-500/10"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed"
                 }`}
             >
               <ShoppingCart className="w-5 h-5" />
@@ -312,9 +316,9 @@ export default function ProductHero({ product }: ProductHeroProps) {
             <button
               type="button"
               onClick={handleWishlistToggle}
-              className={`px-6 py-4 rounded-xl transition-all active:scale-95 ${inWishlist
-                  ? "bg-red-500/10 text-red-500 border-2 border-red-500/30"
-                  : "bg-white/5 text-white border-2 border-white/10 hover:border-amber-500/50 hover:text-amber-500"
+              className={`shrink-0 px-6 py-4 rounded-xl transition-all active:scale-95 ${inWishlist
+                ? "bg-red-500/10 text-red-500 border-2 border-red-500/30"
+                : "bg-white/5 text-white border-2 border-white/10 hover:border-amber-500/50 hover:text-amber-500"
                 }`}
               aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
@@ -322,44 +326,46 @@ export default function ProductHero({ product }: ProductHeroProps) {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 p-5 rounded-xl bg-black/40 border border-white/5">
-            <div className="text-center p-3 rounded-lg bg-white/5">
-              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-                {t("game")}
-              </p>
-              <p className="text-white font-bold text-sm capitalize">
-                {product.game || "TCG"}
-              </p>
-            </div>
+        </div>
 
-            <div className="text-center p-3 rounded-lg bg-white/5">
-              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-                {t("rarity")}
-              </p>
-              <p className="text-white font-bold text-sm">{product.rarity || "N/A"}</p>
-            </div>
+        <div className="grid grid-cols-2 gap-4 p-5 rounded-xl bg-black/40 border border-white/5">
+          <div className="text-center p-3 rounded-lg bg-white/5">
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+              {t("game")}
+            </p>
+            <p className="text-white font-bold text-sm capitalize">
+              {product.game || "TCG"}
+            </p>
+          </div>
 
-            <div className="text-center p-3 rounded-lg bg-white/5">
-              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-                {t("condition")}
-              </p>
-              <p className="text-white font-bold text-sm">{product.condition || "N/A"}</p>
-            </div>
+          <div className="text-center p-3 rounded-lg bg-white/5">
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+              {t("rarity")}
+            </p>
+            <p className="text-white font-bold text-sm">{product.rarity || "N/A"}</p>
+          </div>
 
-            <div className="text-center p-3 rounded-lg bg-white/5">
-              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-                {t("availability")}
-              </p>
-              <p
-                className={`font-bold text-sm ${product.inStock ? "text-green-400" : "text-red-400"
-                  }`}
-              >
-                {product.inStock ? t("inStock") : t("outOfStock")}
-              </p>
-            </div>
+          <div className="text-center p-3 rounded-lg bg-white/5">
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+              {t("condition")}
+            </p>
+            <p className="text-white font-bold text-sm">{product.condition || "N/A"}</p>
+          </div>
+
+          <div className="text-center p-3 rounded-lg bg-white/5">
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+              {t("availability")}
+            </p>
+            <p
+              className={`font-bold text-sm ${product.inStock ? "text-green-400" : "text-red-400"
+                }`}
+            >
+              {product.inStock ? t("inStock") : t("outOfStock")}
+            </p>
           </div>
         </div>
       </div>
+
     </section>
   );
 }

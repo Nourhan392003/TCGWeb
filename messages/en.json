@@ -274,6 +274,7 @@
     "name": "Name",
     "email": "Email",
     "message": "Message",
+    "phone": "Phone",
     "namePlaceholder": "Your name",
     "emailPlaceholder": "your@email.com",
     "messagePlaceholder": "How can we help?",

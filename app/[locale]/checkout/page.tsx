@@ -42,7 +42,7 @@ export default function CheckoutPage() {
     const t = useTranslations("Checkout");
     const locale = useLocale();
 
-    const { items, freeShipping } = useCartStore();
+    const { items, freeShipping, appliedCoupon } = useCartStore();
 
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -66,9 +66,9 @@ export default function CheckoutPage() {
         0
     );
 
+
     const shipping = freeShipping ? 0 : getShippingFee();
-    const shippingFeeOverride = freeShipping ? 0 : undefined;
-    const shippingOverrideReason = freeShipping ? "manual free shipping" : undefined;
+
     const grandTotal = subtotal + shipping;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +98,6 @@ export default function CheckoutPage() {
 
         try {
             const orderReference = `tcg-${Date.now()}`;
-
             const response = await fetch("/api/paymob/create-intention", {
                 method: "POST",
                 headers: {
@@ -107,12 +106,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     locale,
                     orderReference,
-                    subtotal,
-                    shippingFee: shipping,
-                    shippingFeeOverride,
-                    shippingOverrideReason,
-                    grandTotal,
-                    shippingCountry: "SA",
+                    couponCode: appliedCoupon ?? undefined,
                     customer: {
                         firstName: formData.firstName,
                         lastName: formData.lastName,
@@ -122,15 +116,16 @@ export default function CheckoutPage() {
                         city: formData.city,
                         zipCode: formData.zipCode,
                     },
-
                     items: items.map((item) => ({
                         id: item.id,
                         name: getItemName(item.name),
-                        price: item.price,
-                        quantity: item.quantity,
+                        price: Number(item.price),
+                        quantity: Number(item.quantity),
                     })),
                 }),
             });
+
+
 
             const text = await response.text();
             console.log("create-intention raw response:", text);

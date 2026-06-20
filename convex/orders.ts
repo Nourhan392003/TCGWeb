@@ -187,6 +187,7 @@ export const createOrder = mutation({
             })
         ),
         orderReference: v.optional(v.string()),
+        couponCode: v.optional(v.string()),
         paymobOrderId: v.optional(v.string()),
         paymobTransactionId: v.optional(v.string()),
         paymentReference: v.optional(v.string()),
@@ -229,6 +230,7 @@ export const createOrder = mutation({
             originalShippingFee: initialShippingFee,
             shippingFeeOverride: args.shippingFeeOverride,
             shippingOverrideReason: args.shippingOverrideReason,
+            couponCode: args.couponCode,
         });
 
         return orderId;

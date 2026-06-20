@@ -20,8 +20,13 @@ function getItemName(name: string | LocalizedName): string {
 }
 
 export default function CheckoutButton() {
-  const { items, freeShipping, setFreeShipping, resetFreeShipping } = useCartStore();
-  const { user } = useUser();
+  const {
+    items,
+    freeShipping,
+    appliedCoupon,
+  } = useCartStore();
+
+  const { user, isLoaded, isSignedIn } = useUser();
   const createOrder = useMutation(api.orders.createOrder);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +48,9 @@ export default function CheckoutButton() {
   }));
 
   const handlePaymobCheckout = async () => {
-    if (!user) {
+    if (!isLoaded) return;
+
+    if (!isSignedIn || !user) {
       toast.error("يرجى تسجيل الدخول أولاً");
       return;
     }
@@ -78,8 +85,9 @@ export default function CheckoutButton() {
         shippingFee,
         shippingFeeOverride,
         shippingOverrideReason: freeShipping
-          ? "manual free shipping"
+          ? "coupon_free_shipping"
           : undefined,
+        couponCode: appliedCoupon ?? undefined,
         stockDecremented: false,
         shippingCountry: "SA",
       });
@@ -88,8 +96,10 @@ export default function CheckoutButton() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+
           locale: "ar",
           orderReference,
+          couponCode: appliedCoupon ?? undefined,
           customer: {
             userId: user.id,
             firstName: user.firstName || "",
@@ -137,7 +147,7 @@ export default function CheckoutButton() {
       if (!data?.checkoutUrl) {
         throw new Error("Missing checkout URL from server");
       }
-      setFreeShipping(false);
+
       window.location.href = data.checkoutUrl;
     } catch (error) {
       console.error("Error during checkout:", error);
@@ -153,16 +163,6 @@ export default function CheckoutButton() {
 
   return (
     <div className="space-y-4">
-      <label className="flex items-center gap-2 text-sm text-white">
-        <input
-          type="checkbox"
-          checked={freeShipping}
-          onChange={(e) => setFreeShipping(e.target.checked)}
-          className="h-4 w-4"
-        />
-        شحن مجاني لهذا الطلب
-      </label>
-
       <div className="rounded-lg bg-neutral-900 p-3 text-sm text-gray-300 space-y-1">
         <div className="flex justify-between">
           <span>Subtotal</span>
@@ -182,7 +182,7 @@ export default function CheckoutButton() {
 
       <button
         onClick={handlePaymobCheckout}
-        disabled={isLoading || items.length === 0}
+        disabled={isLoading || items.length === 0 || !isLoaded}
         className="w-full bg-yellow-500 text-black py-4 font-bold rounded-xl disabled:opacity-50"
       >
         {isLoading

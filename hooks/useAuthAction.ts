@@ -6,20 +6,33 @@ import toast from "react-hot-toast";
 import { useLocale } from "next-intl";
 
 export const useAuthAction = () => {
-    const { isSignedIn } = useUser();
+    const { isLoaded, isSignedIn } = useUser();
     const router = useRouter();
     const pathname = usePathname();
     const locale = useLocale();
 
-    const checkAuth = (action: () => void, message?: string, customRedirect?: string) => {
+    const checkAuth = (
+        action: () => void,
+        message?: string,
+        customRedirect?: string
+    ) => {
+        console.log("AUTH CHECK", { isLoaded, isSignedIn, pathname, locale });
+
+        if (!isLoaded) {
+            toast.error("Authentication is still loading");
+            return false;
+        }
+
         if (!isSignedIn) {
             toast.error(message || "Please login to continue");
 
-            // Build redirect URL with locale prefix for proper routing
             const redirectPath = customRedirect || pathname;
-            // Ensure the path includes the locale prefix
-            const fullRedirect = `/${locale}${redirectPath.startsWith('/') ? redirectPath : '/' + redirectPath}`;
-            router.push(`/sign-in?redirect_url=${encodeURIComponent(fullRedirect)}`);
+            const normalizedRedirect = redirectPath.startsWith(`/${locale}`)
+                ? redirectPath
+                : `/${locale}${redirectPath.startsWith("/") ? redirectPath : `/${redirectPath}`}`;
+
+            console.log("REDIRECTING TO", normalizedRedirect);
+            router.push(`/sign-in?redirect_url=${encodeURIComponent(normalizedRedirect)}`);
             return false;
         }
 
@@ -27,5 +40,5 @@ export const useAuthAction = () => {
         return true;
     };
 
-    return { checkAuth, isSignedIn };
+    return { checkAuth, isSignedIn, isLoaded };
 };

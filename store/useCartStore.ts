@@ -17,11 +17,15 @@ interface CartStore {
     freeShipping: boolean;
     setFreeShipping: (value: boolean) => void;
     resetFreeShipping: () => void;
+    appliedCoupon: string | null;
+    setAppliedCoupon: (code: string | null) => void;
+
     addItem: (item: CartItem) => void;
     removeItem: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
     clearCart: () => void;
     getTotalPrice: () => number;
+
 }
 
 type CartPersist = {
@@ -99,6 +103,8 @@ function migrateCartState(persistedState: unknown, version: number): CartPersist
 const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) => ({
     items: [],
     freeShipping: false,
+    appliedCoupon: null,
+    setAppliedCoupon: (code) => set({ appliedCoupon: code }),
 
     setFreeShipping: (value) => {
         set({ freeShipping: value });

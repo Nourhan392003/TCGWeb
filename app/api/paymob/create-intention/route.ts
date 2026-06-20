@@ -12,12 +12,16 @@ const convex = new ConvexHttpClient(
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { items = [], customer, orderReference } = body;
 
-        console.log("=== /api/paymob/create-intention incoming body ===");
-        console.log(JSON.stringify(body, null, 2));
+        const { items = [], customer, orderReference, couponCode } = body;
 
-        if (!customer?.firstName || !customer?.lastName || !customer?.email || !customer?.phone) {
+
+        if (
+            !customer?.firstName ||
+            !customer?.lastName ||
+            !customer?.email ||
+            !customer?.phone
+        ) {
             return NextResponse.json(
                 {
                     success: false,
@@ -35,28 +39,41 @@ export async function POST(req: NextRequest) {
             quantity: Number(item.quantity),
         }));
 
+        const subtotal = storeItems.reduce(
+            (sum: number, item: any) => sum + item.price * item.quantity,
+            0
+        );
+
+        let freeShipping = false;
+
+        if (typeof couponCode === "string" && couponCode.trim()) {
+            try {
+                const couponResult = await convex.query(api.promoCodes.validateCoupon, {
+                    code: couponCode.trim(),
+                    subtotal,
+                });
+
+                if (couponResult.valid && couponResult.type === "free_shipping") {
+                    freeShipping = true;
+                }
+
+                console.log("Coupon validation result ===");
+                console.log(JSON.stringify(couponResult, null, 2));
+
+            } catch (couponError) {
+                console.error("Coupon validation failed:", couponError);
+            }
+        }
+
+        const shippingFee = freeShipping ? 0 : SAUDI_DOMESTIC_SHIPPING_FEE;
+        const shippingFeeHalalas = Math.round(shippingFee * 100);
+
         const productPaymobItems = storeItems.map((item: any) => ({
             name: item.name,
             amount: Math.round(item.price * 100),
             quantity: item.quantity,
             description: item.name,
         }));
-        const requestedShippingOverride =
-            typeof body.shippingFeeOverride === "number"
-                ? body.shippingFeeOverride
-                : undefined;
-
-        const shippingOverrideReason =
-            typeof body.shippingOverrideReason === "string"
-                ? body.shippingOverrideReason
-                : undefined;
-
-        const shippingFee =
-            typeof requestedShippingOverride === "number"
-                ? Math.max(0, requestedShippingOverride)
-                : SAUDI_DOMESTIC_SHIPPING_FEE;
-
-        const shippingFeeHalalas = Math.round(shippingFee * 100);
 
         const shippingPaymobItem =
             shippingFee > 0
@@ -67,6 +84,7 @@ export async function POST(req: NextRequest) {
                     description: "Shipping داخل المملكة",
                 }
                 : null;
+
         const paymobItems = shippingPaymobItem
             ? [...productPaymobItems, shippingPaymobItem]
             : productPaymobItems;
@@ -76,20 +94,10 @@ export async function POST(req: NextRequest) {
             0
         );
 
+
         const ref = orderReference || `tcg-${Date.now()}`;
 
 
-        console.log("Products only items ===");
-        console.log(JSON.stringify(productPaymobItems, null, 2));
-        console.log("Requested shipping override:", requestedShippingOverride);
-        console.log("Shipping override reason:", shippingOverrideReason);
-        console.log("Applied shipping fee (halalas):", shippingFeeHalalas);
-        console.log("Shipping fee (SAR):", shippingFee);
-
-        console.log("Final Paymob items ===");
-        console.log(JSON.stringify(paymobItems, null, 2));
-
-        console.log("Final total (halalas):", totalAmount);
 
         const payload = {
             amount: totalAmount,
@@ -107,15 +115,13 @@ export async function POST(req: NextRequest) {
             special_reference: ref,
         };
 
-        console.log("=== Paymob intention payload ===");
-        console.log(JSON.stringify(payload, null, 2));
+
 
         let intention;
         try {
             intention = await createPaymobIntention(payload);
 
-            console.log("=== Paymob intention raw response ===");
-            console.log(JSON.stringify(intention, null, 2));
+
         } catch (paymobError: any) {
             console.error("Paymob Intention API Call Failed:");
             console.error(paymobError);
@@ -154,14 +160,15 @@ export async function POST(req: NextRequest) {
 
         const checkoutUrl = getPaymobCheckoutUrl(intention.client_secret);
 
-        console.log("=== Generated checkout URL ===");
-        console.log(checkoutUrl);
+
 
         return NextResponse.json({
             success: true,
             checkoutUrl,
             orderReference: ref,
             paymobClientSecret: intention.client_secret,
+            freeShippingApplied: freeShipping,
+            shippingFee,
         });
     } catch (error) {
         console.error("Critical API Route Error:", error);
