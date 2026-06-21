@@ -32,7 +32,6 @@ export const useAuthAction = () => {
                 : `/${locale}${redirectPath.startsWith("/") ? redirectPath : `/${redirectPath}`}`;
 
             console.log("REDIRECTING TO", normalizedRedirect);
-            router.push(`/sign-in?redirect_url=${encodeURIComponent(normalizedRedirect)}`);
             return false;
         }
 

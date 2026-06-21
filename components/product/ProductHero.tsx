@@ -79,7 +79,7 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const tActions = useTranslations("Actions");
 
   const { flyToCart } = useFlyToCart();
-  const { checkAuth, isLoaded } = useAuthAction();
+  const { checkAuth } = useAuthAction();
   const addItem = useCartStore((state) => state.addItem);
   const {
     addItem: addWishlistItem,
@@ -90,62 +90,63 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const productImage = product.imageUrl || product.image || "";
   const productId = product._id.toString();
   const inWishlist = isInWishlist(productId);
-
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("ADD TO CART CLICKED");
 
     const targetElement = e.currentTarget;
 
     checkAuth(() => {
-      flyToCart(targetElement, productImage);
-      addItem({
-        id: productId,
-        name: localizedName,
-        price: product.price,
-        quantity: 1,
-        image: productImage,
-        rarity: product.rarity || "",
-        stockQuantity: product.stockQuantity,
-      });
-      toast.success(tActions("addedToCart", { name: localizedName }));
+      try {
+        flyToCart(targetElement, productImage);
+        addItem({
+          id: productId,
+          name: localizedName,
+          price: product.price,
+          quantity: 1,
+          image: productImage,
+          rarity: product.rarity || "",
+          stockQuantity: product.stockQuantity,
+        });
+        toast.success(tActions("addedToCart", { name: localizedName }));
+      } catch (error) {
+        console.error("ADD TO CART ERROR", error);
+      }
     });
   };
-
   const handleWishlistToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log("WISHLIST CLICKED");
     checkAuth(() => {
-      if (inWishlist) {
-        removeWishlistItem(productId);
-        toast.success(tActions("removedFromWishlist", { name: localizedName }));
-      } else {
-        addWishlistItem({
-          id: productId,
-          name: localizedName,
-          price: product.price,
-          image: productImage,
-          rarity: product.rarity,
-        });
-        toast.success(tActions("addedToWishlist", { name: localizedName }));
+      try {
+        if (inWishlist) {
+          removeWishlistItem(productId);
+          toast.success(tActions("removedFromWishlist", { name: localizedName }));
+        } else {
+          addWishlistItem({
+            id: productId,
+            name: localizedName,
+            price: product.price,
+            image: productImage,
+            rarity: product.rarity,
+          });
+          toast.success(tActions("addedToWishlist", { name: localizedName }));
+        }
+      } catch (error) {
+        console.error("WISHLIST ERROR", error);
       }
     });
   };
-
-
-
 
   const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");
   const rarityStyle = rarityConfig[rarityKey] || rarityConfig.common;
 
   return (
     <section className="relative w-full py-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f18] via-[#12121f] to-[#0a0a12] -z-20" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
       <div
-        className="absolute inset-0 opacity-30"
+        className="pointer-events-none absolute inset-0 opacity-30 -z-10"
         style={{
           backgroundImage:
             "radial-gradient(circle at 20% 50%, rgba(234,179,8,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(249,115,22,0.05) 0%, transparent 50%)",
@@ -223,11 +224,11 @@ export default function ProductHero({ product }: ProductHeroProps) {
                   {t("graded")}
                 </span>
               )}
+
             </div>
           </div>
         </div>
-
-        <div className="flex flex-col ltr:text-left rtl:text-right">
+        <div className="relative z-10 flex flex-col ltr:text-left rtl:text-right">
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a38] text-gray-300 text-sm">
               <span>{gameIcons[product.game?.toLowerCase() || ""] || "🎴"}</span>
@@ -326,46 +327,41 @@ export default function ProductHero({ product }: ProductHeroProps) {
             </button>
           </div>
 
-        </div>
+          <div className="grid grid-cols-2 gap-4 p-5 rounded-xl bg-black/40 border border-white/5">
+            <div className="text-center p-3 rounded-lg bg-white/5">
+              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+                {t("game")}
+              </p>
+              <p className="text-white font-bold text-sm capitalize">
+                {product.game || "TCG"}
+              </p>
+            </div>
 
-        <div className="grid grid-cols-2 gap-4 p-5 rounded-xl bg-black/40 border border-white/5">
-          <div className="text-center p-3 rounded-lg bg-white/5">
-            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-              {t("game")}
-            </p>
-            <p className="text-white font-bold text-sm capitalize">
-              {product.game || "TCG"}
-            </p>
-          </div>
+            <div className="text-center p-3 rounded-lg bg-white/5">
+              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+                {t("rarity")}
+              </p>
+              <p className="text-white font-bold text-sm">{product.rarity || "N/A"}</p>
+            </div>
 
-          <div className="text-center p-3 rounded-lg bg-white/5">
-            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-              {t("rarity")}
-            </p>
-            <p className="text-white font-bold text-sm">{product.rarity || "N/A"}</p>
-          </div>
+            <div className="text-center p-3 rounded-lg bg-white/5">
+              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+                {t("condition")}
+              </p>
+              <p className="text-white font-bold text-sm">{product.condition || "N/A"}</p>
+            </div>
 
-          <div className="text-center p-3 rounded-lg bg-white/5">
-            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-              {t("condition")}
-            </p>
-            <p className="text-white font-bold text-sm">{product.condition || "N/A"}</p>
-          </div>
-
-          <div className="text-center p-3 rounded-lg bg-white/5">
-            <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-              {t("availability")}
-            </p>
-            <p
-              className={`font-bold text-sm ${product.inStock ? "text-green-400" : "text-red-400"
-                }`}
-            >
-              {product.inStock ? t("inStock") : t("outOfStock")}
-            </p>
+            <div className="text-center p-3 rounded-lg bg-white/5">
+              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
+                {t("availability")}
+              </p>
+              <p className={`font-bold text-sm ${product.inStock ? "text-green-400" : "text-red-400"}`}>
+                {product.inStock ? t("inStock") : t("outOfStock")}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 }
