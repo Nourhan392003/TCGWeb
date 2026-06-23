@@ -8,7 +8,7 @@ export interface CartItem {
     price: number;
     image: string;
     quantity: number;
-    rarity: string;
+
     stockQuantity?: number;
 }
 
@@ -78,7 +78,6 @@ function migrateCartState(persistedState: unknown, version: number): CartPersist
                     typeof item.quantity === 'number' && item.quantity > 0
                         ? item.quantity
                         : 1,
-                rarity: typeof item.rarity === 'string' ? item.rarity : '',
                 stockQuantity:
                     typeof item.stockQuantity === 'number' ? item.stockQuantity : undefined,
             }))

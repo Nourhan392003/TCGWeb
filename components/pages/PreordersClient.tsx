@@ -54,7 +54,6 @@ export default function PreordersClient() {
                 price: product.price,
                 quantity: 1,
                 image: productImage,
-                rarity: product.rarity || "Common",
                 stockQuantity: product.stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
@@ -79,7 +78,6 @@ export default function PreordersClient() {
                     name: localizedName,
                     price: product.price,
                     image: product.imageUrl || product.image,
-                    rarity: product.rarity,
                 });
                 toast.success(tActions("addedToWishlist", { name: localizedName }));
             }

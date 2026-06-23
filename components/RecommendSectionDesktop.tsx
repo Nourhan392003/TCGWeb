@@ -15,7 +15,6 @@ interface Poster {
   name: string | { en: string; ar?: string };
   price: number;
   image: string;
-  rarity: string;
   stockQuantity?: number;
   inStock?: boolean;
 }
@@ -30,35 +29,34 @@ const posterData: Poster[] = [
     name: { en: 'Pirates Party 2026 Vol.1', ar: 'حفلة القراصنة ٢٠٢٦' },
     price: 24.99,
     image: '/cards/card1.png',
-    rarity: 'Rare',
+
   },
   {
     id: '2',
     name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' },
     price: 19.99,
     image: '/cards/card3.png',
-    rarity: 'Rare',
+
   },
   {
     id: '3',
     name: { en: "Quick Beginner's Guide", ar: 'دليل المبتدئين السريع' },
     price: 15.99,
     image: '/cards/card3.png',
-    rarity: 'Uncommon',
+
   },
   {
     id: '4',
     name: { en: 'Teaching App', ar: 'تطبيق التعليم' },
     price: 22.99,
     image: '/cards/card4.png',
-    rarity: 'Rare',
+
   },
   {
     id: '5',
     name: { en: 'Championship 26-27', ar: 'البطولة ٢٦-٢٧' },
     price: 29.99,
     image: '/cards/card1.png',
-    rarity: 'Legendary',
   },
 ];
 
@@ -96,7 +94,6 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
         price: card.price,
         quantity: 1,
         image: card.image,
-        rarity: card.rarity,
         stockQuantity: card.stockQuantity,
       });
       toast.success(tActions('addedToCart', { name: localizedName }));

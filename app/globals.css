@@ -529,113 +529,113 @@ body {
         unicode-bidi: embed;
     }
 
-/* ========================================
+    /* ========================================
    MOBILE RESPONSIVE FIXES - Mobile-First
    ======================================== */
 
-@layer utilities {
+    @layer utilities {
 
-    /* 1. VIEWPORT & BASE MOBILE */
-    html {
-        -webkit-text-size-adjust: 100%;
-        touch-action: manipulation;
-    }
+        /* 1. VIEWPORT & BASE MOBILE */
+        html {
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
 
-    body {
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    /* 2. CONTAINER RESPONSIVE */
-    .container {
-        width: 100%;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 12px;
-    }
-
-    @media (min-width: 640px) {
+        /* 2. CONTAINER RESPONSIVE */
         .container {
-            padding: 0 20px;
-        }
-    }
-
-    @media (min-width: 1024px) {
-        .container {
-            padding: 0 32px;
-        }
-    }
-
-    /* 3. MOBILE GRID FIXES - For cards and products */
-    @media (max-width: 639px) {
-        .grid-cols-3 {
-            grid-template-columns: repeat(1, minmax(0, 1fr));
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 12px;
         }
 
-        .grid-cols-4 {
-            grid-template-columns: repeat(1, minmax(0, 1fr));
+        @media (min-width: 640px) {
+            .container {
+                padding: 0 20px;
+            }
         }
 
-        .grid-cols-2 {
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-        }
-    }
-
-    @media (min-width: 640px) and (max-width: 1023px) {
-        .grid-cols-3 {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        @media (min-width: 1024px) {
+            .container {
+                padding: 0 32px;
+            }
         }
 
-        .grid-cols-4 {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* 3. MOBILE GRID FIXES - For cards and products */
+        @media (max-width: 639px) {
+            .grid-cols-3 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+
+            .grid-cols-4 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+
+            .grid-cols-2 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
         }
-    }
 
-    /* 4. HERO HEIGHT RESPONSIVE */
-    .hero-section {
-        min-height: 50vh;
-    }
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .grid-cols-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
 
-    @media (min-width: 768px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* 4. HERO HEIGHT RESPONSIVE */
         .hero-section {
-            min-height: 70vh;
-        }
-    }
-
-    /* 5. NAVBAR MOBILE */
-    @media (max-width: 768px) {
-        .navbar-menu {
-            display: none !important;
+            min-height: 50vh;
         }
 
-        .mobile-menu {
-            display: block !important;
-        }
-    }
-
-    /* 6. BUTTONS & CARDS MOBILE */
-    @media (max-width: 639px) {
-        .btn-primary {
-            padding: 12px 20px;
-            font-size: 16px;
+        @media (min-width: 768px) {
+            .hero-section {
+                min-height: 70vh;
+            }
         }
 
-        .card {
-            margin-bottom: 1rem;
+        /* 5. NAVBAR MOBILE */
+        @media (max-width: 768px) {
+            .navbar-menu {
+                display: none !important;
+            }
+
+            .mobile-menu {
+                display: block !important;
+            }
         }
-    }
 
-    /* 7. PRICE RESPONSIVE */
-    .price-large {
-        font-size: 1.75rem;
-    }
+        /* 6. BUTTONS & CARDS MOBILE */
+        @media (max-width: 639px) {
+            .btn-primary {
+                padding: 12px 20px;
+                font-size: 16px;
+            }
 
-    @media (min-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* 7. PRICE RESPONSIVE */
         .price-large {
-            font-size: 2.5rem;
+            font-size: 1.75rem;
+        }
+
+        @media (min-width: 768px) {
+            .price-large {
+                font-size: 2.5rem;
+            }
         }
     }
-}
 
     body {
         min-height: 100vh;

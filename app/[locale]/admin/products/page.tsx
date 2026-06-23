@@ -72,7 +72,6 @@ export default function ProductsPage() {
                 name: { en: editingProduct.nameEn, ar: editingProduct.nameAr || undefined },
                 price: Number(editingProduct.price),
                 game: editingProduct.game,
-                rarity: editingProduct.rarity,
                 inStock: editingProduct.inStock,
                 stockQuantity: editingProduct.stockQuantity ?? 0,
                 isPreorder: editingProduct.isPreorder,
@@ -146,7 +145,6 @@ export default function ProductsPage() {
                         <div className="col-span-1">Image</div>
                         <div className="col-span-2">Name (EN / AR)</div>
                         <div className="col-span-1">{t('game')}</div>
-                        <div className="col-span-1">{t('rarity')}</div>
                         <div className="col-span-1">{t('price')}</div>
                         <div className="col-span-1">{t('stock')}</div>
                     </div>
@@ -193,17 +191,6 @@ export default function ProductsPage() {
                                             </span>
                                         </div>
 
-                                        {/* Rarity */}
-                                        <div className="col-span-1">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
-                                                ${product.rarity === 'Ultra Rare' || product.rarity === 'Secret Rare' ? 'bg-purple-500/20 text-purple-400' :
-                                                    product.rarity === 'Rare' ? 'bg-blue-500/20 text-blue-400' :
-                                                        product.rarity === 'Uncommon' ? 'bg-green-500/20 text-green-400' :
-                                                            'bg-gray-500/20 text-gray-400'
-                                                }`}>
-                                                {product.rarity || 'Common'}
-                                            </span>
-                                        </div>
 
                                         {/* Price */}
                                         <div className="col-span-1">
@@ -366,21 +353,7 @@ export default function ProductsPage() {
                                     ))}
                                 </select>
                             </div>
-                            {/* Rarity */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-1">{t('rarity')}</label>
-                                <select
-                                    value={editingProduct.rarity}
-                                    onChange={(e) => setEditingProduct({ ...editingProduct, rarity: e.target.value })}
-                                    className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
-                                >
-                                    <option value="Common">Common</option>
-                                    <option value="Uncommon">Uncommon</option>
-                                    <option value="Rare">Rare</option>
-                                    <option value="Ultra Rare">Ultra Rare</option>
-                                    <option value="Secret Rare">Secret Rare</option>
-                                </select>
-                            </div>
+
                             {/* Image Upload */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">{t('uploadImage')}</label>

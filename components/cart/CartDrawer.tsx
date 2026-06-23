@@ -19,21 +19,8 @@ interface CartDrawerProps {
     onClose: () => void;
 }
 
-/**
- * Rarity badge colors
- */
-const getRarityColor = (rarity: string) => {
-    const colors: Record<string, string> = {
-        common: "bg-gray-500",
-        uncommon: "bg-green-500",
-        rare: "bg-blue-500",
-        super_rare: "bg-purple-500",
-        ultra_rare: "bg-yellow-500",
-        secret_rare: "bg-gradient-to-r from-pink-500 to-purple-500",
-        mythic: "bg-red-500",
-    };
-    return colors[rarity.toLowerCase()] || "bg-gray-500";
-};
+
+
 
 /**
  * Individual Cart Item Component
@@ -70,13 +57,6 @@ function CartItemRow({ item }: { item: CartItem }) {
                     </button>
                 </div>
 
-                <span
-                    className={`inline-block px-2 py-0.5 text-[10px] font-medium text-white rounded mt-1 ${getRarityColor(
-                        item.rarity
-                    )}`}
-                >
-                    {item.rarity.replace("_", " ")}
-                </span>
 
                 <div className="flex items-center justify-between mt-3">
                     {/* Quantity Controls */}

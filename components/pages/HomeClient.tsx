@@ -27,7 +27,6 @@ export default function HomeClient() {
                 name: getLocalizedText(card.name, locale),
                 price: card.price,
                 image: card.imageUrl || card.image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg",
-                rarity: card.rarity || "Common",
             }))} />
 
             {/* 4️⃣ قسم الفيديوهات الجديد اللي فيه الخريطة ولوفي بيجري (اللي عملناه في الكومبوننت) */}

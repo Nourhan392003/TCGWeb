@@ -25,18 +25,6 @@ interface CheckoutFormData {
     zipCode: string;
 }
 
-const getRarityColor = (rarity: string) => {
-    const colors: Record<string, string> = {
-        common: "bg-gray-500",
-        uncommon: "bg-green-500",
-        rare: "bg-blue-500",
-        super_rare: "bg-purple-500",
-        ultra_rare: "bg-yellow-500",
-        secret_rare: "bg-gradient-to-r from-pink-500 to-purple-500",
-        mythic: "bg-red-500",
-    };
-    return colors[rarity?.toLowerCase()] || "bg-gray-500";
-};
 
 export default function CheckoutPage() {
     const t = useTranslations("Checkout");
@@ -411,9 +399,7 @@ export default function CheckoutPage() {
                                                     <h4 className="text-xs sm:text-sm font-medium text-[#f0f0f5] truncate">
                                                         {localizedName}
                                                     </h4>
-                                                    <span className={`inline-block px-1.5 py-0.5 text-[10px] sm:text-xs text-white rounded mt-1 ${getRarityColor(item.rarity)}`}>
-                                                        {item.rarity?.replace("_", " ")}
-                                                    </span>
+
                                                     <div className="flex justify-between items-center mt-1.5 sm:mt-2">
                                                         <span className="text-[10px] sm:text-xs text-[#6a6a7a]">
                                                             {t("qty", { count: item.quantity })}

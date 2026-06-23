@@ -17,7 +17,6 @@ export default function AddProductForm() {
     const [descriptionEn, setDescriptionEn] = useState("");
     const [descriptionAr, setDescriptionAr] = useState("");
     const [game, setGame] = useState(GAME_OPTIONS[0].value);
-    const [rarity, setRarity] = useState("Common");
     const [condition, setCondition] = useState("Factory Sealed");
 
     const [inStock, setInStock] = useState(true);
@@ -62,7 +61,7 @@ export default function AddProductForm() {
                     ? { en: descriptionEn, ar: descriptionAr || undefined }
                     : undefined,
                 game,
-                rarity,
+
                 condition,
                 inStock,
                 stockQuantity,
@@ -79,7 +78,6 @@ export default function AddProductForm() {
             setDescriptionEn("");
             setDescriptionAr("");
             setGame(GAME_OPTIONS[0].value);
-            setRarity("Common");
             setCondition("Factory Sealed");
             setInStock(true);
             setIsPreorder(false);
@@ -127,7 +125,7 @@ export default function AddProductForm() {
                     </div>
                 </div>
 
-                {/* Game & Rarity */}
+                {/* Game */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-300">{t('game')}</label>
@@ -141,19 +139,8 @@ export default function AddProductForm() {
                             ))}
                         </select>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-300">{t('rarity')}</label>
-                        <select
-                            value={rarity}
-                            onChange={(e) => setRarity(e.target.value)}
-                            className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
-                        >
-                            <option>Common</option>
-                            <option>Uncommon</option>
-                            <option>Rare</option>
-                            <option>Ultra Rare</option>
-                        </select>
-                    </div>
+
+
                 </div>
 
                 {/* Price & Condition */}

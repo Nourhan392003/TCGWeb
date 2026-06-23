@@ -17,7 +17,6 @@ interface TCGCardItemProps {
     image: string;
     name: string | { en: string; ar?: string };
     price: number;
-    rarity: string;
     stockQuantity?: number;
     inStock?: boolean;
 }
@@ -27,7 +26,7 @@ export default function TCGCardItem({
     image,
     name,
     price,
-    rarity,
+
     stockQuantity,
     inStock = true,
 }: TCGCardItemProps) {
@@ -64,7 +63,6 @@ export default function TCGCardItem({
                     name: localizedName,
                     price,
                     image,
-                    rarity,
                 });
                 toast.success(tActions("addedToWishlist", { name: localizedName }));
             }
@@ -85,7 +83,7 @@ export default function TCGCardItem({
                 price,
                 quantity: 1,
                 image,
-                rarity,
+
                 stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
@@ -115,11 +113,7 @@ export default function TCGCardItem({
                 aria-label={localizedName}
             />
 
-            <div className="absolute top-6 left-6 rtl:left-auto rtl:right-6 z-10">
-                <div className="px-2.5 py-0.5 rounded-full border bg-black/50 backdrop-blur-md text-xs font-semibold capitalize border-purple-500 text-purple-400">
-                    {rarity ? rarity.replace(/_/g, " ") : "Common"}
-                </div>
-            </div>
+
 
             <button
                 type="button"
@@ -164,7 +158,7 @@ export default function TCGCardItem({
                     </button>
                 </div>
             </div>
-            
+
             {!inStock && (
                 <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center z-20 pointer-events-none">
                     <span className="px-4 py-2 bg-red-500/80 text-white font-bold rounded-lg text-sm rotate-[-10deg] border border-red-400">

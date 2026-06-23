@@ -16,7 +16,6 @@ interface ProductHeroProps {
     _id: string;
     name: string | { en: string; ar?: string };
     game?: string;
-    rarity?: string;
     condition?: string;
     price: number;
     inStock: boolean;
@@ -29,41 +28,7 @@ interface ProductHeroProps {
   };
 }
 
-const rarityConfig: Record<
-  string,
-  { labelKey: string; bgColor: string; textColor: string; borderColor: string }
-> = {
-  common: {
-    labelKey: "common",
-    bgColor: "bg-gray-600/20",
-    textColor: "text-gray-300",
-    borderColor: "border-gray-600/50",
-  },
-  uncommon: {
-    labelKey: "uncommon",
-    bgColor: "bg-green-600/20",
-    textColor: "text-green-300",
-    borderColor: "border-green-600/50",
-  },
-  rare: {
-    labelKey: "rare",
-    bgColor: "bg-blue-600/20",
-    textColor: "text-blue-300",
-    borderColor: "border-blue-600/50",
-  },
-  ultra_rare: {
-    labelKey: "ultra_rare",
-    bgColor: "bg-purple-600/20",
-    textColor: "text-purple-300",
-    borderColor: "border-purple-600/50",
-  },
-  secret_rare: {
-    labelKey: "secret_rare",
-    bgColor: "bg-gradient-to-r from-yellow-600/20 to-orange-600/20",
-    textColor: "text-yellow-300",
-    borderColor: "border-yellow-600/50",
-  },
-};
+
 
 const gameIcons: Record<string, string> = {
   pokemon: "⚡",
@@ -105,7 +70,6 @@ export default function ProductHero({ product }: ProductHeroProps) {
           price: product.price,
           quantity: 1,
           image: productImage,
-          rarity: product.rarity || "",
           stockQuantity: product.stockQuantity,
         });
         toast.success(tActions("addedToCart", { name: localizedName }));
@@ -129,7 +93,6 @@ export default function ProductHero({ product }: ProductHeroProps) {
             name: localizedName,
             price: product.price,
             image: productImage,
-            rarity: product.rarity,
           });
           toast.success(tActions("addedToWishlist", { name: localizedName }));
         }
@@ -139,8 +102,7 @@ export default function ProductHero({ product }: ProductHeroProps) {
     });
   };
 
-  const rarityKey = (product.rarity || "").toLowerCase().replace(/ /g, "_");
-  const rarityStyle = rarityConfig[rarityKey] || rarityConfig.common;
+
 
   return (
     <section className="relative w-full py-8">
@@ -230,18 +192,10 @@ export default function ProductHero({ product }: ProductHeroProps) {
         </div>
         <div className="relative z-10 flex flex-col ltr:text-left rtl:text-right">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1a1a24] border border-[#2a2a38] text-gray-300 text-sm">
-              <span>{gameIcons[product.game?.toLowerCase() || ""] || "🎴"}</span>
-              <span className="capitalize">{product.game || "TCG"}</span>
-            </span>
+            <span>{gameIcons[product.game?.toLowerCase() || ""] || "🎴"}</span>
+            <span className="capitalize">{product.game || "TCG"}</span>
 
-            {product.rarity && (
-              <span
-                className={`inline-flex px-3 py-1 rounded-lg text-sm font-medium ${rarityStyle.bgColor} ${rarityStyle.textColor} border ${rarityStyle.borderColor}`}
-              >
-                {product.rarity}
-              </span>
-            )}
+
           </div>
 
           <h1 className="text-3xl md:text-5xl font-black text-white mb-3 leading-tight">
@@ -337,12 +291,6 @@ export default function ProductHero({ product }: ProductHeroProps) {
               </p>
             </div>
 
-            <div className="text-center p-3 rounded-lg bg-white/5">
-              <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
-                {t("rarity")}
-              </p>
-              <p className="text-white font-bold text-sm">{product.rarity || "N/A"}</p>
-            </div>
 
             <div className="text-center p-3 rounded-lg bg-white/5">
               <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">

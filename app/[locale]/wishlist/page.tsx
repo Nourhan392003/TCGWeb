@@ -82,7 +82,7 @@ export default function WishlistPage() {
                                     name={getLocalizedText(item.name, locale)}
                                     image={item.image || ""}
                                     price={item.price}
-                                    rarity={item.rarity || ""}
+
                                 />
                             ))}
                         </div>

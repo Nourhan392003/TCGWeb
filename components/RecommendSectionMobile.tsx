@@ -67,7 +67,6 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                 price: card.price,
                 quantity: 1,
                 image: card.image,
-                rarity: 'Rare',
                 stockQuantity: card.stockQuantity,
             });
             toast.success(tActions('addedToCart', { name: localizedName }));

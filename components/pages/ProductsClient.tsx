@@ -231,7 +231,6 @@ export default function ProductsClient() {
                 price: product.price,
                 quantity: 1,
                 image: productImage,
-                rarity: product.rarity || "Common",
                 stockQuantity: product.stockQuantity,
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
@@ -256,7 +255,6 @@ export default function ProductsClient() {
                     name: localizedName,
                     price: product.price,
                     image: product.imageUrl || product.image,
-                    rarity: product.rarity,
                 });
                 toast.success(tActions("addedToWishlist", { name: localizedName }));
             }
@@ -357,8 +355,8 @@ export default function ProductsClient() {
                                                         )
                                                     }
                                                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === true
-                                                            ? "bg-amber-500 border-amber-500"
-                                                            : "border-gray-600 group-hover:border-gray-500"
+                                                        ? "bg-amber-500 border-amber-500"
+                                                        : "border-gray-600 group-hover:border-gray-500"
                                                         }`}
                                                 >
                                                     {availableInStock === true && (
@@ -383,8 +381,8 @@ export default function ProductsClient() {
                                                         )
                                                     }
                                                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${availableInStock === false
-                                                            ? "bg-amber-500 border-amber-500"
-                                                            : "border-gray-600 group-hover:border-gray-500"
+                                                        ? "bg-amber-500 border-amber-500"
+                                                        : "border-gray-600 group-hover:border-gray-500"
                                                         }`}
                                                 >
                                                     {availableInStock === false && (
@@ -430,8 +428,8 @@ export default function ProductsClient() {
                                                         <div
                                                             onClick={() => handleBrandToggle(brand.value)}
                                                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand.value)
-                                                                    ? "bg-amber-500 border-amber-500"
-                                                                    : "border-gray-600 group-hover:border-gray-500"
+                                                                ? "bg-amber-500 border-amber-500"
+                                                                : "border-gray-600 group-hover:border-gray-500"
                                                                 }`}
                                                         >
                                                             {selectedBrands.includes(brand.value) && (
@@ -482,8 +480,8 @@ export default function ProductsClient() {
                                                         <div
                                                             onClick={() => handleTypeToggle(type.value)}
                                                             className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedTypes.includes(type.value)
-                                                                    ? "bg-amber-500 border-amber-500"
-                                                                    : "border-gray-600 group-hover:border-gray-500"
+                                                                ? "bg-amber-500 border-amber-500"
+                                                                : "border-gray-600 group-hover:border-gray-500"
                                                                 }`}
                                                         >
                                                             {selectedTypes.includes(type.value) && (
@@ -673,15 +671,7 @@ export default function ProductsClient() {
                                                     />
                                                 </button>
 
-                                                {product.rarity &&
-                                                    (product.rarity === "Ultra Rare" ||
-                                                        product.rarity === "Secret Rare") && (
-                                                        <div
-                                                            className={`absolute top-2 ${isRTL ? "right-2" : "left-2"} z-10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-purple-500/80 backdrop-blur-md text-[10px] sm:text-xs font-medium text-white border border-purple-400`}
-                                                        >
-                                                            {product.rarity}
-                                                        </div>
-                                                    )}
+
                                             </div>
 
                                             <div className="p-2.5 sm:p-4 ltr:text-left rtl:text-right">

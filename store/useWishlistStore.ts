@@ -6,7 +6,6 @@ export interface WishlistItem {
     name: string;
     price: number;
     image?: string;
-    rarity?: string;
 }
 
 interface WishlistStore {

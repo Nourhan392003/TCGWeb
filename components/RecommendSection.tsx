@@ -8,7 +8,6 @@ type Poster = {
   name: string | { en: string; ar?: string };
   price: number;
   image: string;
-  rarity: string;
 };
 
 type RecommendSectionProps = {

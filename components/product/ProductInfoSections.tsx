@@ -13,7 +13,6 @@ interface ProductInfoSectionsProps {
     name: string | { en: string; ar?: string };
     game?: string;
     description?: string | { en: string; ar?: string };
-    rarity?: string;
     condition?: string;
     price: number;
     inStock: boolean;
@@ -27,7 +26,6 @@ interface ProductInfoSectionsProps {
     price: number;
     imageUrl?: string;
     image?: string;
-    rarity?: string;
     inStock: boolean;
   }>;
   loadingRelated?: boolean;
@@ -63,18 +61,8 @@ function generateHighlights(product: ProductInfoSectionsProps["product"], t: any
     highlights.push(t('h6'));
   }
 
-  if ((product.rarity || "").toLowerCase().includes("secret") || (product.rarity || "").toLowerCase().includes("ultra")) {
-    highlights.push(t('h7'));
-    highlights.push(t('h8'));
-  }
 
-  if (product.rarity && typeof product.rarity === 'string') {
-    const rarityLower = product.rarity.toLowerCase();
-    if (rarityLower.includes("secret") || rarityLower.includes("ultra")) {
-      highlights.push(t('h7'));
-      highlights.push(t('h8'));
-    }
-  }
+
 
   if (product.isFoil) {
     highlights.push(t('h9'));

@@ -24,7 +24,6 @@ export default defineSchema({
         imageUrl: v.optional(v.string()),
         imageId: v.optional(v.string()),
         game: v.optional(v.string()),
-        rarity: v.optional(v.string()),
         condition: v.optional(v.string()),
         isFoil: v.optional(v.boolean()),
         isFirstEdition: v.optional(v.boolean()),

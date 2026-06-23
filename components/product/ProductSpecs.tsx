@@ -6,7 +6,6 @@ import { useTranslations, useLocale } from "next-intl";
 interface ProductSpecsProps {
   product: {
     game?: string;
-    rarity?: string;
     condition?: string;
     price: number;
     inStock: boolean;
@@ -17,13 +16,6 @@ interface ProductSpecsProps {
   };
 }
 
-const rarityConfig: Record<string, { color: string }> = {
-  common: { color: "text-gray-300" },
-  uncommon: { color: "text-green-300" },
-  rare: { color: "text-blue-300" },
-  "ultra_rare": { color: "text-purple-300" },
-  "secret_rare": { color: "text-yellow-300" },
-};
 
 export default function ProductSpecs({ product }: ProductSpecsProps) {
   const t = useTranslations('ProductSpecs');
@@ -35,12 +27,7 @@ export default function ProductSpecs({ product }: ProductSpecsProps) {
       value: product.game || "TCG",
       icon: "🎴",
     },
-    {
-      label: t('rarity'),
-      value: product.rarity || t('notSpecified'),
-      icon: "⭐",
-      color: rarityConfig[(product.rarity || "").toLowerCase().replace(/ /g, "_")]?.color || "text-white",
-    },
+
     {
       label: t('condition'),
       value: product.condition || t('notSpecified'),

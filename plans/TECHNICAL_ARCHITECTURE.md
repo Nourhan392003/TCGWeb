@@ -285,15 +285,7 @@ tcg-vault/
      RARITY COLORS - TCG Specific
      ============================================ */
   
-  /* Card Rarity */
-  --rarity-common: #9ca3af;      /* Gray */
-  --rarity-uncommon: #22c55e;    /* Green */
-  --rarity-rare: #3b82f6;        /* Blue */
-  --rarity-super-rare: #a855f7; /* Purple */
-  --rarity-ultra-rare: #f59e0b; /* Orange/Gold */
-  --rarity-secret-rare: #ec4899; /* Pink */
-  --rarity-promotional: #ef4444; /* Red */
-
+  
   /* ============================================
      CONDITION COLORS
      ============================================ */
@@ -447,7 +439,6 @@ tcg-vault/
 | **Input** | Form input with validation states | `components/ui/Input.tsx` | React Hook Form |
 | **Modal** | Accessible modal dialog | `components/ui/Modal.tsx` | Framer Motion |
 | **Drawer** | Slide-out panels (cart, filters) | `components/ui/Drawer.tsx` | Framer Motion |
-| **Badge** | Status, rarity, condition badges | `components/ui/Badge.tsx` | CSS variables |
 | **Skeleton** | Loading placeholders | `components/ui/Skeleton.tsx` | Tailwind |
 | **FilterSidebar** | Collapsible filter panel | `components/filters/FilterSidebar.tsx` | Filter components |
 | **CartDrawer** | Slide-out shopping cart | `components/cart/CartDrawer.tsx` | Zustand cartStore |
@@ -591,7 +582,7 @@ interface FilterState {
   search: string;
   
   // Card filters
-  rarity: CardRarity[];
+
   condition: CardCondition[];
   language: CardLanguage[];
   foilStatus: FoilStatus[];
@@ -614,7 +605,6 @@ interface FilterState {
   setSet: (set: string | null) => void;
   setSearch: (search: string) => void;
   
-  toggleRarity: (rarity: CardRarity) => void;
   toggleCondition: (condition: CardCondition) => void;
   toggleLanguage: (language: CardLanguage) => void;
   toggleFoilStatus: (status: FoilStatus) => void;

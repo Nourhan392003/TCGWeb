@@ -35,16 +35,7 @@ enum FoilStatus {
   REVERSE_HOLO
 }
 
-enum CardRarity {
-  COMMON
-  UNCOMMON
-  RARE
-  SUPER_RARE
-  ULTRA_RARE
-  SECRET_RARE
-  PROMOTIONAL
-  PRERELEASE
-}
+
 
 enum CardEdition {
   FIRST_EDITION
@@ -272,10 +263,7 @@ model Product {
   cardType        String?   @map("card_type") // Monster, Spell, Trap, Creature, etc.
   attribute       String?   // Fire, Water, Earth, Wind, etc.
   archetype       String?   // e.g., "Blue-Eyes", "Exodia"
-  
-  // Rarity
-  rarity          CardRarity?
-  
+
   // Physical Description
   // Note: Condition, Language, Foil are handled in ProductVariant for inventory tracking
   
