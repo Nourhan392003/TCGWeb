@@ -18,16 +18,18 @@ function getItemName(name: string | LocalizedName): string {
   if (typeof name === "string") return name;
   return name.en || name.ar || "Product";
 }
-
+function getStoreItemName(name: string | { en?: string; ar?: string }) {
+  return typeof name === "string" ? name : name?.en || name?.ar || "Product";
+}
 export default function CheckoutButton() {
   const {
     items,
     freeShipping,
     appliedCoupon,
   } = useCartStore();
-
   const { user, isLoaded, isSignedIn } = useUser();
   const createOrder = useMutation(api.orders.createOrder);
+
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +41,6 @@ export default function CheckoutButton() {
   const shippingFee = freeShipping ? 0 : getShippingFee();
   const shippingFeeOverride = freeShipping ? 0 : undefined;
   const totalAmount = subtotal + shippingFee;
-
   const storeItems = items.map((item) => ({
     productId: item.id as Id<"products">,
     name: getItemName(item.name),
@@ -48,33 +49,27 @@ export default function CheckoutButton() {
   }));
 
   const handlePaymobCheckout = async () => {
-    if (!isLoaded) return;
-
-    if (!isSignedIn || !user) {
-      toast.error("يرجى تسجيل الدخول أولاً");
-      return;
-    }
-
-    if (items.length === 0) {
-      toast.error("السلة فارغة");
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      const orderReference = `order_${Date.now()}_${Math.floor(
-        Math.random() * 1000
-      )}`;
+      if (!isLoaded || !isSignedIn || !user) {
+        toast.error("يجب تسجيل الدخول أولاً");
+        return;
+      }
 
-      await createOrder({
+      setIsLoading(true);
+
+      const orderReference = `ORD-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+
+      const testOrderPayload = {
         userId: user.id,
         totalAmount,
         status: "pending",
         orderReference,
         paymentStatus: "pending",
         paymentProvider: "paymob",
-        storeItems,
+        customerName: user.fullName ?? "Unknown",
+        customerEmail: user.primaryEmailAddress?.emailAddress ?? "N/A",
         shippingAddress: {
           fullName: user.fullName || "",
           address: "Riyadh",
@@ -83,84 +78,27 @@ export default function CheckoutButton() {
           postalCode: "",
         },
         shippingFee,
-        shippingFeeOverride,
-        shippingOverrideReason: freeShipping
-          ? "coupon_free_shipping"
-          : undefined,
-        couponCode: appliedCoupon ?? undefined,
         stockDecremented: false,
         shippingCountry: "SA",
-      });
+      };
 
-      const response = await fetch("/api/paymob/create-intention", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      console.log("STEP 1 - before createOrder");
+      console.log("STEP 2 - payload:", testOrderPayload);
 
-          locale: "ar",
-          orderReference,
-          couponCode: appliedCoupon ?? undefined,
-          customer: {
-            userId: user.id,
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            email: user.emailAddresses[0]?.emailAddress || "",
-            phone: user.primaryPhoneNumber?.phoneNumber || "",
-            address: "Riyadh",
-            city: "Riyadh",
-            zipCode: "",
-          },
-          items: items.map((item) => ({
-            id: item.id,
-            productId: item.id,
-            name: getItemName(item.name),
-            price: Number(item.price),
-            quantity: Number(item.quantity),
-          })),
-          shippingFee,
-          shippingFeeOverride,
-          shippingOverrideReason: freeShipping
-            ? "manual free shipping"
-            : undefined,
-          totalAmount,
-        }),
-      });
+      const createdOrderId = await createOrder(testOrderPayload);
 
-      const text = await response.text();
-
-      let data: any = null;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(`Server returned non-JSON response: ${text.slice(0, 200)}`);
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          data?.detail ||
-          data?.message ||
-          data?.error ||
-          "Failed to create payment intention"
-        );
-      }
-
-      if (!data?.checkoutUrl) {
-        throw new Error("Missing checkout URL from server");
-      }
-
-      window.location.href = data.checkoutUrl;
+      console.log("STEP 3 - order created:", createdOrderId);
+      toast.success("Order created successfully");
+      return;
     } catch (error) {
-      console.error("Error during checkout:", error);
+      console.error("CHECKOUT ERROR FULL:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "حدث خطأ أثناء التوجيه للدفع"
+        error instanceof Error ? error.message : "حدث خطأ أثناء إنشاء الأوردر"
       );
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-neutral-900 p-3 text-sm text-gray-300 space-y-1">
@@ -179,6 +117,9 @@ export default function CheckoutButton() {
           <span>{totalAmount.toFixed(2)} SAR</span>
         </div>
       </div>
+      <div className="text-white text-xs">
+        items: {items.length} | isLoaded: {String(isLoaded)} | isSignedIn: {String(isSignedIn)}
+      </div>
 
       <button
         onClick={handlePaymobCheckout}
@@ -189,6 +130,7 @@ export default function CheckoutButton() {
           ? "جاري التوجيه للدفع..."
           : `إتمام الدفع عبر Paymob - ${totalAmount.toFixed(2)} SAR`}
       </button>
+
     </div>
   );
 }

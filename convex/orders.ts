@@ -177,6 +177,8 @@ export const createOrder = mutation({
         shippingFeeOverride: v.optional(v.number()),
         shippingOverrideReason: v.optional(v.string()),
         shippingCountry: v.optional(v.string()),
+        customerName: v.optional(v.string()),
+        customerEmail: v.optional(v.string()),
         shippingAddress: v.optional(
             v.object({
                 fullName: v.string(),
@@ -198,7 +200,13 @@ export const createOrder = mutation({
             v.array(
                 v.object({
                     productId: v.id("products"),
-                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    name: v.union(
+                        v.string(),
+                        v.object({
+                            en: v.string(),
+                            ar: v.optional(v.string()),
+                        })
+                    ),
                     price: v.number(),
                     quantity: v.number(),
                 })
@@ -207,12 +215,17 @@ export const createOrder = mutation({
         stockDecremented: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
+        console.log("createOrder args:", args);
+
         const initialShippingFee = args.shippingFee ?? 27;
 
         const orderId = await ctx.db.insert("orders", {
+
             userId: args.userId,
             totalAmount: args.totalAmount,
             status: args.status,
+            customerName: args.customerName,
+            customerEmail: args.customerEmail,
             shippingAddress: args.shippingAddress,
             orderReference: args.orderReference,
             paymobOrderId: args.paymobOrderId,
@@ -232,6 +245,8 @@ export const createOrder = mutation({
             shippingOverrideReason: args.shippingOverrideReason,
             couponCode: args.couponCode,
         });
+
+        console.log("createOrder success orderId:", orderId);
 
         return orderId;
     },

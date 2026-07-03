@@ -14,7 +14,10 @@ import { formatPrice, formatPriceByLocale } from "@/utils/currency";
 import { getShippingFee } from "@/lib/shipping";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText } from "@/utils/localization";
-
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import type { Id } from "@/convex/_generated/dataModel";
 interface CheckoutFormData {
     firstName: string;
     lastName: string;
@@ -31,7 +34,8 @@ export default function CheckoutPage() {
     const locale = useLocale();
 
     const { items, freeShipping, appliedCoupon } = useCartStore();
-
+    const { user, isLoaded, isSignedIn } = useUser();
+    const createOrder = useMutation(api.orders.createOrder);
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -68,7 +72,6 @@ export default function CheckoutPage() {
     }
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
 
         if (
             !formData.firstName ||
@@ -80,12 +83,50 @@ export default function CheckoutPage() {
             !formData.zipCode
         ) {
             toast.error(t("fillRequired"));
-            setIsLoading(false);
+            return;
+        }
+
+        if (!isLoaded || !isSignedIn || !user) {
+            toast.error("You must be signed in first");
             return;
         }
 
         try {
+            setIsLoading(true);
+
             const orderReference = `tcg-${Date.now()}`;
+            const storeItems = items.map((item) => ({
+                productId: item.id as Id<"products">,
+                name: getItemName(item.name),
+                price: Number(item.price),
+                quantity: Number(item.quantity),
+            }));
+
+
+            await createOrder({
+                userId: user.id,
+                totalAmount: grandTotal,
+                status: "pending",
+                orderReference,
+                paymentStatus: "pending",
+                paymentProvider: "paymob",
+
+                shippingAddress: {
+                    fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+                    address: formData.address,
+                    city: formData.city,
+                    phone: formData.phone,
+                    postalCode: formData.zipCode,
+                },
+                shippingFee: shipping,
+                shippingFeeOverride: freeShipping ? 0 : undefined,
+                shippingOverrideReason: freeShipping ? "coupon_free_shipping" : undefined,
+                couponCode: appliedCoupon ?? undefined,
+                stockDecremented: false,
+                shippingCountry: "SA",
+                storeItems,
+            });
+
             const response = await fetch("/api/paymob/create-intention", {
                 method: "POST",
                 headers: {
@@ -110,10 +151,12 @@ export default function CheckoutPage() {
                         price: Number(item.price),
                         quantity: Number(item.quantity),
                     })),
+                    shippingFee: shipping,
+                    shippingFeeOverride: freeShipping ? 0 : undefined,
+                    shippingOverrideReason: freeShipping ? "manual free shipping" : undefined,
+                    totalAmount: grandTotal,
                 }),
             });
-
-
 
             const text = await response.text();
             console.log("create-intention raw response:", text);
@@ -133,9 +176,7 @@ export default function CheckoutPage() {
         } catch (error) {
             console.error("Payment error:", error);
             toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to initialize payment"
+                error instanceof Error ? error.message : "Failed to initialize payment"
             );
         } finally {
             setIsLoading(false);

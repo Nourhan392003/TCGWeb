@@ -61,6 +61,9 @@ export default defineSchema({
         paymentStatus: v.optional(v.string()),
         paymentProvider: v.optional(v.string()),
         paymentRawPayload: v.optional(v.string()),
+
+        customerName: v.optional(v.string()),
+        customerEmail: v.optional(v.string()),
         storeItems: v.optional(
             v.array(
                 v.object({
