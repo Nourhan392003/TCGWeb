@@ -17,7 +17,7 @@ export const sendNewOrderEmail = internalAction({
 
         await resend.emails.send({
             from: "onboarding@resend.dev",
-            to: "YOUR_EMAIL@example.com",
+            to: "hatartcg@gmail.com",
             subject: `New order received: ${args.orderId}`,
             html: `
         <h2>New order received</h2>
