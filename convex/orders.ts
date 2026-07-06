@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAdmin } from "./auth";
+import { internal } from "./_generated/api";
 
 export const getAllOrders = query({
     args: {},
@@ -62,10 +63,6 @@ export const setOrderShippingOverride = mutation({
             updatedAt: Date.now(),
         });
 
-        console.log(
-            `[Convex] Shipping for order ${args.orderId} updated from ${currentShippingFee} to ${normalizedShippingFee}, total is now ${recalculatedTotal}`
-        );
-
         return {
             success: true,
             previousShippingFee: currentShippingFee,
@@ -83,7 +80,10 @@ export const updateOrderStatusByPaymobOrderId = mutation({
             v.array(
                 v.object({
                     productId: v.id("products"),
-                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    name: v.union(
+                        v.string(),
+                        v.object({ en: v.string(), ar: v.optional(v.string()) })
+                    ),
                     price: v.number(),
                     quantity: v.number(),
                 })
@@ -131,7 +131,10 @@ export const updatePaymentStatus = mutation({
             v.array(
                 v.object({
                     productId: v.id("products"),
-                    name: v.union(v.string(), v.object({ en: v.string(), ar: v.optional(v.string()) })),
+                    name: v.union(
+                        v.string(),
+                        v.object({ en: v.string(), ar: v.optional(v.string()) })
+                    ),
                     price: v.number(),
                     quantity: v.number(),
                 })
@@ -220,7 +223,6 @@ export const createOrder = mutation({
         const initialShippingFee = args.shippingFee ?? 27;
 
         const orderId = await ctx.db.insert("orders", {
-
             userId: args.userId,
             totalAmount: args.totalAmount,
             status: args.status,
@@ -246,8 +248,32 @@ export const createOrder = mutation({
             couponCode: args.couponCode,
         });
 
+        await ctx.scheduler.runAfter(0, internal.emails.sendNewOrderEmail, {
+            orderId,
+            customerName: args.customerName,
+            customerEmail: args.customerEmail,
+            totalAmount: args.totalAmount,
+            paymobOrderId: args.paymobOrderId,
+        });
+
         console.log("createOrder success orderId:", orderId);
 
         return orderId;
+    },
+});
+
+export const getOrderByPaymobOrderId = query({
+    args: {
+        paymobOrderId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const order = await ctx.db
+            .query("orders")
+            .withIndex("by_paymob_order_id", (q) =>
+                q.eq("paymobOrderId", args.paymobOrderId)
+            )
+            .first();
+
+        return order;
     },
 });
