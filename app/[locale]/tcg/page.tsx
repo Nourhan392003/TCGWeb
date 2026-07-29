@@ -72,7 +72,7 @@ const TCG_CATEGORIES = [
         nameKey: "riftbound",
         description: "Enter a dark fantasy world of magic and strategy. Defend your realm in this immersive TCG experience.",
         releaseYear: 2024,
-        bannerImage: "/tcg/riftbound.jpg",
+        bannerImage: "public/slider/Riftboundchar.png",
         themeColor: "fuchsia-500",
         bgHover: "hover:shadow-fuchsia-500/20"
     },

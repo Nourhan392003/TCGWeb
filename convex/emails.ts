@@ -13,11 +13,13 @@ export const sendNewOrderEmail = internalAction({
         paymobOrderId: v.optional(v.string()),
     },
     handler: async (_ctx, args) => {
+        console.log("sendNewOrderEmail called", args);
+
         const resend = new Resend(process.env.RESEND_API_KEY);
 
-        await resend.emails.send({
-            from: "onboarding@resend.dev",
-            to: "hatartcg@gmail.com",
+        const { data, error } = await resend.emails.send({
+            from: "TCG Vault <onboarding@resend.dev>",
+            to: ["hatartcg@gmail.com"],
             subject: `New order received: ${args.orderId}`,
             html: `
         <h2>New order received</h2>
@@ -28,5 +30,12 @@ export const sendNewOrderEmail = internalAction({
         <p><strong>Paymob Order ID:</strong> ${args.paymobOrderId ?? "N/A"}</p>
       `,
         });
+
+        if (error) {
+            console.error("Resend error:", error);
+            throw new Error(error.message);
+        }
+
+        console.log("Resend success:", data);
     },
 });

@@ -19,6 +19,7 @@ export default defineSchema({
                 })
             )
         ),
+        rarity: v.optional(v.string()),
         price: v.number(),
         image: v.optional(v.string()),
         imageUrl: v.optional(v.string()),

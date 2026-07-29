@@ -23,7 +23,7 @@ const SLIDES_CONFIG = [
     {
         id: 2,
         bgColor: "from-[#071827] via-[#35104f] to-blue", glowColor: "rgba(160, 141, 219, 0.12)", // Purple glow
-        // characterImg: "/slider/pokemonchar.png",
+        characterImg: "/slider/pokemonchar.png",
         floatingPackImg: "/slider/pokemoncard.png",
     },
     {
@@ -37,7 +37,7 @@ const SLIDES_CONFIG = [
         id: 4,
         bgColor: "from-[#1e0a2b] via-[#3d1259] to-black",
         glowColor: "rgba(139, 92, 246, 0.15)", // Violet glow
-        characterImg: "/slider/riftboundtchar.png",
+        characterImg: "/slider/Riftboundchar.png",
         floatingPackImg: "/slider/riftBoundcard.png",
     },
 
@@ -89,10 +89,10 @@ export default function HeroSlider() {
                             "٨ مايو، ٢٠٢٦";
         } else {
             dateStr =
-                i === 0 ? "APR. 3, 2026" :
-                    i === 1 ? "JAN. 22, 2026" :
-                        i === 2 ? "MAR. 13, 2026" :
-                            "MAY. 8, 2026";
+                i === 0 ? "JUNE. 5, 2026" :
+                    i === 1 ? "JULY. 17, 2026" :
+                        i === 2 ? "JUNE. 21, 2026" :
+                            "JULY. 21, 2026";
         }
         return {
             ...s,

@@ -248,18 +248,24 @@ export const createOrder = mutation({
             couponCode: args.couponCode,
         });
 
-        await ctx.scheduler.runAfter(0, internal.emails.sendNewOrderEmail, {
-            orderId,
-            customerName: args.customerName,
-            customerEmail: args.customerEmail,
-            totalAmount: args.totalAmount,
-            paymobOrderId: args.paymobOrderId,
-        });
-
         console.log("createOrder success orderId:", orderId);
 
+        const scheduledId = await ctx.scheduler.runAfter(
+            0,
+            internal.emails.sendNewOrderEmail,
+            {
+                orderId,
+                customerName: args.customerName,
+                customerEmail: args.customerEmail,
+                totalAmount: args.totalAmount,
+                paymobOrderId: args.paymobOrderId,
+            }
+        );
+
+        console.log("Scheduled email job:", scheduledId);
+
         return orderId;
-    },
+    }
 });
 
 export const getOrderByPaymobOrderId = query({
