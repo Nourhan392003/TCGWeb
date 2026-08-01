@@ -130,7 +130,7 @@ export default function SubscribePage() {
             </div>
 
             <div className="bg-[#0d1f35] rounded-xl p-6 md:p-8 border border-[#1a3050]">
-              <h2 className="text-xl font-semibold text-white mb-4">What You'll Get</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">What You&apos;ll Get</h2>
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
