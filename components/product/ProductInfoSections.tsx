@@ -2,7 +2,6 @@
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
-import { useAuthAction } from "@/hooks/useAuthAction";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPriceByLocale } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
@@ -94,7 +93,6 @@ export default function ProductInfoSections({
 }: ProductInfoSectionsProps) {
   const t = useTranslations('ProductInfo');
   const locale = useLocale();
-  const { checkAuth } = useAuthAction();
   const router = useRouter();
 
   const descriptionLines = formatDescription(product.description, locale);
@@ -174,7 +172,7 @@ export default function ProductInfoSections({
               return (
                 <div
                   key={item._id}
-                  onClick={() => checkAuth(() => router.push(`/products/${item._id}`), undefined, `/products/${item._id}`)}
+                  onClick={() => router.push(`/products/${item._id}`)}
                   className="group block cursor-pointer"
                 >
                   <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-[#1a1a24] to-[#0d0d12] border border-white/5 group-hover:border-amber-500/30 transition-all duration-300">

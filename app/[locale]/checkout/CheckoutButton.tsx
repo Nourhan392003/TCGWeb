@@ -46,6 +46,7 @@ export default function CheckoutButton() {
     name: getItemName(item.name),
     price: Number(item.price),
     quantity: Number(item.quantity),
+    ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
   }));
 
   const handlePaymobCheckout = async () => {

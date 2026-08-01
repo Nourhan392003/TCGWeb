@@ -108,9 +108,7 @@ export default function RecommendSectionDesktop({ featuredCards }: RecommendSect
 
     if (!isRealProductId(cardId)) return;
 
-    checkAuth(() => {
-      router.push(`/products/${cardId}`);
-    }, undefined, `/products/${cardId}`);
+    router.push(`/products/${cardId}`);
   };
   return (
     <section className="relative w-full py-[clamp(4rem,10vw,8rem)] overflow-hidden bg-[#0a0a0f]">

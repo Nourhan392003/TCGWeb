@@ -49,8 +49,13 @@ function CartItemRow({ item }: { item: CartItem }) {
                     <h4 className="text-sm font-medium text-white truncate">
                         {localizedName}
                     </h4>
+                    {item.purchaseOptionType && (
+                        <span className="text-[10px] text-amber-400 uppercase">
+                            {item.purchaseOptionType}
+                        </span>
+                    )}
                     <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.id, item.purchaseOptionType)}
                         className="p-1 text-gray-400 hover:text-red-400 transition-colors"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -63,7 +68,7 @@ function CartItemRow({ item }: { item: CartItem }) {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
+                                updateQuantity(item.id, item.quantity - 1, item.purchaseOptionType)
                             }
                             className="p-1.5 bg-white/5 rounded-md hover:bg-amber-500 hover:text-black transition-colors"
                         >
@@ -74,7 +79,7 @@ function CartItemRow({ item }: { item: CartItem }) {
                         </span>
                         <button
                             onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
+                                updateQuantity(item.id, item.quantity + 1, item.purchaseOptionType)
                             }
                             className="p-1.5 bg-white/5 rounded-md hover:bg-amber-500 hover:text-black transition-colors"
                         >
@@ -192,9 +197,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     </button>
                                 </div>
                             ) : (
-                                items.map((item) => (
-                                    <CartItemRow key={item.id} item={item} />
-                                ))
+                items.map((item) => (
+                    <CartItemRow
+                        key={`${item.id}-${item.purchaseOptionType || ""}`}
+                        item={item}
+                    />
+                ))
                             )}
                         </div>
 

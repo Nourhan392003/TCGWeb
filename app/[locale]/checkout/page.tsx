@@ -17,6 +17,7 @@ import { getLocalizedText } from "@/utils/localization";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import { useRequireAuth } from "@/hooks/useAuthAction";
 import type { Id } from "@/convex/_generated/dataModel";
 interface CheckoutFormData {
     firstName: string;
@@ -34,7 +35,8 @@ export default function CheckoutPage() {
     const locale = useLocale();
 
     const { items, freeShipping, appliedCoupon } = useCartStore();
-    const { user, isLoaded, isSignedIn } = useUser();
+    const { user } = useUser();
+    const { isLoaded, isSignedIn } = useRequireAuth();
     const createOrder = useMutation(api.orders.createOrder);
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +102,7 @@ export default function CheckoutPage() {
                 name: getItemName(item.name),
                 price: Number(item.price),
                 quantity: Number(item.quantity),
+                ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
             }));
 
 
@@ -150,6 +153,7 @@ export default function CheckoutPage() {
                         name: getItemName(item.name),
                         price: Number(item.price),
                         quantity: Number(item.quantity),
+                        ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
                     })),
                     shippingFee: shipping,
                     shippingFeeOverride: freeShipping ? 0 : undefined,
@@ -192,6 +196,10 @@ export default function CheckoutPage() {
                 </div>
             </div>
         );
+    }
+
+    if (!isLoaded || !isSignedIn) {
+        return null;
     }
 
     return (

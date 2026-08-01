@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, Share } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import toast from "react-hot-toast";
@@ -25,6 +26,12 @@ interface ProductHeroProps {
     isFoil?: boolean;
     isFirstEdition?: boolean;
     isGraded?: boolean;
+    purchaseOptions?: Array<{
+      type: string;
+      price: number;
+      inStock?: boolean;
+      stockQuantity?: number;
+    }>;
   };
 }
 
@@ -55,6 +62,25 @@ export default function ProductHero({ product }: ProductHeroProps) {
   const productImage = product.imageUrl || product.image || "";
   const productId = product._id.toString();
   const inWishlist = isInWishlist(productId);
+
+  const options = product.purchaseOptions ?? [];
+  const hasOptions = options.length > 0;
+  const [selectedOptionType, setSelectedOptionType] = useState<string>(
+    hasOptions ? options[0].type : ""
+  );
+  const selectedOption =
+    hasOptions && selectedOptionType
+      ? options.find((o) => o.type === selectedOptionType)
+      : undefined;
+  const effectivePrice = selectedOption ? selectedOption.price : product["price"];
+  const effectiveInStock =
+    selectedOption !== undefined
+      ? (selectedOption.inStock ?? true)
+      : product["inStock"];
+  const effectiveStockQuantity =
+    selectedOption !== undefined
+      ? selectedOption.stockQuantity
+      : product["stockQuantity"];
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -67,10 +93,11 @@ export default function ProductHero({ product }: ProductHeroProps) {
         addItem({
           id: productId,
           name: localizedName,
-          price: product.price,
+          price: effectivePrice,
           quantity: 1,
           image: productImage,
-          stockQuantity: product.stockQuantity,
+          stockQuantity: effectiveStockQuantity,
+          ...(selectedOptionType ? { purchaseOptionType: selectedOptionType } : {}),
         });
         toast.success(tActions("addedToCart", { name: localizedName }));
       } catch (error) {
@@ -103,6 +130,33 @@ export default function ProductHero({ product }: ProductHeroProps) {
   };
 
 
+
+  const handleShare = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const productUrl =
+      typeof window !== "undefined" ? window.location.href : "";
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: localizedName,
+          url: productUrl,
+        });
+        return;
+      } catch {
+        // Native share sheet dismissed or unavailable; fall back to clipboard.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(productUrl);
+      toast.success(tActions("linkCopied"));
+    } catch {
+      toast.error(tActions("copyFailed"));
+    }
+  };
 
   return (
     <section className="relative w-full py-8">
@@ -161,12 +215,12 @@ export default function ProductHero({ product }: ProductHeroProps) {
 
             <div className={`absolute top-5 ${isRTL ? "left-5" : "right-5"}`}>
               <span
-                className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold tracking-wide ${product.inStock
+                className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold tracking-wide ${effectiveInStock
                   ? "bg-green-500/30 text-green-300 border border-green-500/50"
                   : "bg-red-500/30 text-red-300 border border-red-500/50"
                   }`}
               >
-                {product.inStock ? t("inStock") : t("outOfStock")}
+                {effectiveInStock ? t("inStock") : t("outOfStock")}
               </span>
             </div>
 
@@ -219,35 +273,54 @@ export default function ProductHero({ product }: ProductHeroProps) {
 
           <div className="mb-8">
             <div className="text-4xl md:text-6xl font-black text-amber-500">
-              {formatPriceByLocale(product.price, locale)}
+              {formatPriceByLocale(effectivePrice, locale)}
             </div>
 
-            {product.inStock &&
-              product.stockQuantity !== undefined &&
-              product.stockQuantity > 0 && (
+            {effectiveInStock &&
+              effectiveStockQuantity !== undefined &&
+              effectiveStockQuantity > 0 && (
                 <p className="text-amber-400/80 text-xs sm:text-sm mt-2">
-                  {t("onlyLeft", { count: product.stockQuantity })}
+                  {t("onlyLeft", { count: effectiveStockQuantity })}
                 </p>
               )}
           </div>
 
+          {hasOptions && (
+            <div className="flex gap-2 mb-6">
+              {options.map((opt) => (
+                <button
+                  key={opt.type}
+                  type="button"
+                  onClick={() => setSelectedOptionType(opt.type)}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    selectedOptionType === opt.type
+                      ? "bg-amber-500 text-black border-amber-500"
+                      : "bg-[#16161e] text-gray-300 border-[#2a2a38] hover:border-amber-400"
+                  }`}
+                >
+                  {opt.type.charAt(0).toUpperCase() + opt.type.slice(1)} — {formatPriceByLocale(opt.price, locale)}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="mb-8 p-5 rounded-xl bg-[#16161e]/90 border border-[#2a2a38]">
             <div className="flex items-center gap-4">
               <div
-                className={`w-3 h-3 rounded-full ${product.inStock ? "bg-green-500 animate-pulse" : "bg-red-500"
+                className={`w-3 h-3 rounded-full ${effectiveInStock ? "bg-green-500 animate-pulse" : "bg-red-500"
                   }`}
               />
               <div className="flex flex-col">
                 <span
                   className={
-                    product.inStock
+                    effectiveInStock
                       ? "text-green-300 text-sm font-semibold"
                       : "text-red-300 text-sm font-semibold"
                   }
                 >
-                  {product.inStock ? t("dispatch") : t("unavailable")}
+                  {effectiveInStock ? t("dispatch") : t("unavailable")}
                 </span>
-                {product.inStock && (
+                {effectiveInStock && (
                   <span className="text-gray-500 text-xs mt-1">{t("shipsToday")}</span>
                 )}
               </div>
@@ -258,14 +331,14 @@ export default function ProductHero({ product }: ProductHeroProps) {
             <button
               type="button"
               onClick={handleAddToCart}
-              disabled={!product.inStock}
-              className={`flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all active:scale-95 ${product.inStock
+              disabled={!effectiveInStock}
+              className={`flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all active:scale-95 ${effectiveInStock
                 ? "bg-amber-500 text-black hover:bg-amber-400 shadow-lg shadow-amber-500/10"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
                 }`}
             >
               <ShoppingCart className="w-5 h-5" />
-              {product.inStock ? t("addToCart") : t("soldOut")}
+              {effectiveInStock ? t("addToCart") : t("soldOut")}
             </button>
 
             <button
@@ -278,6 +351,17 @@ export default function ProductHero({ product }: ProductHeroProps) {
               aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <Heart className={`w-6 h-6 ${inWishlist ? "fill-current" : ""}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className={`shrink-0 px-6 py-4 rounded-xl transition-all active:scale-95 ${
+                "bg-white/5 text-white border-2 border-white/10 hover:border-amber-500/50 hover:text-amber-500"
+              }`}
+              aria-label={t("share")}
+            >
+              <Share className="w-6 h-6" />
             </button>
           </div>
 
@@ -303,8 +387,8 @@ export default function ProductHero({ product }: ProductHeroProps) {
               <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">
                 {t("availability")}
               </p>
-              <p className={`font-bold text-sm ${product.inStock ? "text-green-400" : "text-red-400"}`}>
-                {product.inStock ? t("inStock") : t("outOfStock")}
+              <p className={`font-bold text-sm ${effectiveInStock ? "text-green-400" : "text-red-400"}`}>
+                {effectiveInStock ? t("inStock") : t("outOfStock")}
               </p>
             </div>
           </div>

@@ -33,6 +33,13 @@ export default function ProductsPage() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState("");
     const [isUploading, setIsUploading] = useState(false);
+    const [editHasPurchaseOptions, setEditHasPurchaseOptions] = useState(false);
+    const [editBoxPrice, setEditBoxPrice] = useState("");
+    const [editBoxInStock, setEditBoxInStock] = useState(true);
+    const [editBoxStockQty, setEditBoxStockQty] = useState(0);
+    const [editCasePrice, setEditCasePrice] = useState("");
+    const [editCaseInStock, setEditCaseInStock] = useState(true);
+    const [editCaseStockQty, setEditCaseStockQty] = useState(0);
     const generateUploadUrl = useMutation(api.products.generateUploadUrl);
 
     const handleEdit = (product: any) => {
@@ -46,6 +53,22 @@ export default function ProductsPage() {
             stockQuantity: product.stockQuantity ?? 0,
         };
         setEditingProduct(normalizedProduct);
+
+        const boxOpt = Array.isArray(product.purchaseOptions)
+            ? product.purchaseOptions.find((o: any) => o.type === "box")
+            : undefined;
+        const caseOpt = Array.isArray(product.purchaseOptions)
+            ? product.purchaseOptions.find((o: any) => o.type === "case")
+            : undefined;
+        setEditHasPurchaseOptions(
+            !!(product.purchaseOptions && product.purchaseOptions.length > 0)
+        );
+        setEditBoxPrice(boxOpt?.price !== undefined ? String(boxOpt.price) : "");
+        setEditBoxInStock(boxOpt?.inStock ?? true);
+        setEditBoxStockQty(boxOpt?.stockQuantity ?? 0);
+        setEditCasePrice(caseOpt?.price !== undefined ? String(caseOpt.price) : "");
+        setEditCaseInStock(caseOpt?.inStock ?? true);
+        setEditCaseStockQty(caseOpt?.stockQuantity ?? 0);
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -67,6 +90,29 @@ export default function ProductsPage() {
                 imageId = data.storageId || data.fileId || data.id;
             }
 
+            const purchaseOptions: Array<{
+                type: string;
+                price: number;
+                inStock?: boolean;
+                stockQuantity?: number;
+            }> = [];
+            if (editHasPurchaseOptions && editBoxPrice) {
+                purchaseOptions.push({
+                    type: "box",
+                    price: parseFloat(editBoxPrice),
+                    inStock: editBoxInStock,
+                    stockQuantity: editBoxStockQty,
+                });
+            }
+            if (editHasPurchaseOptions && editCasePrice) {
+                purchaseOptions.push({
+                    type: "case",
+                    price: parseFloat(editCasePrice),
+                    inStock: editCaseInStock,
+                    stockQuantity: editCaseStockQty,
+                });
+            }
+
             await updateProduct({
                 id: editingProduct._id as any,
                 name: { en: editingProduct.nameEn, ar: editingProduct.nameAr || undefined },
@@ -78,6 +124,7 @@ export default function ProductsPage() {
                 description: editingProduct.descriptionEn
                     ? { en: editingProduct.descriptionEn, ar: editingProduct.descriptionAr || undefined }
                     : undefined,
+                ...(editHasPurchaseOptions ? { purchaseOptions } : {}),
                 imageId,
             });
             setEditingProduct(null);
@@ -420,10 +467,99 @@ export default function ProductsPage() {
                                         onChange={(e) => setEditingProduct({ ...editingProduct, isPreorder: e.target.checked })}
                                         className="w-4 h-4 rounded bg-[#1a1a24] border-gray-700 text-emerald-500 focus:ring-emerald-500"
                                     />
-                                    <label htmlFor="isPreorder" className="text-sm text-gray-300">Preorder</label>
-                                </div>
-                            </div>
-                            {/* Buttons */}
+                                     <label htmlFor="isPreorder" className="text-sm text-gray-300">Preorder</label>
+                                 </div>
+                             </div>
+                              {/* Purchase Options */}
+                              <div>
+                                  <p className="text-xs text-gray-400 mb-1">
+                                      Configure separate price, stock quantity, and availability for box and case.
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                      <input
+                                          type="checkbox"
+                                          id="editHasPurchaseOptions"
+                                          checked={editHasPurchaseOptions}
+                                          onChange={(e) => setEditHasPurchaseOptions(e.target.checked)}
+                                          className="w-4 h-4 rounded bg-[#1a1a24] border-gray-700 text-amber-500 focus:ring-amber-500"
+                                      />
+                                      <label htmlFor="editHasPurchaseOptions" className="text-sm text-gray-300">
+                                          Enable purchase options (box / case)
+                                      </label>
+                                  </div>
+                              </div>
+
+                              {editHasPurchaseOptions && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-[#1a1a24] rounded-lg border border-gray-700">
+                                      <div className="flex flex-col gap-2">
+                                          <div className="flex flex-col gap-1">
+                                              <label className="text-xs text-gray-400">Box price (SAR)</label>
+                                              <input
+                                                  type="number"
+                                                  step="0.01"
+                                                  min="0"
+                                                  value={editBoxPrice}
+                                                  onChange={(e) => setEditBoxPrice(e.target.value)}
+                                                  className="border border-gray-600 bg-[#0f0f16] p-2 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                              />
+                                          </div>
+                                          <div className="flex flex-col gap-1">
+                                              <label className="text-xs text-gray-400">Box stock quantity</label>
+                                              <input
+                                                  type="number"
+                                                  min="0"
+                                                  step="1"
+                                                  value={editBoxStockQty}
+                                                  onChange={(e) => setEditBoxStockQty(Math.max(0, Number(e.target.value)))}
+                                                  className="border border-gray-600 bg-[#0f0f16] p-2 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                              />
+                                          </div>
+                                          <label className="flex items-center gap-2 text-xs text-gray-300">
+                                              <input
+                                                  type="checkbox"
+                                                  checked={editBoxInStock}
+                                                  onChange={(e) => setEditBoxInStock(e.target.checked)}
+                                                  className="w-3.5 h-3.5 accent-amber-500"
+                                              />
+                                              Box in stock
+                                          </label>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                          <div className="flex flex-col gap-1">
+                                              <label className="text-xs text-gray-400">Case price (SAR)</label>
+                                              <input
+                                                  type="number"
+                                                  step="0.01"
+                                                  min="0"
+                                                  value={editCasePrice}
+                                                  onChange={(e) => setEditCasePrice(e.target.value)}
+                                                  className="border border-gray-600 bg-[#0f0f16] p-2 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                              />
+                                          </div>
+                                          <div className="flex flex-col gap-1">
+                                              <label className="text-xs text-gray-400">Case stock quantity</label>
+                                              <input
+                                                  type="number"
+                                                  min="0"
+                                                  step="1"
+                                                  value={editCaseStockQty}
+                                                  onChange={(e) => setEditCaseStockQty(Math.max(0, Number(e.target.value)))}
+                                                  className="border border-gray-600 bg-[#0f0f16] p-2 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                              />
+                                          </div>
+                                          <label className="flex items-center gap-2 text-xs text-gray-300">
+                                              <input
+                                                  type="checkbox"
+                                                  checked={editCaseInStock}
+                                                  onChange={(e) => setEditCaseInStock(e.target.checked)}
+                                                  className="w-3.5 h-3.5 accent-amber-500"
+                                              />
+                                              Case in stock
+                                          </label>
+                                      </div>
+                                  </div>
+                              )}
+                             {/* Buttons */}
                             <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"

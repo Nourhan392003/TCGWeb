@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
             name: item.name || "Unknown",
             price: Number(item.price),
             quantity: Number(item.quantity),
+            purchaseOptionType: item.purchaseOptionType,
         }));
 
         const subtotal = storeItems.reduce(
@@ -69,7 +70,9 @@ export async function POST(req: NextRequest) {
         const shippingFeeHalalas = Math.round(shippingFee * 100);
 
         const productPaymobItems = storeItems.map((item: any) => ({
-            name: item.name,
+            name: item.purchaseOptionType
+                ? `${item.purchaseOptionType} - ${item.name}`
+                : item.name,
             amount: Math.round(item.price * 100),
             quantity: item.quantity,
             description: item.name,

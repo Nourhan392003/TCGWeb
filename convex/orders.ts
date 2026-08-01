@@ -86,6 +86,7 @@ export const updateOrderStatusByPaymobOrderId = mutation({
                     ),
                     price: v.number(),
                     quantity: v.number(),
+                    purchaseOptionType: v.optional(v.string()),
                 })
             )
         ),
@@ -137,6 +138,7 @@ export const updatePaymentStatus = mutation({
                     ),
                     price: v.number(),
                     quantity: v.number(),
+                    purchaseOptionType: v.optional(v.string()),
                 })
             )
         ),
@@ -212,6 +214,7 @@ export const createOrder = mutation({
                     ),
                     price: v.number(),
                     quantity: v.number(),
+                    purchaseOptionType: v.optional(v.string()),
                 })
             )
         ),

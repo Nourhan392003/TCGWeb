@@ -4,18 +4,27 @@ import { dark } from "@clerk/themes";
 
 interface Props {
     params: Promise<{ locale: string }>;
+    searchParams: Promise<{ redirect_url?: string }>;
 }
 
-export default async function SignUpPage({ params }: Props) {
+export default async function SignUpPage({ params, searchParams }: Props) {
     const { locale } = await params;
+    const { redirect_url } = await searchParams;
     const isArabic = locale === 'ar';
     const clerkLocalization = isArabic ? arSA : undefined;
+
+    const isLocalized = (url: string | undefined) =>
+        !!url && url.startsWith(`/${locale}`);
+    const redirectUrl = redirect_url && isLocalized(redirect_url)
+        ? redirect_url
+        : `/${locale}`;
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
             <SignUp
-                signInUrl={`/${locale}/sign-in`}
+                signInUrl={`/${locale}/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`}
+                redirectUrl={redirectUrl}
                 appearance={{
                     baseTheme: dark,
                     elements: {

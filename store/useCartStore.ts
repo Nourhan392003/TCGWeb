@@ -10,6 +10,7 @@ export interface CartItem {
     quantity: number;
 
     stockQuantity?: number;
+    purchaseOptionType?: string;
 }
 
 interface CartStore {
@@ -21,8 +22,8 @@ interface CartStore {
     setAppliedCoupon: (code: string | null) => void;
 
     addItem: (item: CartItem) => void;
-    removeItem: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
+    removeItem: (id: string, purchaseOptionType?: string) => void;
+    updateQuantity: (id: string, quantity: number, purchaseOptionType?: string) => void;
     clearCart: () => void;
     getTotalPrice: () => number;
 
@@ -80,6 +81,10 @@ function migrateCartState(persistedState: unknown, version: number): CartPersist
                         : 1,
                 stockQuantity:
                     typeof item.stockQuantity === 'number' ? item.stockQuantity : undefined,
+                purchaseOptionType:
+                    typeof item.purchaseOptionType === 'string'
+                        ? item.purchaseOptionType
+                        : undefined,
             }))
         : [];
 
@@ -113,7 +118,12 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
     },
     addItem: (newItem) => {
         set((state) => {
-            const existingItem = state.items.find((item) => item.id === newItem.id);
+            const optionA = (newItem.purchaseOptionType ?? null);
+            const existingItem = state.items.find(
+                (item) =>
+                    item.id === newItem.id &&
+                    (item.purchaseOptionType ?? null) === optionA
+            );
 
             if (existingItem) {
                 const maxQty = existingItem.stockQuantity ?? Infinity;
@@ -121,7 +131,8 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
 
                 return {
                     items: state.items.map((item) =>
-                        item.id === newItem.id
+                        item.id === newItem.id &&
+                        (item.purchaseOptionType ?? null) === optionA
                             ? { ...item, quantity: item.quantity + 1 }
                             : item
                     ),
@@ -141,16 +152,21 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
         });
     },
 
-    removeItem: (id) => {
+    removeItem: (id, purchaseOptionType) => {
+        const optionA = (purchaseOptionType ?? null);
         set((state) => ({
-            items: state.items.filter((item) => item.id !== id),
+            items: state.items.filter(
+                (item) =>
+                    !(item.id === id && (item.purchaseOptionType ?? null) === optionA)
+            ),
         }));
     },
 
-    updateQuantity: (id, quantity) => {
+    updateQuantity: (id, quantity, purchaseOptionType) => {
+        const optionA = (purchaseOptionType ?? null);
         set((state) => ({
             items: state.items.map((item) => {
-                if (item.id === id) {
+                if (item.id === id && (item.purchaseOptionType ?? null) === optionA) {
                     const maxQty = item.stockQuantity ?? Infinity;
                     return { ...item, quantity: Math.min(Math.max(1, quantity), maxQty) };
                 }
@@ -171,7 +187,7 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
 
 const cartPersistOptions: PersistOptions<CartStore, CartPersist> = {
     name: 'tcg-cart-storage',
-    version: 2,
+    version: 3,
     migrate: (persistedState, version) => migrateCartState(persistedState, version),
     partialize: (state) => ({
         items: state.items,

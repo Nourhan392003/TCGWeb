@@ -22,6 +22,14 @@ export default function AddProductForm() {
     const [inStock, setInStock] = useState(true);
     const [isPreorder, setIsPreorder] = useState(false);
 
+    const [hasPurchaseOptions, setHasPurchaseOptions] = useState(false);
+    const [boxPrice, setBoxPrice] = useState("");
+    const [boxInStock, setBoxInStock] = useState(true);
+    const [boxStockQty, setBoxStockQty] = useState(0);
+    const [casePrice, setCasePrice] = useState("");
+    const [caseInStock, setCaseInStock] = useState(true);
+    const [caseStockQty, setCaseStockQty] = useState(0);
+
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -54,6 +62,29 @@ export default function AddProductForm() {
             const storageId = data.storageId || data.fileId || data.id;
             if (!storageId) throw new Error("No storageId returned from upload");
 
+            const purchaseOptions: Array<{
+                type: string;
+                price: number;
+                inStock?: boolean;
+                stockQuantity?: number;
+            }> = [];
+            if (hasPurchaseOptions && boxPrice) {
+                purchaseOptions.push({
+                    type: "box",
+                    price: parseFloat(boxPrice),
+                    inStock: boxInStock,
+                    stockQuantity: boxStockQty,
+                });
+            }
+            if (hasPurchaseOptions && casePrice) {
+                purchaseOptions.push({
+                    type: "case",
+                    price: parseFloat(casePrice),
+                    inStock: caseInStock,
+                    stockQuantity: caseStockQty,
+                });
+            }
+
             await addProduct({
                 name: { en: nameEn, ar: nameAr || undefined },
                 price: parseFloat(price),
@@ -66,6 +97,7 @@ export default function AddProductForm() {
                 inStock,
                 stockQuantity,
                 isPreorder,
+                ...(purchaseOptions.length > 0 ? { purchaseOptions } : {}),
                 imageId: storageId,
             });
 
@@ -81,6 +113,13 @@ export default function AddProductForm() {
             setCondition("Factory Sealed");
             setInStock(true);
             setIsPreorder(false);
+            setHasPurchaseOptions(false);
+            setBoxPrice("");
+            setBoxInStock(true);
+            setBoxStockQty(0);
+            setCasePrice("");
+            setCaseInStock(true);
+            setCaseStockQty(0);
             setSelectedImage(null);
             if (imageInputRef.current) imageInputRef.current.value = "";
         } catch (error: any) {
@@ -260,6 +299,94 @@ export default function AddProductForm() {
                         <label htmlFor="isPreorder" className="text-sm text-white">Pre-order Product</label>
                     </div>
                 </div>
+
+                <div className="flex items-center gap-2 mt-2">
+                    <input
+                        type="checkbox"
+                        id="hasPurchaseOptions"
+                        checked={hasPurchaseOptions}
+                        onChange={(e) => setHasPurchaseOptions(e.target.checked)}
+                        className="w-4 h-4 accent-amber-500"
+                    />
+                    <label htmlFor="hasPurchaseOptions" className="text-sm text-white">
+                        Enable purchase options (box / case)
+                    </label>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-2">
+                    Configure separate price, stock quantity, and availability for box and case.
+                </p>
+
+                {hasPurchaseOptions && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#16161e] rounded-lg border border-[#2a2a38]">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-gray-400">Box price (SAR)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={boxPrice}
+                                    onChange={(e) => setBoxPrice(e.target.value)}
+                                    className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-gray-400">Box stock quantity</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={boxStockQty}
+                                    onChange={(e) => setBoxStockQty(Math.max(0, Number(e.target.value)))}
+                                    className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 text-xs text-gray-300">
+                                <input
+                                    type="checkbox"
+                                    checked={boxInStock}
+                                    onChange={(e) => setBoxInStock(e.target.checked)}
+                                    className="w-3.5 h-3.5 accent-amber-500"
+                                />
+                                Box in stock
+                            </label>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-gray-400">Case price (SAR)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={casePrice}
+                                    onChange={(e) => setCasePrice(e.target.value)}
+                                    className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-gray-400">Case stock quantity</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={caseStockQty}
+                                    onChange={(e) => setCaseStockQty(Math.max(0, Number(e.target.value)))}
+                                    className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none text-sm text-white"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 text-xs text-gray-300">
+                                <input
+                                    type="checkbox"
+                                    checked={caseInStock}
+                                    onChange={(e) => setCaseInStock(e.target.checked)}
+                                    className="w-3.5 h-3.5 accent-amber-500"
+                                />
+                                Case in stock
+                            </label>
+                        </div>
+                    </div>
+                )}
 
                 <button
                     type="submit"

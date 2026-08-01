@@ -45,16 +45,20 @@ export default function PreordersClient() {
             product.imageUrl ||
             product.image ||
             "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg";
+        const firstOption = product.purchaseOptions?.[0];
 
         checkAuth(() => {
             flyToCart(targetElement, productImage);
             addItemToCart({
                 id: product._id.toString(),
                 name: localizedName,
-                price: product.price,
+                price: firstOption ? firstOption.price : product.price,
                 quantity: 1,
                 image: productImage,
-                stockQuantity: product.stockQuantity,
+                stockQuantity: firstOption
+                    ? firstOption.stockQuantity
+                    : product.stockQuantity,
+                ...(firstOption ? { purchaseOptionType: firstOption.type } : {}),
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
         });
@@ -125,8 +129,10 @@ export default function PreordersClient() {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                         {products.map((product: any) => {
-                            const inWishlist = isInWishlist(product._id.toString());
+                             const inWishlist = isInWishlist(product._id.toString());
                             const localizedName = getLocalizedText(product.name, locale);
+                            const firstOption = product.purchaseOptions?.[0];
+                            const cardPrice = firstOption ? firstOption.price : product.price;
 
                             return (
                                 <Link
@@ -134,12 +140,12 @@ export default function PreordersClient() {
                                     href={`/products/${product._id}`}
                                     className="group bg-[#12121a] rounded-xl border border-gray-800 overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10"
                                 >
-                                    <div className="aspect-[3/4] relative overflow-hidden bg-[#1a1a24]">
+                                    <div className="aspect-[3/4] relative overflow-hidden bg-white p-3 flex items-center justify-center">
                                         {product.imageUrl || product.image ? (
                                             <img
                                                 src={product.imageUrl || product.image}
                                                 alt={localizedName}
-                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs sm:text-sm">
@@ -171,9 +177,9 @@ export default function PreordersClient() {
                                         </h3>
 
                                         <div className="flex items-center justify-between mb-2 sm:mb-3">
-                                            <span className="text-sm sm:text-lg font-bold text-amber-500">
-                                                {formatPriceByLocale(product.price, locale)}
-                                            </span>
+                                                <span className="text-sm sm:text-lg font-bold text-amber-500">
+                                                        {formatPriceByLocale(cardPrice, locale)}
+                                                    </span>
                                             <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
                                                 {tPre("comingSoon")}
                                             </span>

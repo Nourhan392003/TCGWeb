@@ -26,7 +26,9 @@
     "addedToCart": "تم إضافة {name} للسلة!",
     "removedFromWishlist": "تم إزالة {name} من المفضلة",
     "addedToWishlist": "تم إضافة {name} للمفضلة!",
-    "loginRequired": "يرجى تسجيل الدخول أولًا لإضافة المنتجات أو إكمال الشراء"
+    "loginRequired": "يرجى تسجيل الدخول أولًا لإضافة المنتجات أو إكمال الشراء",
+    "linkCopied": "تم نسخ الرابط!",
+    "copyFailed": "فشل نسخ الرابط"
   },
   "Hero": {
     "available": "متوفر في {date}",
@@ -117,7 +119,8 @@
     "addToCart": "إضافة للسلة",
     "soldOut": "نفذ",
     "game": "اللعبة",
-    "availability": "التوفر"
+    "availability": "التوفر",
+    "share": "مشاركة"
   },
   "ProductSpecs": {
     "title": "تفاصيل المنتج",
@@ -502,5 +505,11 @@
     "browse": "تصفح جميع المنتجات",
     "comingSoon": "قريباً",
     "badge": "طلب مسبق"
+  },
+  "WelcomePrompt": {
+    "headline": "افتح خزنتك",
+    "benefit": "سجّل دخولك لحفظ قائمة أمنياتك، وتتبع طلباتك، وإتمام الشراء بسرعة.",
+    "cta": "ادخل الخزنة",
+    "skip": "تصفّح أولاً"
   }
 }

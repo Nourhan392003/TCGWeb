@@ -5,7 +5,8 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartStore, CartItem } from "@/store/useCartStore";
 import { formatPriceByLocale } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import Image from "next/image";
 import { getLocalizedText } from "@/utils/localization";
 import { getShippingFee } from "@/lib/shipping";
@@ -21,19 +22,19 @@ function CartItemCard({ item }: { item: CartItem }) {
   const localizedName = getLocalizedText(item.name, locale);
 
   const handleIncrement = () => {
-    updateQuantity(item.id, item.quantity + 1);
+    updateQuantity(item.id, item.quantity + 1, item.purchaseOptionType);
   };
 
   const handleDecrement = () => {
     if (item.quantity > 1) {
-      updateQuantity(item.id, item.quantity - 1);
+      updateQuantity(item.id, item.quantity - 1, item.purchaseOptionType);
     } else {
-      removeItem(item.id);
+      removeItem(item.id, item.purchaseOptionType);
     }
   };
 
   const handleRemove = () => {
-    removeItem(item.id);
+    removeItem(item.id, item.purchaseOptionType);
   };
 
   return (
@@ -53,6 +54,11 @@ function CartItemCard({ item }: { item: CartItem }) {
           <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
             {localizedName}
           </h4>
+          {item.purchaseOptionType && (
+            <span className="text-[10px] text-amber-400 uppercase">
+              {item.purchaseOptionType}
+            </span>
+          )}
           <button
             onClick={handleRemove}
             className="p-1 sm:p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
@@ -118,6 +124,8 @@ function OrderSummary() {
   const t = useTranslations("Cart");
   const tActions = useTranslations("Actions");
   const locale = useLocale();
+  const { checkAuth } = useAuthAction();
+  const router = useRouter();
 
   const {
     items,
@@ -245,13 +253,14 @@ function OrderSummary() {
           {t("clearCart")}
         </button>
 
-        <Link
-          href="/checkout"
+        <button
+          type="button"
+          onClick={() => checkAuth(() => router.push("/checkout"), undefined, "/checkout")}
           className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all"
         >
           {tActions("checkout")}
           <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" />
-        </Link>
+        </button>
       </div>
     </div>
   );
@@ -292,7 +301,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-3 sm:space-y-4">
               {items.map((item) => (
-                <CartItemCard key={item.id} item={item} />
+                <CartItemCard key={`${item.id}-${item.purchaseOptionType || ""}`} item={item} />
               ))}
             </div>
 

@@ -7,11 +7,14 @@ import { Heart, ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText } from "@/utils/localization";
+import { useRequireAuth } from "@/hooks/useAuthAction";
 
 export default function WishlistPage() {
     const t = useTranslations('Wishlist');
     const locale = useLocale();
     const isRTL = locale === 'ar';
+
+    const { isLoaded, isSignedIn } = useRequireAuth();
 
     const wishlistStore = useWishlistStore();
     const [mounted, setMounted] = useState(false);
@@ -20,7 +23,7 @@ export default function WishlistPage() {
         setMounted(true);
     }, []);
 
-    if (!mounted) {
+    if (!mounted || !isLoaded || !isSignedIn) {
         return (
             <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center">

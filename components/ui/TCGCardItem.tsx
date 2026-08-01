@@ -19,6 +19,7 @@ interface TCGCardItemProps {
     price: number;
     stockQuantity?: number;
     inStock?: boolean;
+    purchaseOptionType?: string;
 }
 
 export default function TCGCardItem({
@@ -29,6 +30,7 @@ export default function TCGCardItem({
 
     stockQuantity,
     inStock = true,
+    purchaseOptionType,
 }: TCGCardItemProps) {
     const stringId = id.toString();
     const { checkAuth } = useAuthAction();
@@ -85,6 +87,7 @@ export default function TCGCardItem({
                 image,
 
                 stockQuantity,
+                ...(purchaseOptionType ? { purchaseOptionType } : {}),
             });
             toast.success(tActions("addedToCart", { name: localizedName }));
         });
@@ -95,9 +98,7 @@ export default function TCGCardItem({
 
         if (isMobile) {
             e.preventDefault();
-            checkAuth(() => {
-                router.push(`/products/${stringId}`);
-            }, undefined, `/products/${stringId}`);
+            router.push(`/products/${stringId}`);
         }
     };
 
@@ -127,12 +128,12 @@ export default function TCGCardItem({
                 />
             </button>
 
-            <div className="relative aspect-[2.5/3.5] w-full overflow-hidden rounded-lg mb-4 pointer-events-none">
+            <div className="relative aspect-[2.5/3.5] w-full overflow-hidden rounded-lg mb-4 pointer-events-none bg-white p-3 flex items-center justify-center">
                 <Image
                     src={image || "https://tcg.pokemon.com/img/tcg-xy-xy11-19.jpg"}
                     alt={localizedName || "Card Image"}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-contain transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
             </div>

@@ -79,9 +79,7 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
 
         if (!isRealProductId(cardId)) return;
 
-        checkAuth(() => {
-            router.push(`/products/${cardId}`);
-        }, undefined, `/products/${cardId}`);
+        router.push(`/products/${cardId}`);
     };
     return (
         <section className="relative w-full overflow-hidden bg-[#0a0a0f] py-8">

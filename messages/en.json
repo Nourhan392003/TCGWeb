@@ -26,7 +26,9 @@
     "addedToCart": "{name} added to cart!",
     "removedFromWishlist": "{name} removed from wishlist",
     "addedToWishlist": "{name} added to wishlist!",
-    "loginRequired": "Please sign in first to add products or complete purchase"
+    "loginRequired": "Please sign in first to add products or complete purchase",
+    "linkCopied": "Link copied to clipboard!",
+    "copyFailed": "Failed to copy link"
   },
   "Hero": {
     "available": "AVAILABLE {date}",
@@ -117,7 +119,8 @@
     "addToCart": "Add to Cart",
     "soldOut": "Sold Out",
     "game": "Game",
-    "availability": "Availability"
+    "availability": "Availability",
+    "share": "Share"
   },
   "ProductSpecs": {
     "title": "Product Details",
@@ -502,5 +505,11 @@
     "browse": "Browse All Products",
     "comingSoon": "Coming Soon",
     "badge": "Pre-order"
+  },
+  "WelcomePrompt": {
+    "headline": "Unlock Your Vault",
+    "benefit": "Sign in to save your wishlist, track orders, and check out faster.",
+    "cta": "Enter the Vault",
+    "skip": "Browse First"
   }
 }

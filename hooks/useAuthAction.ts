@@ -4,6 +4,14 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { useLocale } from "next-intl";
+import { useEffect } from "react";
+
+export const normalizeLocalePath = (path: string, locale: string) => {
+    if (!path) return `/${locale}`;
+    if (path.startsWith(`/${locale}/`) || path === `/${locale}`) return path;
+    if (path.startsWith("/")) return `/${locale}${path}`;
+    return `/${locale}/${path}`;
+};
 
 export const useAuthAction = () => {
     const { isLoaded, isSignedIn } = useUser();
@@ -16,22 +24,18 @@ export const useAuthAction = () => {
         message?: string,
         customRedirect?: string
     ) => {
-        console.log("AUTH CHECK", { isLoaded, isSignedIn, pathname, locale });
-
         if (!isLoaded) {
             toast.error("Authentication is still loading");
             return false;
         }
 
         if (!isSignedIn) {
-            toast.error(message || "Please login to continue");
-
-            const redirectPath = customRedirect || pathname;
-            const normalizedRedirect = redirectPath.startsWith(`/${locale}`)
-                ? redirectPath
-                : `/${locale}${redirectPath.startsWith("/") ? redirectPath : `/${redirectPath}`}`;
-
-            console.log("REDIRECTING TO", normalizedRedirect);
+            const redirectPath = normalizeLocalePath(
+                customRedirect || pathname,
+                locale
+            );
+            const signInHref = `/sign-in?redirect_url=${encodeURIComponent(redirectPath)}`;
+            router.push(signInHref);
             return false;
         }
 
@@ -39,5 +43,25 @@ export const useAuthAction = () => {
         return true;
     };
 
-    return { checkAuth, isSignedIn, isLoaded };
+    return { checkAuth, isSignedIn: isSignedIn ?? false, isLoaded };
+};
+
+export const useRequireAuth = (customRedirect?: string) => {
+    const { isLoaded, isSignedIn } = useUser();
+    const router = useRouter();
+    const pathname = usePathname();
+    const locale = useLocale();
+
+    useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            const redirectPath = normalizeLocalePath(
+                customRedirect || pathname,
+                locale
+            );
+            const signInHref = `/sign-in?redirect_url=${encodeURIComponent(redirectPath)}`;
+            router.replace(signInHref);
+        }
+    }, [isLoaded, isSignedIn, router, pathname, locale, customRedirect]);
+
+    return { isLoaded, isSignedIn: isSignedIn ?? false };
 };

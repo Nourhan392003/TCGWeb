@@ -3,11 +3,17 @@
 import { Link } from "@/i18n/navigation";
 import { LayoutDashboard, Package, ShoppingCart, LogOut } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { useRequireAuth } from "@/hooks/useAuthAction";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const t = useTranslations('Admin');
     const locale = useLocale();
     const isRTL = locale === 'ar';
+    const { isLoaded, isSignedIn } = useRequireAuth();
+
+    if (!isLoaded || !isSignedIn) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0a0f] text-white flex">

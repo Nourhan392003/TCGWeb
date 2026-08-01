@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Id, Doc } from "./_generated/dataModel";
 import { requireAdmin } from "./auth";
 
 
@@ -61,6 +61,16 @@ export const addProduct = mutation({
         isFeatured: v.optional(v.boolean()),
         isGraded: v.optional(v.boolean()),
         isPreorder: v.optional(v.boolean()),
+        purchaseOptions: v.optional(
+            v.array(
+                v.object({
+                    type: v.string(),
+                    price: v.number(),
+                    inStock: v.optional(v.boolean()),
+                    stockQuantity: v.optional(v.number()),
+                })
+            )
+        ),
     },
     handler: async (ctx, args) => {
 
@@ -173,6 +183,16 @@ export const updateCard = mutation({
         isFeatured: v.optional(v.boolean()),
         isPreorder: v.optional(v.boolean()),
         type: v.optional(v.string()),
+        purchaseOptions: v.optional(
+            v.array(
+                v.object({
+                    type: v.string(),
+                    price: v.number(),
+                    inStock: v.optional(v.boolean()),
+                    stockQuantity: v.optional(v.number()),
+                })
+            )
+        ),
     },
     handler: async (ctx, args) => {
 
@@ -311,8 +331,16 @@ export const finalizeOrder = mutation({
         }
 
         const orderItems =
-            ((order.storeItems as Array<{ productId: Id<"products">; quantity: number }>) ??
-                []) as Array<{ productId: Id<"products">; quantity: number }>;
+            ((order.storeItems as Array<{
+                productId: Id<"products">;
+                quantity: number;
+                purchaseOptionType?: string;
+            }>) ??
+                []) as Array<{
+                productId: Id<"products">;
+                quantity: number;
+                purchaseOptionType?: string;
+            }>;
 
         if (orderItems.length === 0) {
             await ctx.db.patch(order._id, { stockDecremented: true });
@@ -322,38 +350,90 @@ export const finalizeOrder = mutation({
             };
         }
 
-        const productUpdates: Array<{ id: Id<"products">; newStock: number }> = [];
+        const productUpdates: Array<{
+            id: Id<"products">;
+            newStock?: number;
+            purchaseOptionsPatch?: NonNullable<Doc<"products">["purchaseOptions"]>;
+        }> = [];
 
         for (const item of orderItems) {
             const product = await ctx.db.get(item.productId);
 
             if (!product) {
                 throw new Error(
-                    `Product not found during finalization: ${String(item.productId)}`
-                );
-            }
-
-            const currentStock = product.stockQuantity ?? 0;
-
-            if (currentStock < item.quantity) {
-                throw new Error(
-                    `Insufficient stock for product ${String(
+                    `Product not found during finalization: ${String(
                         item.productId
-                    )}: requested ${item.quantity}, available ${currentStock}`
+                    )}`
                 );
             }
 
-            productUpdates.push({
-                id: product._id,
-                newStock: Math.max(0, currentStock - item.quantity),
-            });
+            if (
+                item.purchaseOptionType &&
+                Array.isArray(product.purchaseOptions)
+            ) {
+                const optIndex = product.purchaseOptions.findIndex(
+                    (o) => o.type === item.purchaseOptionType
+                );
+
+                if (optIndex === -1) {
+                    throw new Error(
+                        `Purchase option "${item.purchaseOptionType}" not found for product ${String(
+                            item.productId
+                        )}`
+                    );
+                }
+
+                const option = product.purchaseOptions[optIndex];
+                const currentOptStock = option.stockQuantity ?? 0;
+
+                if (currentOptStock < item.quantity) {
+                    throw new Error(
+                        `Insufficient stock for option "${item.purchaseOptionType}" of product ${String(
+                            item.productId
+                        )}: requested ${item.quantity}, available ${currentOptStock}`
+                    );
+                }
+
+                const newOptStock = Math.max(0, currentOptStock - item.quantity);
+                const updatedOptions = [...product.purchaseOptions];
+                updatedOptions[optIndex] = {
+                    ...option,
+                    stockQuantity: newOptStock,
+                    inStock: newOptStock > 0,
+                };
+
+                productUpdates.push({
+                    id: product._id,
+                    purchaseOptionsPatch: updatedOptions,
+                });
+            } else {
+                const currentStock = product.stockQuantity ?? 0;
+
+                if (currentStock < item.quantity) {
+                    throw new Error(
+                        `Insufficient stock for product ${String(
+                            item.productId
+                        )}: requested ${item.quantity}, available ${currentStock}`
+                    );
+                }
+
+                productUpdates.push({
+                    id: product._id,
+                    newStock: Math.max(0, currentStock - item.quantity),
+                });
+            }
         }
 
         for (const update of productUpdates) {
-            await ctx.db.patch(update.id, {
-                stockQuantity: update.newStock,
-                inStock: update.newStock > 0,
-            });
+            const patchObj: Record<string, unknown> = {};
+            if (update.purchaseOptionsPatch) {
+                patchObj.purchaseOptions = update.purchaseOptionsPatch;
+            }
+            if (update.newStock !== undefined) {
+                patchObj.stockQuantity = update.newStock;
+                patchObj.inStock = update.newStock > 0;
+            }
+            await ctx.db.patch(update.id, patchObj);
         }
 
         await ctx.db.patch(order._id, {

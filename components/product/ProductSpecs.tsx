@@ -13,6 +13,12 @@ interface ProductSpecsProps {
     isFoil?: boolean;
     isFirstEdition?: boolean;
     isGraded?: boolean;
+    purchaseOptions?: Array<{
+      type: string;
+      price: number;
+      inStock?: boolean;
+      stockQuantity?: number;
+    }>;
   };
 }
 
@@ -95,6 +101,29 @@ export default function ProductSpecs({ product }: ProductSpecsProps) {
                 >
                   {feature}
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {product.purchaseOptions && product.purchaseOptions.length > 0 && (
+          <div className="p-4 border-t border-white/5">
+            <p className="text-gray-400 text-sm mb-2">
+              {locale === "ar" ? "خيارات الشراء" : "Purchase Options"}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {product.purchaseOptions.map((opt) => (
+                <div
+                  key={opt.type}
+                  className="flex justify-between items-center"
+                >
+                  <span className="text-gray-400 text-sm capitalize">
+                    {opt.type}
+                  </span>
+                  <span className="text-amber-500 font-semibold">
+                    {formatPriceByLocale(opt.price, locale)}
+                  </span>
+                </div>
               ))}
             </div>
           </div>

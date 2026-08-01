@@ -34,6 +34,16 @@ export default defineSchema({
         isPreorder: v.optional(v.boolean()),
         createdAt: v.optional(v.number()),
         isGraded: v.optional(v.boolean()),
+        purchaseOptions: v.optional(
+            v.array(
+                v.object({
+                    type: v.string(),
+                    price: v.number(),
+                    inStock: v.optional(v.boolean()),
+                    stockQuantity: v.optional(v.number()),
+                })
+            )
+        ),
     }).index("by_game", ["game"]),
 
     orders: defineTable({
@@ -78,6 +88,7 @@ export default defineSchema({
                     ),
                     price: v.number(),
                     quantity: v.number(),
+                    purchaseOptionType: v.optional(v.string()),
                 })
             )
         ),

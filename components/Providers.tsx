@@ -16,6 +16,7 @@ export default function Providers({ children, locale, messages }: Props) {
             messages={messages}
             timeZone="Asia/Riyadh"
         >
+            <Toaster position="bottom-right" />
             {children}
         </NextIntlClientProvider>
     );
