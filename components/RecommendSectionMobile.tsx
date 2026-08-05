@@ -24,11 +24,11 @@ interface RecommendSectionProps {
 }
 
 const posterData: Poster[] = [
-    { id: '1', name: { en: 'Pirates Party 2026 Vol.1', ar: 'حفلة القراصنة ٢٠٢٦' }, price: 24.99, image: '/cards/card1.png' },
-    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/cards/card12.png' },
-    { id: '3', name: { en: "Quick Beginner's Guide", ar: 'دليل المبتدئين السريع' }, price: 15.99, image: '/cards/card3.png' },
-    { id: '4', name: { en: 'Teaching App', ar: 'تطبيق التعليم' }, price: 22.99, image: '/cards/card4.png' },
-    { id: '5', name: { en: 'Championship 26-27', ar: 'البطولة ٢٦-٢٧' }, price: 29.99, image: '/cards/card1.png' },
+    { id: '1', name: { en: 'Pirates Party 2026 Vol.1', ar: 'حفلة القراصنة ٢٠٢٦' }, price: 24.99, image: '/cards/card1.png', inStock: true },
+    { id: '2', name: { en: 'Recommended Decks', ar: 'مجموعات موصى بها' }, price: 19.99, image: '/cards/card12.png', inStock: true },
+    { id: '3', name: { en: "Quick Beginner's Guide", ar: 'دليل المبتدئين السريع' }, price: 15.99, image: '/cards/card3.png', inStock: true },
+    { id: '4', name: { en: 'Teaching App', ar: 'تطبيق التعليم' }, price: 22.99, image: '/cards/card4.png', inStock: true },
+    { id: '5', name: { en: 'Championship 26-27', ar: 'البطولة ٢٦-٢٧' }, price: 29.99, image: '/cards/card1.png', inStock: true },
 ];
 
 const mobilePosterPositions = [
@@ -48,13 +48,21 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
     const { flyToCart } = useFlyToCart();
     const addItemToCart = useCartStore((state) => state.addItem);
 
-    const cards = featuredCards?.length ? featuredCards : posterData;
+    const cards = featuredCards?.length
+      ? featuredCards.filter(
+          (card) =>
+            card.inStock === true ||
+            (card.stockQuantity !== undefined && card.stockQuantity > 0)
+        )
+      : posterData;
 
     const isRealProductId = (id: string) => id.includes(":");
 
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>, card: Poster) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!card.inStock) return;
 
         const targetElement = e.currentTarget;
         const localizedName = getLocalizedText(card.name, locale);
@@ -173,10 +181,10 @@ export default function RecommendSectionMobile({ featuredCards }: RecommendSecti
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleAddToCart(e, card)}
-                                                disabled={card.inStock === false}
-                                                className={`px-3 py-1 text-[0.6rem] font-extrabold uppercase tracking-wider rounded-sm ${card.inStock !== false ? "bg-[#2e1a0b] text-[#f4e4c1]" : "bg-[#2e1a0b]/50 text-[#f4e4c1]/50 cursor-not-allowed"}`}
+                                                disabled={!card.inStock}
+                                                className={`px-3 py-1 text-[0.6rem] font-extrabold uppercase tracking-wider rounded-sm ${card.inStock ? "bg-[#2e1a0b] text-[#f4e4c1]" : "bg-[#2e1a0b]/50 text-[#f4e4c1]/50 cursor-not-allowed"}`}
                                             >
-                                                {card.inStock !== false ? tActions('claim') : tActions('soldOut')}
+                                                {card.inStock ? tActions('claim') : tActions('soldOut')}
                                             </button>
                                         </div>
                                     </div>

@@ -8,6 +8,8 @@ type Poster = {
   name: string | { en: string; ar?: string };
   price: number;
   image: string;
+  stockQuantity?: number;
+  inStock?: boolean;
 };
 
 type RecommendSectionProps = {

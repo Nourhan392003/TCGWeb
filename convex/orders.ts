@@ -169,10 +169,52 @@ export const updatePaymentStatus = mutation({
             updateFields.storeItems = args.storeItems;
         }
 
+        // تحديث حالة الدفع أولاً
         await ctx.db.patch(order._id, updateFields);
+
+        // خصم المخزون بعد الدفع الناجح، مرة واحدة فقط
+        if (args.paymentStatus === "paid") {
+            const freshOrder = await ctx.db.get(order._id);
+
+            if (!freshOrder) {
+                throw new Error("Order not found after payment update");
+            }
+
+            // لو المخزون اتخصم قبل كده، ما نعملش حاجة
+            if (freshOrder.stockDecremented) {
+                return;
+            }
+
+            const items = (freshOrder.storeItems ?? args.storeItems) ?? [];
+
+            // لو مفيش items، ما فيش حاجة نخصمها
+            if (!items || items.length === 0) {
+                return;
+            }
+
+            for (const item of items) {
+                if (!item.productId || !item.quantity) continue;
+
+                const product = await ctx.db.get(item.productId);
+                if (!product) continue;
+
+                const currentStock = product.stockQuantity ?? 0;
+                const newStock = Math.max(0, currentStock - item.quantity);
+
+                await ctx.db.patch(item.productId, {
+                    stockQuantity: newStock,
+                    inStock: newStock > 0, // تخلي المنتج out of stock لو المخزون صفر
+                });
+            }
+
+            // نعلّم إن المخزون اتخصم عشان ما نكررش العملية
+            await ctx.db.patch(order._id, {
+                stockDecremented: true,
+                updatedAt: Date.now(),
+            });
+        }
     },
 });
-
 export const createOrder = mutation({
     args: {
         userId: v.string(),
