@@ -244,6 +244,18 @@ export const updatePaymentStatus = mutation({
                     stockDecremented: true,
                     updatedAt: Date.now(),
                 });
+
+                await ctx.scheduler.runAfter(
+                    0,
+                    internal.emails.sendNewOrderEmail,
+                    {
+                        orderId: order._id,
+                        customerName: freshOrder.customerName,
+                        customerEmail: freshOrder.customerEmail,
+                        totalAmount: freshOrder.totalAmount,
+                        paymobOrderId: freshOrder.paymobOrderId,
+                    }
+                );
             }
 
             if (!freshOrder.confirmationEmailSent) {

@@ -3,7 +3,8 @@ import crypto from "crypto";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
-const HMAC_SECRET = process.env.PAYMOB_HMAC_SECRET || "";
+const HMAC_SECRET =
+    process.env.PAYMOB_HMAC_SECRET || process.env.PAYMOB_HMAC || "";
 const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL || "";
 
 const convex = new ConvexHttpClient(CONVEX_URL);
@@ -71,10 +72,8 @@ export async function POST(req: NextRequest) {
             payload.success === "true";
 
         const orderReference =
-            payload.order?.merchant_order_id ||
-            payload.order?.id ||
-            payload.id ||
             payload.special_reference ||
+            payload.order?.merchant_order_id ||
             null;
 
         if (!orderReference) {
@@ -87,7 +86,8 @@ export async function POST(req: NextRequest) {
 
         const paymobOrderId = payload.id || payload.obj?.id || null;
 
-        // Update payment status and store items on the order
+        // Update payment status and store items on the order.
+        // updatePaymentStatus handles stock decrement and customer email idempotently.
         await convex.mutation(api.orders.updatePaymentStatus, {
             orderReference: String(orderReference),
             paymentStatus: isPaid ? "paid" : "failed",
@@ -95,25 +95,6 @@ export async function POST(req: NextRequest) {
             rawPayload: JSON.stringify(payload),
             paymobOrderId: paymobOrderId ? String(paymobOrderId) : undefined,
         });
-
-        // On confirmed payment, finalize the order (decrement stock)
-        // This is idempotent — if stockDecremented is already true, it returns early.
-        if (isPaid) {
-            try {
-                const result = await convex.mutation(api.products.finalizeOrder, {
-                    orderReference: String(orderReference),
-                });
-                console.log(`finalizeOrder for ${orderReference}:`, result);
-            } catch (finalizeError: any) {
-                // Log but do not return error to Paymob — we don't want retries
-                // to cause issues. The stockDecremented flag prevents double-decrement.
-                console.error(`Error during finalizeOrder for ${orderReference}:`, finalizeError.message);
-                return NextResponse.json(
-                    { success: false, error: "Finalization failed" },
-                    { status: 500 }
-                );
-            }
-        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

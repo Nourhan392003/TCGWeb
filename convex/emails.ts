@@ -27,8 +27,6 @@ export const sendNewOrderEmail = internalAction({
         paymobOrderId: v.optional(v.string()),
     },
     handler: async (_ctx, args) => {
-        console.log("sendNewOrderEmail called", args);
-
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         const { data, error } = await resend.emails.send({
@@ -46,11 +44,11 @@ export const sendNewOrderEmail = internalAction({
         });
 
         if (error) {
-            console.error("Resend error:", error);
+            console.error("Resend admin email error:", error);
             throw new Error(error.message);
         }
 
-        console.log("Resend success:", data);
+        console.log("Admin notification email sent:", data?.id ?? "ok");
     },
 });
 
@@ -139,6 +137,6 @@ export const sendOrderConfirmationEmail = internalAction({
             orderId: args.orderId,
         });
 
-        console.log("Confirmation email sent:", data);
+        console.log("Customer confirmation email sent:", data?.id ?? "ok");
     },
 });
