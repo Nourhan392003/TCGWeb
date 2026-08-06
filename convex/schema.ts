@@ -94,6 +94,7 @@ export default defineSchema({
         ),
 
         stockDecremented: v.optional(v.boolean()),
+        confirmationEmailSent: v.optional(v.boolean()),
         couponCode: v.optional(v.string()),
         couponType: v.optional(v.string()),
         createdAt: v.number(),

@@ -15,6 +15,7 @@ import {
     Mail,
     Calendar,
     DollarSign,
+    CreditCard,
 } from "lucide-react";
 import { formatPrice } from "@/utils/currency";
 import { getLocalizedText } from "@/utils/localization";
@@ -30,6 +31,12 @@ const statusColors: Record<OrderStatus, { color: string; icon: typeof Clock }> =
 };
 
 const statusOptions: OrderStatus[] = ["pending", "processing", "shipped", "delivered", "cancelled"];
+
+const paymentStatusColors: Record<string, string> = {
+    paid: "bg-green-500/20 text-green-400 border-green-500/30",
+    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    failed: "bg-red-500/20 text-red-400 border-red-500/30",
+};
 
 export default function OrdersPage() {
     const t = useTranslations("Admin");
@@ -135,11 +142,12 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="bg-[#12121a] rounded-xl border border-gray-800 overflow-hidden">
-                    <div className="hidden md:grid md:grid-cols-6 gap-4 p-4 bg-[#1a1a24] border-b border-gray-800 text-sm font-medium text-gray-400">
+                    <div className="hidden md:grid md:grid-cols-7 gap-4 p-4 bg-[#1a1a24] border-b border-gray-800 text-sm font-medium text-gray-400">
                         <div className="col-span-1">Order ID</div>
                         <div className="col-span-2">Customer</div>
                         <div className="col-span-1">Date</div>
                         <div className="col-span-1">Total</div>
+                        <div className="col-span-1">Payment</div>
                         <div className="col-span-1">Status</div>
                     </div>
 
@@ -164,7 +172,7 @@ export default function OrdersPage() {
                                 return (
                                     <div key={order._id}>
                                         <div
-                                            className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 items-center hover:bg-[#1a1a24] transition-colors duration-150 cursor-pointer"
+                                            className="grid grid-cols-1 md:grid-cols-7 gap-4 p-4 items-center hover:bg-[#1a1a24] transition-colors duration-150 cursor-pointer"
                                             onClick={() => setSelectedOrder(isExpanded ? null : order._id)}
                                         >
                                             <div className="col-span-1">
@@ -213,17 +221,26 @@ export default function OrdersPage() {
                                                 </div>
                                             </div>
 
-                                            <div className="col-span-1">
-                                                <div
-                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color ||
-                                                        statusConfig.pending.color
-                                                        }`}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <StatusIcon className="w-3.5 h-3.5" />
-                                                    {statusConfig[order.status as OrderStatus]?.label || "Pending"}
-                                                </div>
-                                            </div>
+<div className="col-span-1">
+                                                            <div
+                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${paymentStatusColors[order.paymentStatus || "pending"] || paymentStatusColors.pending}`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                {order.paymentStatus || "pending"}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-span-1">
+                                                            <div
+                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color ||
+                                                                    statusConfig.pending.color
+                                                                    }`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <StatusIcon className="w-3.5 h-3.5" />
+                                                                {statusConfig[order.status as OrderStatus]?.label || "Pending"}
+                                                            </div>
+                                                        </div>
                                         </div>
 
                                         {isExpanded && (
@@ -239,9 +256,15 @@ export default function OrdersPage() {
                                                                 <span className="text-gray-400">Order ID:</span>
                                                                 <span className="text-white font-mono text-sm">{order._id}</span>
                                                             </div>
+<div className="flex justify-between">
+                                                                <span className="text-gray-400">Payment:</span>
+                                                                <span className={`font-medium ${order.paymentStatus === "paid" ? "text-green-400" : order.paymentStatus === "failed" ? "text-red-400" : "text-yellow-400"}`}>
+                                                                    {order.paymentStatus || "pending"}
+                                                                </span>
+                                                            </div>
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Items:</span>
-                                                                <span className="text-white">{order.items?.length || 0}</span>
+                                                                <span className="text-white">{order.storeItems?.length || 0}</span>
                                                             </div>
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Total Amount:</span>
@@ -343,6 +366,37 @@ export default function OrdersPage() {
 
                                                 <div className="mt-6">
                                                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                                                        <CreditCard className="w-5 h-5" />
+                                                        Payment Status
+                                                    </h3>
+
+                                                    <div className="bg-[#12121a] rounded-lg border border-gray-700 p-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <span
+                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${paymentStatusColors[order.paymentStatus || "pending"] || paymentStatusColors.pending}`}
+                                                            >
+                                                                {order.paymentStatus === "paid"
+                                                                    ? "Paid"
+                                                                    : order.paymentStatus === "failed"
+                                                                      ? "Failed"
+                                                                      : "Pending"}
+                                                            </span>
+                                                            {order.paymentReference && (
+                                                                <span className="text-gray-400 text-xs font-mono">
+                                                                    Ref: {order.paymentReference}
+                                                                </span>
+                                                            )}
+                                                            {order.paymobOrderId && (
+                                                                <span className="text-gray-500 text-xs font-mono">
+                                                                    Paymob: {order.paymobOrderId}
+                                                                </span>
+                                                            )}
+                                                        </div>
+</div>
+                                                </div>
+
+                                                <div className="mt-6">
+                                                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                         <ShoppingCart className="w-5 h-5" />
                                                         Order Items
                                                     </h3>
@@ -356,20 +410,24 @@ export default function OrdersPage() {
                                                         </div>
 
                                                         <div className="divide-y divide-gray-700">
-                                                            {order.items?.length ? (
-                                                                order.items.map((item: any, index: number) => {
+                                                            {order.storeItems?.length ? (
+                                                                order.storeItems.map((item: any, index: number) => {
                                                                     const localizedItemName = getLocalizedText(item.name, locale);
 
                                                                     return (
                                                                         <div key={`${order._id}-${index}`} className="grid grid-cols-4 gap-4 p-3">
                                                                             <div className="col-span-1">
                                                                                 <div className="flex items-center gap-2">
-                                                                                    {item.image && (
+                                                                                    {item.image ? (
                                                                                         <img
                                                                                             src={item.image}
                                                                                             alt={localizedItemName}
                                                                                             className="w-10 h-10 rounded object-cover"
                                                                                         />
+                                                                                    ) : (
+                                                                                        <div className="w-10 h-10 rounded bg-[#1a1a24] flex items-center justify-center text-gray-500">
+                                                                                            <Package className="w-5 h-5" />
+                                                                                        </div>
                                                                                     )}
                                                                                     <span className="text-white text-sm">
                                                                                         {localizedItemName}

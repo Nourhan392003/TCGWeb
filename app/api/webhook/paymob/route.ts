@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { fetchMutation } from "convex/nextjs";
-// 1. غيّر دي لـ api بدل internal
 import { api } from "../../../../convex/_generated/api";
 
 export async function POST(request: Request) {
@@ -9,12 +8,13 @@ export async function POST(request: Request) {
 
         const paymobOrderId = body.obj?.order?.id;
         const isSuccess = body.obj?.success;
-        const newStatus = isSuccess ? "paid" : "failed";
+        const paymentStatus = isSuccess ? "paid" : "failed";
 
         if (paymobOrderId) {
-            await fetchMutation(api.orders.updateOrderStatusByPaymobOrderId, {
+            await fetchMutation(api.orders.updatePaymentStatus, {
                 paymobOrderId,
-                status: newStatus,
+                paymentStatus,
+                paymentProvider: "paymob",
             });
         }
 

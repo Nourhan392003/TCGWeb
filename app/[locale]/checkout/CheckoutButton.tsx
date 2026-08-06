@@ -81,6 +81,7 @@ export default function CheckoutButton() {
         shippingFee,
         stockDecremented: false,
         shippingCountry: "SA",
+        storeItems,
       };
 
       console.log("STEP 1 - before createOrder");

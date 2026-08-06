@@ -6,7 +6,28 @@ import { internal } from "./_generated/api";
 export const getAllOrders = query({
     args: {},
     handler: async (ctx) => {
-        return await ctx.db.query("orders").order("desc").collect();
+        const orders = await ctx.db.query("orders").order("desc").collect();
+
+        return await Promise.all(
+            orders.map(async (order) => {
+                if (!order.storeItems) return order;
+
+                const enrichedItems = await Promise.all(
+                    (order.storeItems ?? []).map(async (item) => {
+                        if (item.productId) {
+                            const product = await ctx.db.get(item.productId);
+                            return {
+                                ...item,
+                                image: product?.imageUrl ?? product?.image ?? null,
+                            };
+                        }
+                        return { ...item, image: null };
+                    })
+                );
+
+                return { ...order, storeItems: enrichedItems };
+            })
+        );
     },
 });
 
@@ -118,7 +139,8 @@ export const updateOrderStatusByPaymobOrderId = mutation({
 
 export const updatePaymentStatus = mutation({
     args: {
-        orderReference: v.string(),
+        orderReference: v.optional(v.string()),
+        paymobOrderId: v.optional(v.string()),
         paymentStatus: v.union(
             v.literal("pending"),
             v.literal("paid"),
@@ -126,7 +148,6 @@ export const updatePaymentStatus = mutation({
         ),
         paymentProvider: v.string(),
         rawPayload: v.optional(v.string()),
-        paymobOrderId: v.optional(v.string()),
         paymentReference: v.optional(v.string()),
         storeItems: v.optional(
             v.array(
@@ -144,15 +165,27 @@ export const updatePaymentStatus = mutation({
         ),
     },
     handler: async (ctx, args) => {
-        const order = await ctx.db
-            .query("orders")
-            .withIndex("by_order_reference", (q) =>
-                q.eq("orderReference", args.orderReference)
-            )
-            .first();
+        let order;
+        if (args.orderReference) {
+            order = await ctx.db
+                .query("orders")
+                .withIndex("by_order_reference", (q) =>
+                    q.eq("orderReference", args.orderReference)
+                )
+                .first();
+        } else if (args.paymobOrderId) {
+            order = await ctx.db
+                .query("orders")
+                .withIndex("by_paymob_order_id", (q) =>
+                    q.eq("paymobOrderId", args.paymobOrderId)
+                )
+                .first();
+        }
 
         if (!order) {
-            throw new Error(`Order not found: ${args.orderReference}`);
+            throw new Error(
+                `Order not found: ${args.orderReference ?? args.paymobOrderId}`
+            );
         }
 
         const updateFields: Record<string, unknown> = {
@@ -169,10 +202,8 @@ export const updatePaymentStatus = mutation({
             updateFields.storeItems = args.storeItems;
         }
 
-        // تحديث حالة الدفع أولاً
         await ctx.db.patch(order._id, updateFields);
 
-        // خصم المخزون بعد الدفع الناجح، مرة واحدة فقط
         if (args.paymentStatus === "paid") {
             const freshOrder = await ctx.db.get(order._id);
 
@@ -180,38 +211,48 @@ export const updatePaymentStatus = mutation({
                 throw new Error("Order not found after payment update");
             }
 
-            // لو المخزون اتخصم قبل كده، ما نعملش حاجة
-            if (freshOrder.stockDecremented) {
-                return;
-            }
-
             const items = (freshOrder.storeItems ?? args.storeItems) ?? [];
 
-            // لو مفيش items، ما فيش حاجة نخصمها
             if (!items || items.length === 0) {
+                if (!freshOrder.confirmationEmailSent) {
+                    await ctx.scheduler.runAfter(
+                        0,
+                        internal.emails.sendOrderConfirmationEmail,
+                        { orderId: order._id }
+                    );
+                }
                 return;
             }
 
-            for (const item of items) {
-                if (!item.productId || !item.quantity) continue;
+            if (!freshOrder.stockDecremented) {
+                for (const item of items) {
+                    if (!item.productId || !item.quantity) continue;
 
-                const product = await ctx.db.get(item.productId);
-                if (!product) continue;
+                    const product = await ctx.db.get(item.productId);
+                    if (!product) continue;
 
-                const currentStock = product.stockQuantity ?? 0;
-                const newStock = Math.max(0, currentStock - item.quantity);
+                    const currentStock = product.stockQuantity ?? 0;
+                    const newStock = Math.max(0, currentStock - item.quantity);
 
-                await ctx.db.patch(item.productId, {
-                    stockQuantity: newStock,
-                    inStock: newStock > 0, // تخلي المنتج out of stock لو المخزون صفر
+                    await ctx.db.patch(item.productId, {
+                        stockQuantity: newStock,
+                        inStock: newStock > 0,
+                    });
+                }
+
+                await ctx.db.patch(order._id, {
+                    stockDecremented: true,
+                    updatedAt: Date.now(),
                 });
             }
 
-            // نعلّم إن المخزون اتخصم عشان ما نكررش العملية
-            await ctx.db.patch(order._id, {
-                stockDecremented: true,
-                updatedAt: Date.now(),
-            });
+            if (!freshOrder.confirmationEmailSent) {
+                await ctx.scheduler.runAfter(
+                    0,
+                    internal.emails.sendOrderConfirmationEmail,
+                    { orderId: order._id }
+                );
+            }
         }
     },
 });
@@ -294,20 +335,6 @@ export const createOrder = mutation({
         });
 
         console.log("createOrder success orderId:", orderId);
-
-        const scheduledId = await ctx.scheduler.runAfter(
-            0,
-            internal.emails.sendNewOrderEmail,
-            {
-                orderId,
-                customerName: args.customerName,
-                customerEmail: args.customerEmail,
-                totalAmount: args.totalAmount,
-                paymobOrderId: args.paymobOrderId,
-            }
-        );
-
-        console.log("Scheduled email job:", scheduledId);
 
         return orderId;
     }
