@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
 
         const receivedHmac =
+            req.nextUrl.searchParams.get("hmac") ||
             body.hmac ||
             body.HMAC ||
             body.obj?.hmac ||
@@ -67,8 +68,7 @@ export async function POST(req: NextRequest) {
 
         const isPaid =
             payload.success === true ||
-            payload.success === "true" ||
-            payload.pending === false;
+            payload.success === "true";
 
         const orderReference =
             payload.order?.merchant_order_id ||
