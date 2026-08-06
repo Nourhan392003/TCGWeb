@@ -1,4 +1,4 @@
-import { internalQuery, mutation } from "./_generated/server";
+import { internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 async function resolveImageUrl(ctx: any, product: any) {
@@ -53,11 +53,155 @@ export const getOrderForConfirmation = internalQuery({
     },
 });
 
-export const markConfirmationEmailSent = mutation({
-    args: { orderId: v.id("orders") },
+export const claimEmailSend = internalMutation({
+    args: {
+        orderId: v.id("orders"),
+        emailType: v.union(
+            v.literal("admin_new_order"),
+            v.literal("customer_confirmation")
+        ),
+        claimId: v.string(),
+    },
     handler: async (ctx, args) => {
+        const order = await ctx.db.get(args.orderId);
+        if (!order) throw new Error("Order not found");
+
+        const notifications = (order.emailNotifications ?? []) as Array<{
+            type: "admin_new_order" | "customer_confirmation";
+            status: "pending" | "sending" | "sent" | "failed";
+            sentAt?: number;
+            claimId?: string;
+        }>;
+
+        const existingIndex = notifications.findIndex(
+            (n) => n.type === args.emailType
+        );
+
+        if (existingIndex !== -1) {
+            const existing = notifications[existingIndex];
+
+            if (existing.status === "sent") {
+                return { alreadySent: true };
+            }
+
+            if (existing.status === "sending") {
+                return { alreadySent: true };
+            }
+
+            if (existing.status === "failed") {
+                const updatedNotifications = [...notifications];
+                updatedNotifications[existingIndex] = {
+                    type: args.emailType,
+                    status: "sending" as const,
+                    sentAt: Date.now(),
+                    claimId: args.claimId,
+                };
+
+                await ctx.db.patch(args.orderId, {
+                    emailNotifications: updatedNotifications,
+                    updatedAt: Date.now(),
+                });
+
+                return { alreadySent: false };
+            }
+
+            const updatedNotifications = [...notifications];
+            updatedNotifications[existingIndex] = {
+                type: args.emailType,
+                status: "sending" as const,
+                sentAt: Date.now(),
+                claimId: args.claimId,
+            };
+
+            await ctx.db.patch(args.orderId, {
+                emailNotifications: updatedNotifications,
+                updatedAt: Date.now(),
+            });
+
+            return { alreadySent: false };
+        }
+
+        const newNotification = {
+            type: args.emailType,
+            status: "sending" as const,
+            sentAt: Date.now(),
+            claimId: args.claimId,
+        };
+
         await ctx.db.patch(args.orderId, {
-            confirmationEmailSent: true,
+            emailNotifications: [...notifications, newNotification],
+            updatedAt: Date.now(),
+        });
+
+        return { alreadySent: false };
+    },
+});
+
+export const markEmailSent = internalMutation({
+    args: {
+        orderId: v.id("orders"),
+        emailType: v.union(
+            v.literal("admin_new_order"),
+            v.literal("customer_confirmation")
+        ),
+        claimId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const order = await ctx.db.get(args.orderId);
+        if (!order) throw new Error("Order not found");
+
+        const notifications = (order.emailNotifications ?? []) as Array<{
+            type: string;
+            status: string;
+            sentAt?: number;
+            claimId?: string;
+        }>;
+
+        const updatedNotifications = notifications.map((n) =>
+            n.type === args.emailType &&
+            n.claimId === args.claimId &&
+            n.status === "sending"
+                ? { ...n, status: "sent" as const, sentAt: Date.now() }
+                : n
+        );
+
+        await ctx.db.patch(args.orderId, {
+            emailNotifications: updatedNotifications,
+            updatedAt: Date.now(),
+        });
+    },
+});
+
+export const markEmailFailed = internalMutation({
+    args: {
+        orderId: v.id("orders"),
+        emailType: v.union(
+            v.literal("admin_new_order"),
+            v.literal("customer_confirmation")
+        ),
+        claimId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const order = await ctx.db.get(args.orderId);
+        if (!order) throw new Error("Order not found");
+
+        const notifications = (order.emailNotifications ?? []) as Array<{
+            type: string;
+            status: string;
+            sentAt?: number;
+            claimId?: string;
+        }>;
+
+        const updatedNotifications = notifications.map((n) =>
+            n.type === args.emailType &&
+            n.claimId === args.claimId &&
+            n.status === "sending"
+                ? { ...n, status: "failed" as const }
+                : n
+        );
+
+        await ctx.db.patch(args.orderId, {
+            emailNotifications: updatedNotifications,
             updatedAt: Date.now(),
         });
     },

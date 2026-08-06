@@ -96,6 +96,22 @@ export default defineSchema({
         stockDecremented: v.optional(v.boolean()),
         confirmationEmailSent: v.optional(v.boolean()),
         couponCode: v.optional(v.string()),
+        emailNotifications: v.optional(v.array(
+            v.object({
+                type: v.union(
+                    v.literal("admin_new_order"),
+                    v.literal("customer_confirmation")
+                ),
+                status: v.union(
+                    v.literal("pending"),
+                    v.literal("sending"),
+                    v.literal("sent"),
+                    v.literal("failed")
+                ),
+                sentAt: v.optional(v.number()),
+                claimId: v.optional(v.string()),
+            })
+        )),
         couponType: v.optional(v.string()),
         createdAt: v.number(),
         updatedAt: v.optional(v.number()),

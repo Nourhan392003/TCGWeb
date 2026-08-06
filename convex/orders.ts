@@ -214,13 +214,11 @@ export const updatePaymentStatus = mutation({
             const items = (freshOrder.storeItems ?? args.storeItems) ?? [];
 
             if (!items || items.length === 0) {
-                if (!freshOrder.confirmationEmailSent) {
-                    await ctx.scheduler.runAfter(
-                        0,
-                        internal.emails.sendOrderConfirmationEmail,
-                        { orderId: order._id }
-                    );
-                }
+                await ctx.scheduler.runAfter(
+                    0,
+                    internal.emails.sendPaymentSuccessEmails,
+                    { orderId: order._id }
+                );
                 return;
             }
 
@@ -247,24 +245,12 @@ export const updatePaymentStatus = mutation({
 
                 await ctx.scheduler.runAfter(
                     0,
-                    internal.emails.sendNewOrderEmail,
-                    {
-                        orderId: order._id,
-                        customerName: freshOrder.customerName,
-                        customerEmail: freshOrder.customerEmail,
-                        totalAmount: freshOrder.totalAmount,
-                        paymobOrderId: freshOrder.paymobOrderId,
-                    }
-                );
-            }
-
-            if (!freshOrder.confirmationEmailSent) {
-                await ctx.scheduler.runAfter(
-                    0,
-                    internal.emails.sendOrderConfirmationEmail,
+                    internal.emails.sendPaymentSuccessEmails,
                     { orderId: order._id }
                 );
             }
+
+            // Customer + admin emails are handled by sendPaymentSuccessEmails
         }
     },
 });
