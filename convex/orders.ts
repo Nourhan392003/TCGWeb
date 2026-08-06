@@ -214,10 +214,8 @@ export const updatePaymentStatus = mutation({
             const items = (freshOrder.storeItems ?? args.storeItems) ?? [];
 
             if (!items || items.length === 0) {
-                await ctx.scheduler.runAfter(
-                    0,
-                    internal.emails.sendPaymentSuccessEmails,
-                    { orderId: order._id }
+                console.error(
+                    `Order ${order._id} has no storeItems; skipping stock deduction and email`
                 );
                 return;
             }

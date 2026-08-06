@@ -53,6 +53,15 @@ export const getOrderForConfirmation = internalQuery({
     },
 });
 
+type EmailType = "admin_new_order" | "customer_confirmation";
+type EmailStatus = "pending" | "sending" | "sent" | "failed";
+type EmailNotification = {
+    type: EmailType;
+    status: EmailStatus;
+    sentAt?: number;
+    claimId?: string;
+};
+
 export const claimEmailSend = internalMutation({
     args: {
         orderId: v.id("orders"),
@@ -66,12 +75,7 @@ export const claimEmailSend = internalMutation({
         const order = await ctx.db.get(args.orderId);
         if (!order) throw new Error("Order not found");
 
-        const notifications = (order.emailNotifications ?? []) as Array<{
-            type: "admin_new_order" | "customer_confirmation";
-            status: "pending" | "sending" | "sent" | "failed";
-            sentAt?: number;
-            claimId?: string;
-        }>;
+        const notifications = (order.emailNotifications ?? []) as EmailNotification[];
 
         const existingIndex = notifications.findIndex(
             (n) => n.type === args.emailType
@@ -121,7 +125,7 @@ export const claimEmailSend = internalMutation({
             return { alreadySent: false };
         }
 
-        const newNotification = {
+        const newNotification: EmailNotification = {
             type: args.emailType,
             status: "sending" as const,
             sentAt: Date.now(),
@@ -150,12 +154,7 @@ export const markEmailSent = internalMutation({
         const order = await ctx.db.get(args.orderId);
         if (!order) throw new Error("Order not found");
 
-        const notifications = (order.emailNotifications ?? []) as Array<{
-            type: string;
-            status: string;
-            sentAt?: number;
-            claimId?: string;
-        }>;
+        const notifications = (order.emailNotifications ?? []) as EmailNotification[];
 
         const updatedNotifications = notifications.map((n) =>
             n.type === args.emailType &&
@@ -185,12 +184,7 @@ export const markEmailFailed = internalMutation({
         const order = await ctx.db.get(args.orderId);
         if (!order) throw new Error("Order not found");
 
-        const notifications = (order.emailNotifications ?? []) as Array<{
-            type: string;
-            status: string;
-            sentAt?: number;
-            claimId?: string;
-        }>;
+        const notifications = (order.emailNotifications ?? []) as EmailNotification[];
 
         const updatedNotifications = notifications.map((n) =>
             n.type === args.emailType &&

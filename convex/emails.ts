@@ -122,6 +122,19 @@ export const sendPaymentSuccessEmails = internalAction({
 
                 const { order, enrichedItems } = result;
 
+                if (!order.customerEmail) {
+                    await ctx.runMutation(
+                        internal.emailData.markEmailFailed,
+                        {
+                            orderId: args.orderId,
+                            emailType: "customer_confirmation",
+                            claimId: customerClaimId,
+                        }
+                    );
+                    console.error("Customer email is missing");
+                    return;
+                }
+
                 const shippingFee = order.shippingFee ?? 0;
                 const totalAmount = order.totalAmount ?? 0;
                 const customerName = order.customerName || "Customer";
