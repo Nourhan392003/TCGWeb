@@ -76,7 +76,10 @@ export async function POST(req: NextRequest) {
             req.nextUrl.searchParams.get("hmac") || "";
 
         const obj = body.obj || body;
-
+        console.log("Paymob callback payload keys", {
+            topKeys: Object.keys(body || {}),
+            objKeys: obj ? Object.keys(obj) : [],
+        });
 
         // HMAC verification: validate callback authenticity
         const isHmacValid = verifyTransactionHmac(obj, receivedHmac);
