@@ -6,11 +6,27 @@ const isAdminRoute = createRouteMatcher([
   "/:locale/admin(.*)",
 ]);
 
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
+
 type SessionClaimsWithRole = {
   role?: string;
 };
 
 export default clerkMiddleware(async (auth, req) => {
+  const pathname = req.nextUrl.pathname;
+
+  if (MAINTENANCE_MODE) {
+    if (
+      pathname === "/maintenance" ||
+      pathname.startsWith("/_next") ||
+      /\.(css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2|ttf|eot|json|txt|xml|csv|zip|webmanifest)$/.test(pathname)
+    ) {
+      return NextResponse.next();
+    }
+
+    return NextResponse.redirect(new URL("/maintenance", req.url));
+  }
+
   console.log("MIDDLEWARE RUNNING:", req.nextUrl.pathname);
 
   if (isAdminRoute(req)) {
@@ -30,7 +46,6 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/((?!_next|/maintenance|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
   ],
 };
