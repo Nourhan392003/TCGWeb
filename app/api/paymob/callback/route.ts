@@ -65,10 +65,18 @@ function verifyTransactionHmac(obj: Record<string, unknown>, receivedHmac: strin
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+        console.log("Paymob callback hmac source", {
+            hasQueryHmac: !!req.nextUrl.searchParams.get("hmac"),
+            bodyKeys: Object.keys(body || {}),
+            hasObj: !!body?.obj,
+        });
 
-        const receivedHmac = req.nextUrl.searchParams.get("hmac") || "";
+
+        const receivedHmac =
+            req.nextUrl.searchParams.get("hmac") || "";
 
         const obj = body.obj || body;
+
 
         // HMAC verification: validate callback authenticity
         const isHmacValid = verifyTransactionHmac(obj, receivedHmac);
