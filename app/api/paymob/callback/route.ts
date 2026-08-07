@@ -9,57 +9,73 @@ const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL || "";
 
 const convex = new ConvexHttpClient(CONVEX_URL);
 
-function sortObject(obj: Record<string, unknown>) {
-    return Object.keys(obj)
-        .sort()
-        .map((key) => {
-            const value = obj[key];
-            if (value === null || value === undefined) return "";
-            if (typeof value === "object") return JSON.stringify(value);
-            return String(value);
-        })
-        .join("");
+function paymobStr(value: unknown): string {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "boolean") return value ? "true" : "false";
+    return String(value);
 }
 
-function verifyHmac(payload: Record<string, unknown>, receivedHmac: string) {
+function verifyTransactionHmac(obj: Record<string, unknown>, receivedHmac: string): boolean {
     if (!HMAC_SECRET || !receivedHmac) return false;
 
-    // Exclude hmac/HMAC fields from the verification payload —
-    // they are not part of the signed content.
-    const cleanPayload: Record<string, unknown> = {};
-    for (const key of Object.keys(payload)) {
-        if (key.toLowerCase() === "hmac") continue;
-        cleanPayload[key] = payload[key];
-    }
+    const fields: unknown[] = [
+        obj.amount_cents,
+        obj.created_at,
+        obj.currency,
+        obj.error_occured,
+        obj.has_parent_transaction,
+        obj.id,
+        obj.integration_id,
+        obj.is_3d_secure,
+        obj.is_auth,
+        obj.is_capture,
+        obj.is_refunded,
+        obj.is_standalone_payment,
+        obj.is_voided,
+        typeof obj.order === "object" && obj.order !== null ? (obj.order as any).id : "",
+        obj.owner,
+        obj.pending,
+        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).pan : "",
+        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).sub_type : "",
+        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).type : "",
+        obj.success,
+    ];
 
-    const sortedString = sortObject(cleanPayload);
+    const concatenated = fields.map(paymobStr).join("");
+
     const calculatedHmac = crypto
         .createHmac("sha512", HMAC_SECRET)
-        .update(sortedString)
+        .update(concatenated)
         .digest("hex");
 
-    return calculatedHmac === receivedHmac;
+    if (!/^[a-f0-9]{128}$/i.test(receivedHmac)) {
+        return false;
+    }
+
+    if (calculatedHmac.length !== receivedHmac.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(
+        Buffer.from(calculatedHmac, "hex"),
+        Buffer.from(receivedHmac, "hex")
+    );
 }
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const receivedHmac =
-            req.nextUrl.searchParams.get("hmac") ||
-            body.hmac ||
-            body.HMAC ||
-            body.obj?.hmac ||
-            "";
+        const receivedHmac = req.nextUrl.searchParams.get("hmac") || "";
 
-        const payload = body.obj || body;
+        const obj = body.obj || body;
 
         // HMAC verification: validate callback authenticity
-        const isHmacValid = verifyHmac(payload, receivedHmac);
+        const isHmacValid = verifyTransactionHmac(obj, receivedHmac);
         if (!isHmacValid) {
             console.warn("Paymob callback HMAC verification failed", {
-                receivedHmac: receivedHmac ? receivedHmac.substring(0, 16) + "..." : "missing",
                 hasHmacSecret: !!HMAC_SECRET,
+                hasHmac: !!receivedHmac,
             });
             return NextResponse.json(
                 { success: false, error: "Invalid HMAC" },
@@ -68,23 +84,40 @@ export async function POST(req: NextRequest) {
         }
 
         const isPaid =
-            payload.success === true ||
-            payload.success === "true";
+            obj.success === true ||
+            obj.success === "true";
 
         const orderReference =
-            payload.special_reference ||
-            payload.order?.merchant_order_id ||
+            obj.special_reference ||
+            (typeof obj.order === "object" && obj.order !== null ? (obj.order as any).merchant_order_id : null) ||
             null;
 
+        console.log("Paymob callback HMAC", {
+            valid: isHmacValid,
+            orderReference,
+        });
+
+        console.log("Paymob callback received", {
+            success: obj.success,
+            orderReference,
+            hasHmac: !!receivedHmac,
+        });
+
         if (!orderReference) {
-            console.error("Paymac callback: no orderReference found in payload");
+            console.error("Paymob callback: no orderReference found in payload");
             return NextResponse.json(
                 { success: false, error: "No order reference" },
                 { status: 400 }
             );
         }
 
-        const paymobOrderId = payload.id || payload.obj?.id || null;
+        const paymobOrderId = obj.id || null;
+
+        console.log("Paymob callback updating payment", {
+            orderReference,
+            paymentStatus: isPaid ? "paid" : "failed",
+            paymobOrderId,
+        });
 
         // Update payment status and store items on the order.
         // updatePaymentStatus handles stock decrement and customer email idempotently.
@@ -92,8 +125,14 @@ export async function POST(req: NextRequest) {
             orderReference: String(orderReference),
             paymentStatus: isPaid ? "paid" : "failed",
             paymentProvider: "paymob",
-            rawPayload: JSON.stringify(payload),
-            paymobOrderId: paymobOrderId ? String(paymobOrderId) : undefined,
+            rawPayload: JSON.stringify(obj),
+            paymobOrderId: paymobOrderId != null ? String(paymobOrderId) : undefined,
+        });
+
+        console.log("Paymob callback updated", {
+            orderReference,
+            paymentStatus: isPaid ? "paid" : "failed",
+            paymobOrderId,
         });
 
         return NextResponse.json({ success: true });
