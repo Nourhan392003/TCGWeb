@@ -15,7 +15,13 @@ type SessionClaimsWithRole = {
 export default clerkMiddleware(async (auth, req) => {
   const pathname = req.nextUrl.pathname;
 
-  if (pathname === "/maintenance") {
+  const cleanPathname = pathname.replace(/\/+$/, "");
+
+  const isMaintenancePath =
+    cleanPathname === "/maintenance" ||
+    /^\/[^/]+\/maintenance$/.test(cleanPathname);
+
+  if (isMaintenancePath) {
     return NextResponse.next();
   }
 
