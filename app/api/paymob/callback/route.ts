@@ -75,10 +75,35 @@ export async function POST(req: NextRequest) {
         const receivedHmac =
             req.nextUrl.searchParams.get("hmac") || "";
 
-        const obj = body.obj || body;
-        console.log("Paymob callback payload keys", {
-            topKeys: Object.keys(body || {}),
+        const obj = body.obj;
+
+        console.log("Paymob callback diagnostics", {
+            method: req.method,
+            hasQueryHmac: !!receivedHmac,
+            topLevelBodyKeys: Object.keys(body || {}),
             objKeys: obj ? Object.keys(obj) : [],
+            fields: {
+                amount_cents: "amount_cents" in (obj || {}),
+                created_at: "created_at" in (obj || {}),
+                currency: "currency" in (obj || {}),
+                error_occured: "error_occured" in (obj || {}),
+                has_parent_transaction: "has_parent_transaction" in (obj || {}),
+                id: "id" in (obj || {}),
+                integration_id: "integration_id" in (obj || {}),
+                is_3d_secure: "is_3d_secure" in (obj || {}),
+                is_auth: "is_auth" in (obj || {}),
+                is_capture: "is_capture" in (obj || {}),
+                is_refunded: "is_refunded" in (obj || {}),
+                is_standalone_payment: "is_standalone_payment" in (obj || {}),
+                is_voided: "is_voided" in (obj || {}),
+                orderId: typeof obj?.order === "object" && obj.order !== null && "id" in obj.order,
+                owner: "owner" in (obj || {}),
+                pending: "pending" in (obj || {}),
+                sourceDataPan: typeof obj?.source_data === "object" && obj.source_data !== null && "pan" in obj.source_data,
+                sourceDataSubType: typeof obj?.source_data === "object" && obj.source_data !== null && "sub_type" in obj.source_data,
+                sourceDataType: typeof obj?.source_data === "object" && obj.source_data !== null && "type" in obj.source_data,
+                success: "success" in (obj || {}),
+            },
         });
 
         // HMAC verification: validate callback authenticity
