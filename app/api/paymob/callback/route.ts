@@ -132,6 +132,29 @@ export async function POST(req: NextRequest) {
             hasHmacInBody,
         });
 
+        console.log("Paymob callback field presence", {
+            amount_cents: "amount_cents" in (obj || {}),
+            created_at: "created_at" in (obj || {}),
+            currency: "currency" in (obj || {}),
+            error_occured: "error_occured" in (obj || {}),
+            has_parent_transaction: "has_parent_transaction" in (obj || {}),
+            id: "id" in (obj || {}),
+            integration_id: "integration_id" in (obj || {}),
+            is_3d_secure: "is_3d_secure" in (obj || {}),
+            is_auth: "is_auth" in (obj || {}),
+            is_capture: "is_capture" in (obj || {}),
+            is_refunded: "is_refunded" in (obj || {}),
+            is_standalone_payment: "is_standalone_payment" in (obj || {}),
+            is_voided: "is_voided" in (obj || {}),
+            order_id: typeof obj?.order === "object" && obj.order !== null && "id" in obj.order,
+            owner: "owner" in (obj || {}),
+            pending: "pending" in (obj || {}),
+            source_data_pan: typeof obj?.source_data === "object" && obj.source_data !== null && "pan" in obj.source_data,
+            source_data_sub_type: typeof obj?.source_data === "object" && obj.source_data !== null && "sub_type" in obj.source_data,
+            source_data_type: typeof obj?.source_data === "object" && obj.source_data !== null && "type" in obj.source_data,
+            success: "success" in (obj || {}),
+        });
+
         if (!obj || rawBodyLength === 0) {
             console.warn("Paymob callback: no valid payload received", {
                 rawBodyLength,
