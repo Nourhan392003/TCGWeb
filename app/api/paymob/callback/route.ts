@@ -64,47 +64,86 @@ function verifyTransactionHmac(obj: Record<string, unknown>, receivedHmac: strin
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        console.log("Paymob callback hmac source", {
-            hasQueryHmac: !!req.nextUrl.searchParams.get("hmac"),
-            bodyKeys: Object.keys(body || {}),
-            hasObj: !!body?.obj,
+        const method = req.method;
+        const url = new URL(req.url);
+        const contentType = req.headers.get("content-type") || "";
+        const contentLength = req.headers.get("content-length") || "";
+        const queryKeys = Array.from(url.searchParams.keys());
+
+        const rawBody = await req.text();
+        const rawBodyLength = rawBody.length;
+
+        let parsedTopLevelKeys: string[] = [];
+        let objKeys: string[] = [];
+        let obj: Record<string, unknown> | undefined;
+        let hasHmacInQuery = url.searchParams.has("hmac");
+        let hasHmacInBody = false;
+
+        if (contentType.includes("application/json")) {
+            try {
+                const parsed = JSON.parse(rawBody) as Record<string, unknown>;
+                parsedTopLevelKeys = Object.keys(parsed || {});
+                obj =
+                    typeof parsed.obj === "object" && parsed.obj !== null
+                        ? (parsed.obj as Record<string, unknown>)
+                        : parsed;
+                objKeys = obj ? Object.keys(obj) : [];
+                hasHmacInBody =
+                    parsed.hmac !== undefined || parsed.HMAC !== undefined;
+            } catch {
+                parsedTopLevelKeys = [];
+                objKeys = [];
+            }
+        } else if (contentType.includes("application/x-www-form-urlencoded")) {
+            try {
+                const params = new URLSearchParams(rawBody);
+                parsedTopLevelKeys = Array.from(params.keys());
+                objKeys = [];
+                hasHmacInBody = params.has("hmac") || params.has("HMAC");
+            } catch {
+                parsedTopLevelKeys = [];
+                objKeys = [];
+            }
+        } else if (contentType.includes("multipart/form-data")) {
+            parsedTopLevelKeys = [];
+            objKeys = [];
+            console.log("Paymob callback multipart body", {
+                contentType: contentType.split(";")[0],
+            });
+        } else {
+            parsedTopLevelKeys = [];
+            objKeys = [];
+            console.log("Paymob callback unknown body type", {
+                contentType,
+            });
+        }
+
+        console.log("Paymob callback diagnostics", {
+            method,
+            contentType,
+            contentLength,
+            queryKeys,
+            rawBodyLength,
+            parsedTopLevelKeys,
+            objKeys,
+            hasHmacInQuery,
+            hasHmacInBody,
         });
 
+        if (!obj || rawBodyLength === 0) {
+            console.warn("Paymob callback: no valid payload received", {
+                rawBodyLength,
+                hasHmacInQuery,
+                hasHmacInBody,
+            });
+            return NextResponse.json(
+                { success: false, error: "No valid payload" },
+                { status: 400 }
+            );
+        }
 
         const receivedHmac =
             req.nextUrl.searchParams.get("hmac") || "";
-
-        const obj = body.obj;
-
-        console.log("Paymob callback diagnostics", {
-            method: req.method,
-            hasQueryHmac: !!receivedHmac,
-            topLevelBodyKeys: Object.keys(body || {}),
-            objKeys: obj ? Object.keys(obj) : [],
-            fields: {
-                amount_cents: "amount_cents" in (obj || {}),
-                created_at: "created_at" in (obj || {}),
-                currency: "currency" in (obj || {}),
-                error_occured: "error_occured" in (obj || {}),
-                has_parent_transaction: "has_parent_transaction" in (obj || {}),
-                id: "id" in (obj || {}),
-                integration_id: "integration_id" in (obj || {}),
-                is_3d_secure: "is_3d_secure" in (obj || {}),
-                is_auth: "is_auth" in (obj || {}),
-                is_capture: "is_capture" in (obj || {}),
-                is_refunded: "is_refunded" in (obj || {}),
-                is_standalone_payment: "is_standalone_payment" in (obj || {}),
-                is_voided: "is_voided" in (obj || {}),
-                orderId: typeof obj?.order === "object" && obj.order !== null && "id" in obj.order,
-                owner: "owner" in (obj || {}),
-                pending: "pending" in (obj || {}),
-                sourceDataPan: typeof obj?.source_data === "object" && obj.source_data !== null && "pan" in obj.source_data,
-                sourceDataSubType: typeof obj?.source_data === "object" && obj.source_data !== null && "sub_type" in obj.source_data,
-                sourceDataType: typeof obj?.source_data === "object" && obj.source_data !== null && "type" in obj.source_data,
-                success: "success" in (obj || {}),
-            },
-        });
 
         // HMAC verification: validate callback authenticity
         const isHmacValid = verifyTransactionHmac(obj, receivedHmac);
