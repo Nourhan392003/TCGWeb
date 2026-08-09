@@ -76,20 +76,21 @@ export async function POST(req: NextRequest) {
         let parsedTopLevelKeys: string[] = [];
         let objKeys: string[] = [];
         let obj: Record<string, unknown> | undefined;
+        let parsedBody: Record<string, unknown> | undefined;
         let hasHmacInQuery = url.searchParams.has("hmac");
         let hasHmacInBody = false;
 
         if (contentType.includes("application/json")) {
             try {
-                const parsed = JSON.parse(rawBody) as Record<string, unknown>;
-                parsedTopLevelKeys = Object.keys(parsed || {});
+                parsedBody = JSON.parse(rawBody) as Record<string, unknown>;
+                parsedTopLevelKeys = Object.keys(parsedBody || {});
                 obj =
-                    typeof parsed.obj === "object" && parsed.obj !== null
-                        ? (parsed.obj as Record<string, unknown>)
-                        : parsed;
+                    typeof parsedBody.obj === "object" && parsedBody.obj !== null
+                        ? (parsedBody.obj as Record<string, unknown>)
+                        : parsedBody;
                 objKeys = obj ? Object.keys(obj) : [];
                 hasHmacInBody =
-                    parsed.hmac !== undefined || parsed.HMAC !== undefined;
+                    parsedBody.hmac !== undefined || parsedBody.HMAC !== undefined;
             } catch {
                 parsedTopLevelKeys = [];
                 objKeys = [];
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
                 parsedTopLevelKeys = Array.from(params.keys());
                 objKeys = [];
                 hasHmacInBody = params.has("hmac") || params.has("HMAC");
+                parsedBody = Object.fromEntries(params) as Record<string, unknown>;
             } catch {
                 parsedTopLevelKeys = [];
                 objKeys = [];
@@ -142,15 +144,31 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const receivedHmac =
-            req.nextUrl.searchParams.get("hmac") || "";
+        let receivedHmac: string | null | undefined =
+            req.nextUrl.searchParams.get("hmac");
+
+        if (!receivedHmac && parsedBody) {
+            receivedHmac = parsedBody.hmac as string | undefined;
+        }
+
+        if (!receivedHmac && parsedBody) {
+            receivedHmac = parsedBody.HMAC as string | undefined;
+        }
+
+        if (!receivedHmac && parsedBody?.obj && typeof parsedBody.obj === "object") {
+            receivedHmac = (parsedBody.obj as Record<string, unknown>).hmac as
+                | string
+                | undefined;
+        }
+
+        const hmac = receivedHmac || "";
 
         // HMAC verification: validate callback authenticity
-        const isHmacValid = verifyTransactionHmac(obj, receivedHmac);
+        const isHmacValid = verifyTransactionHmac(obj, hmac);
         if (!isHmacValid) {
             console.warn("Paymob callback HMAC verification failed", {
                 hasHmacSecret: !!HMAC_SECRET,
-                hasHmac: !!receivedHmac,
+                hasHmac: !!hmac,
             });
             return NextResponse.json(
                 { success: false, error: "Invalid HMAC" },
@@ -175,7 +193,7 @@ export async function POST(req: NextRequest) {
         console.log("Paymob callback received", {
             success: obj.success,
             orderReference,
-            hasHmac: !!receivedHmac,
+            hasHmac: !!hmac,
         });
 
         if (!orderReference) {
