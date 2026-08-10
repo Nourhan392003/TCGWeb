@@ -32,8 +32,12 @@ export default clerkMiddleware(async (auth, req) => {
     ) {
       return NextResponse.next();
     }
+    const localeMatch = cleanPathname.match(/^\/([^/]+)(?:\/|$)/);
+    const locale = localeMatch?.[1];
 
-    return NextResponse.redirect(new URL("/maintenance", req.url));
+    return NextResponse.redirect(
+      new URL(locale ? `/${locale}/maintenance` : "/maintenance", req.url)
+    ); return NextResponse.redirect(new URL("/maintenance", req.url));
   }
 
   console.log("MIDDLEWARE RUNNING:", req.nextUrl.pathname);

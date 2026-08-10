@@ -15,8 +15,10 @@ function paymobStr(value: unknown): string {
     return String(value);
 }
 
-function verifyTransactionHmac(obj: Record<string, unknown>, receivedHmac: string): boolean {
-    if (!HMAC_SECRET || !receivedHmac) return false;
+function calculateTransactionHmac(
+    obj: Record<string, unknown>
+): string | null {
+    if (!HMAC_SECRET) return null;
 
     const fields: unknown[] = [
         obj.amount_cents,
@@ -32,35 +34,54 @@ function verifyTransactionHmac(obj: Record<string, unknown>, receivedHmac: strin
         obj.is_refunded,
         obj.is_standalone_payment,
         obj.is_voided,
-        typeof obj.order === "object" && obj.order !== null ? (obj.order as any).id : "",
+        typeof obj.order === "object" && obj.order !== null
+            ? (obj.order as Record<string, unknown>).id
+            : "",
         obj.owner,
         obj.pending,
-        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).pan : "",
-        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).sub_type : "",
-        typeof obj.source_data === "object" && obj.source_data !== null ? (obj.source_data as any).type : "",
+        typeof obj.source_data === "object" && obj.source_data !== null
+            ? (obj.source_data as Record<string, unknown>).pan
+            : "",
+        typeof obj.source_data === "object" && obj.source_data !== null
+            ? (obj.source_data as Record<string, unknown>).sub_type
+            : "",
+        typeof obj.source_data === "object" && obj.source_data !== null
+            ? (obj.source_data as Record<string, unknown>).type
+            : "",
         obj.success,
     ];
 
     const concatenated = fields.map(paymobStr).join("");
 
-    const calculatedHmac = crypto
+    return crypto
         .createHmac("sha512", HMAC_SECRET)
         .update(concatenated)
         .digest("hex");
+}
+
+function verifyTransactionHmac(
+    obj: Record<string, unknown>,
+    receivedHmac: string
+): { valid: boolean; calculatedHmac: string | null } {
+    const calculatedHmac = calculateTransactionHmac(obj);
+
+    if (!calculatedHmac || !receivedHmac) {
+        return { valid: false, calculatedHmac };
+    }
 
     if (!/^[a-f0-9]{128}$/i.test(receivedHmac)) {
-        return false;
+        return { valid: false, calculatedHmac };
     }
 
-    if (calculatedHmac.length !== receivedHmac.length) {
-        return false;
-    }
-
-    return crypto.timingSafeEqual(
+    const valid = crypto.timingSafeEqual(
         Buffer.from(calculatedHmac, "hex"),
         Buffer.from(receivedHmac, "hex")
     );
+
+    return { valid, calculatedHmac };
 }
+
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -87,7 +108,10 @@ export async function POST(req: NextRequest) {
                 obj =
                     typeof parsedBody.obj === "object" && parsedBody.obj !== null
                         ? (parsedBody.obj as Record<string, unknown>)
-                        : parsedBody;
+                        : typeof parsedBody.transaction === "object" &&
+                            parsedBody.transaction !== null
+                            ? (parsedBody.transaction as Record<string, unknown>)
+                            : parsedBody;
                 objKeys = obj ? Object.keys(obj) : [];
                 hasHmacInBody =
                     parsedBody.hmac !== undefined || parsedBody.HMAC !== undefined;
@@ -187,11 +211,33 @@ export async function POST(req: NextRequest) {
         const hmac = receivedHmac || "";
 
         // HMAC verification: validate callback authenticity
-        const isHmacValid = verifyTransactionHmac(obj, hmac);
+        const hmacResult = verifyTransactionHmac(obj, hmac);
+        const isHmacValid = hmacResult.valid;
+
+        console.warn("PAYMOB_HMAC_DEBUG", JSON.stringify({
+            callbackBody: parsedBody,
+            receivedHmac: hmac,
+            calculatedHmac: hmacResult.calculatedHmac,
+            rootKeys: Object.keys(parsedBody || {}),
+            transactionKeys:
+                parsedBody &&
+                    typeof parsedBody.transaction === "object" &&
+                    parsedBody.transaction !== null
+                    ? Object.keys(parsedBody.transaction)
+                    : [],
+            intentionKeys:
+                parsedBody &&
+                    typeof parsedBody.intention === "object" &&
+                    parsedBody.intention !== null
+                    ? Object.keys(parsedBody.intention)
+                    : [],
+        }));
+
         if (!isHmacValid) {
             console.warn("Paymob callback HMAC verification failed", {
                 hasHmacSecret: !!HMAC_SECRET,
                 hasHmac: !!hmac,
+                calculatedHmacLength: hmacResult.calculatedHmac?.length ?? 0,
             });
             return NextResponse.json(
                 { success: false, error: "Invalid HMAC" },

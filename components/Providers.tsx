@@ -14,7 +14,7 @@ export default function Providers({ children, locale, messages }: Props) {
         <NextIntlClientProvider
             locale={locale}
             messages={messages}
-            timeZone="Asia/Riyadh"
+            timeZone="Asia/Jeddah"
         >
             <Toaster position="bottom-right" />
             {children}

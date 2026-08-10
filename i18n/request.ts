@@ -16,6 +16,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages,
-    timeZone: 'Asia/Riyadh'
+    timeZone: 'Asia/Jeddah'
   };
 });
