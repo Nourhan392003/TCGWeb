@@ -38,10 +38,8 @@ export default function CheckoutPage() {
     const { user } = useUser();
     const { isLoaded, isSignedIn } = useRequireAuth();
     const createOrder = useMutation(api.orders.createOrder);
-    const updatePaymentStatus = useMutation(api.orders.updatePaymentStatus);
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<"paymob" | "cash">("paymob");
 
     const [formData, setFormData] = useState<CheckoutFormData>({
         firstName: "",
@@ -98,16 +96,6 @@ export default function CheckoutPage() {
         try {
             setIsLoading(true);
 
-            if (paymentMethod === "paymob") {
-                toast.error(
-                    locale === "ar"
-                        ? "الدفع الإلكتروني غير متاح مؤقتًا، يمكنك اختيار الدفع عند الاستلام."
-                        : "Electronic payment is temporarily unavailable. Please choose cash on delivery."
-                );
-                setIsLoading(false);
-                return;
-            }
-
             const orderReference = `tcg-${Date.now()}`;
             const storeItems = items.map((item) => ({
                 productId: item.id as Id<"products">,
@@ -123,7 +111,7 @@ export default function CheckoutPage() {
                 status: "pending",
                 orderReference,
                 paymentStatus: "pending",
-                paymentProvider: "cash",
+                paymentProvider: "paymob",
                 shippingAddress: {
                     fullName: `${formData.firstName} ${formData.lastName}`.trim(),
                     address: formData.address,
@@ -140,22 +128,57 @@ export default function CheckoutPage() {
                 storeItems,
             });
 
-            await updatePaymentStatus({
-                orderReference,
-                paymentStatus: "paid",
-                paymentProvider: "cash",
+            const response = await fetch("/api/paymob/create-intention", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    locale,
+                    orderReference,
+                    couponCode: appliedCoupon ?? undefined,
+                    customer: {
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        email: formData.email,
+                        phone: formData.phone,
+                        address: formData.address,
+                        city: formData.city,
+                        zipCode: formData.zipCode,
+                    },
+                    items: items.map((item) => ({
+                        id: item.id,
+                        name: getItemName(item.name),
+                        price: Number(item.price),
+                        quantity: Number(item.quantity),
+                        ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
+                    })),
+                    shippingFee: shipping,
+                    shippingFeeOverride: freeShipping ? 0 : undefined,
+                    shippingOverrideReason: freeShipping ? "manual free shipping" : undefined,
+                    totalAmount: grandTotal,
+                }),
             });
 
-            toast.success(
-                locale === "ar"
-                    ? "تم إنشاء الطلب بنجاح! سيتم التواصل معك قريباً."
-                    : "Order placed successfully! We'll contact you soon."
-            );
-            window.location.href = "/";
+            const text = await response.text();
+            console.log("create-intention raw response:", text);
+
+            let data: any = null;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                throw new Error(`Server returned non-JSON response: ${text.slice(0, 200)}`);
+            }
+
+            if (!response.ok || !data?.checkoutUrl) {
+                throw new Error(data?.error || "Failed to initialize payment");
+            }
+
+            window.location.href = data.checkoutUrl;
         } catch (error) {
             console.error("Payment error:", error);
             toast.error(
-                error instanceof Error ? error.message : "Failed to place order"
+                error instanceof Error ? error.message : "Failed to initialize payment"
             );
         } finally {
             setIsLoading(false);
@@ -369,51 +392,6 @@ export default function CheckoutPage() {
                                         : "Payment method will be selected on the secure Paymob page"}
                                 </p>
 
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3 p-3 sm:p-4 bg-[#1a1a24] border border-[#2a2a38] rounded-xl">
-                                        <input
-                                            type="radio"
-                                            id="paymob"
-                                            name="paymentMethod"
-                                            value="paymob"
-                                            checked={paymentMethod === "paymob"}
-                                            onChange={() => setPaymentMethod("paymob")}
-                                            disabled
-                                            className="w-4 h-4 text-[#eab308] bg-[#1a1a24] border-[#2a2a38] focus:ring-[#eab308] focus:ring-2"
-                                        />
-                                        <label htmlFor="paymob" className="flex-1 cursor-not-allowed">
-                                            <span className="block text-sm sm:text-base font-medium text-[#f0f0f5]">
-                                                {locale === "ar" ? "الدفع الإلكتروني" : "Electronic Payment"}
-                                            </span>
-                                            <span className="block text-xs text-red-400 mt-1">
-                                                {locale === "ar"
-                                                    ? "الدفع الإلكتروني غير متاح مؤقتًا، يمكنك اختيار الدفع عند الاستلام."
-                                                    : "Electronic payment is temporarily unavailable. Please choose cash on delivery."}
-                                            </span>
-                                        </label>
-                                    </div>
-
-                                    <div className="flex items-center gap-3 p-3 sm:p-4 bg-[#1a1a24] border border-[#2a2a38] rounded-xl">
-                                        <input
-                                            type="radio"
-                                            id="cash"
-                                            name="paymentMethod"
-                                            value="cash"
-                                            checked={paymentMethod === "cash"}
-                                            onChange={() => setPaymentMethod("cash")}
-                                            className="w-4 h-4 text-[#eab508] bg-[#1a1a24] border-[#2a2a38] focus:ring-[#eab508] focus:ring-2"
-                                        />
-                                        <label htmlFor="cash" className="flex-1 cursor-pointer">
-                                            <span className="block text-sm sm:text-base font-medium text-[#f0f0f5]">
-                                                {locale === "ar" ? "الدفع عند الاستلام" : "Cash on Delivery"}
-                                            </span>
-                                            <span className="block text-xs text-green-400 mt-1">
-                                                {locale === "ar" ? "ادفع نقداً عند استلام الطلب" : "Pay cash when your order arrives"}
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -422,19 +400,13 @@ export default function CheckoutPage() {
                                     {isLoading ? (
                                         <>
                                             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                            <span className="text-sm sm:text-base">
-                                                {locale === "ar" ? "جاري معالجة الطلب..." : "Processing order..."}
-                                            </span>
+                                            <span className="text-sm sm:text-base">{t("processing")}</span>
                                         </>
                                     ) : (
                                         <>
                                             <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                                             <span className="text-sm sm:text-base">
-                                                {paymentMethod === "cash"
-                                                    ? locale === "ar"
-                                                        ? `تأكيد الطلب - ${formatPriceByLocale(grandTotal, locale)}`
-                                                        : `Confirm Order - ${formatPriceByLocale(grandTotal, locale)}`
-                                                    : t("placeOrder", { amount: formatPriceByLocale(grandTotal, locale) })}
+                                                {t("placeOrder", { amount: formatPriceByLocale(grandTotal, locale) })}
                                             </span>
                                         </>
                                     )}
