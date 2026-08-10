@@ -821,7 +821,6 @@ Paymob is a comprehensive payment solution serving the MENA region, supporting:
 - Mobile Wallets (M-Pesa, Vodafone Cash, Etisalat Cash)
 - Bank Installments ( valu, Bank Misr, etc.)
 - Bank Transfers (Fawry, QNB, Alex Bank)
-- Cash on Delivery
 
 ### 6.2 Paymob Integration Flow
 

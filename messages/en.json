@@ -211,7 +211,6 @@
     "city": "City",
     "zipCode": "Zip Code",
     "required": "*",
-    "paymentMethod": "Payment Method",
     "visaEnding": "Visa ending in {last4}",
     "expires": "Expires {date}",
     "selected": "Selected",

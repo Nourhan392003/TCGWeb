@@ -211,7 +211,6 @@
     "city": "المدينة",
     "zipCode": "الرمز البريدي",
     "required": "*",
-    "paymentMethod": "طريقة الدفع",
     "visaEnding": "تأشيرة تنتهي بـ {last4}",
     "expires": "تنتهي في {date}",
     "selected": "مختار",

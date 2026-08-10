@@ -214,24 +214,11 @@ export async function POST(req: NextRequest) {
         const hmacResult = verifyTransactionHmac(obj, hmac);
         const isHmacValid = hmacResult.valid;
 
-        console.warn("PAYMOB_HMAC_DEBUG", JSON.stringify({
-            callbackBody: parsedBody,
-            receivedHmac: hmac,
-            calculatedHmac: hmacResult.calculatedHmac,
-            rootKeys: Object.keys(parsedBody || {}),
-            transactionKeys:
-                parsedBody &&
-                    typeof parsedBody.transaction === "object" &&
-                    parsedBody.transaction !== null
-                    ? Object.keys(parsedBody.transaction)
-                    : [],
-            intentionKeys:
-                parsedBody &&
-                    typeof parsedBody.intention === "object" &&
-                    parsedBody.intention !== null
-                    ? Object.keys(parsedBody.intention)
-                    : [],
-        }));
+        console.warn("Paymob callback HMAC verification failed", {
+            hasHmacSecret: !!HMAC_SECRET,
+            hasHmac: !!hmac,
+            calculatedHmacLength: hmacResult.calculatedHmac?.length ?? 0,
+        });
 
         if (!isHmacValid) {
             console.warn("Paymob callback HMAC verification failed", {

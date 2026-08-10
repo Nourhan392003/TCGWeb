@@ -185,11 +185,11 @@ Filter Categories:
 - PayPal
 - Apple Pay / Google Pay
 - Bank transfer
-- Cash on delivery (optional)
 
 **Step 4: Order Confirmation**
 - Order summary
 - Estimated delivery
+
 - Order number for tracking
 - Email confirmation
 
