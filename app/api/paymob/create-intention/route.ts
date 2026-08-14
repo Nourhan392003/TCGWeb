@@ -13,8 +13,7 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const { items = [], customer, orderReference, couponCode } = body;
-
+        const { items = [], customer, orderReference, couponCode, shippingFeeOverride } = body;
 
         if (
             !customer?.firstName ||
@@ -32,18 +31,89 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const storeItems = items.map((item: any) => ({
-            productId: item.productId || item.id || "",
-            name: item.name || "Unknown",
-            price: Number(item.price),
-            quantity: Number(item.quantity),
-            purchaseOptionType: item.purchaseOptionType,
-        }));
+        const productIds = items
+            .map((item: any) => item.productId || item.id)
+            .filter(Boolean);
 
-        const subtotal = storeItems.reduce(
-            (sum: number, item: any) => sum + item.price * item.quantity,
-            0
-        );
+        if (productIds.length === 0) {
+            return NextResponse.json(
+                { success: false, error: "No products specified" },
+                { status: 400 }
+            );
+        }
+
+        const products = await convex.query(api.products.getAllProducts, {});
+        const productMap = new Map(products.map((p: any) => [String(p._id), p]));
+
+        const validatedItems = [];
+        let subtotal = 0;
+
+        for (const item of items) {
+            const productId = item.productId || item.id;
+            const product = productMap.get(String(productId));
+
+            if (!product) {
+                return NextResponse.json(
+                    { success: false, error: `Product not found: ${productId}` },
+                    { status: 400 }
+                );
+            }
+
+            const quantity = Number(item.quantity);
+            if (!Number.isInteger(quantity) || quantity <= 0) {
+                return NextResponse.json(
+                    { success: false, error: `Invalid quantity for product: ${productId}` },
+                    { status: 400 }
+                );
+            }
+
+            let effectivePrice = product.price;
+            let effectiveStockQuantity = product.stockQuantity;
+
+            if (item.purchaseOptionType && Array.isArray(product.purchaseOptions)) {
+                const option = product.purchaseOptions.find(
+                    (o: any) => o.type === item.purchaseOptionType
+                );
+                if (!option) {
+                    return NextResponse.json(
+                        { success: false, error: `Purchase option not found: ${item.purchaseOptionType}` },
+                        { status: 400 }
+                    );
+                }
+                effectivePrice = option.price;
+                effectiveStockQuantity = option.stockQuantity ?? product.stockQuantity;
+            }
+
+            if (!product.inStock) {
+                return NextResponse.json(
+                    { success: false, error: `Product out of stock: ${product.name}` },
+                    { status: 400 }
+                );
+            }
+
+            if (effectiveStockQuantity !== undefined && quantity > effectiveStockQuantity) {
+                return NextResponse.json(
+                    { success: false, error: `Insufficient stock for ${product.name}: requested ${quantity}, available ${effectiveStockQuantity}` },
+                    { status: 400 }
+                );
+            }
+
+            const itemTotal = effectivePrice * quantity;
+            subtotal += itemTotal;
+
+            const productName =
+                typeof product.name === "string"
+                    ? product.name
+                    : product.name?.en || product.name?.ar || "Product";
+
+            validatedItems.push({
+                productId: product._id,
+                name: productName,
+                price: effectivePrice,
+                quantity,
+                purchaseOptionType: item.purchaseOptionType,
+            });
+        }
 
         let freeShipping = false;
 
@@ -57,10 +127,6 @@ export async function POST(req: NextRequest) {
                 if (couponResult.valid && couponResult.type === "free_shipping") {
                     freeShipping = true;
                 }
-
-                console.log("Coupon validation result ===");
-                console.log(JSON.stringify(couponResult, null, 2));
-
             } catch (couponError) {
                 console.error("Coupon validation failed:", couponError);
             }
@@ -69,7 +135,7 @@ export async function POST(req: NextRequest) {
         const shippingFee = freeShipping ? 0 : SAUDI_DOMESTIC_SHIPPING_FEE;
         const shippingFeeHalalas = Math.round(shippingFee * 100);
 
-        const productPaymobItems = storeItems.map((item: any) => ({
+        const productPaymobItems = validatedItems.map((item: any) => ({
             name: item.purchaseOptionType
                 ? `${item.purchaseOptionType} - ${item.name}`
                 : item.name,
@@ -97,10 +163,7 @@ export async function POST(req: NextRequest) {
             0
         );
 
-
         const ref = orderReference || `tcg-${Date.now()}`;
-
-
 
         const payload = {
             amount: totalAmount,
@@ -118,13 +181,9 @@ export async function POST(req: NextRequest) {
             special_reference: ref,
         };
 
-
-
         let intention;
         try {
             intention = await createPaymobIntention(payload);
-
-
         } catch (paymobError: any) {
             console.error("Paymob Intention API Call Failed:");
             console.error(paymobError);
@@ -163,8 +222,6 @@ export async function POST(req: NextRequest) {
 
         const checkoutUrl = getPaymobCheckoutUrl(intention.client_secret);
 
-
-
         return NextResponse.json({
             success: true,
             checkoutUrl,
@@ -172,6 +229,9 @@ export async function POST(req: NextRequest) {
             paymobClientSecret: intention.client_secret,
             freeShippingApplied: freeShipping,
             shippingFee,
+            validatedItems,
+            subtotal,
+            totalAmount,
         });
     } catch (error) {
         console.error("Critical API Route Error:", error);

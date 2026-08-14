@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { persist, PersistOptions } from 'zustand/middleware';
 import type { StateCreator } from 'zustand';
+import { api } from '@/convex/_generated/api';
+import { getLocalizedText } from '@/utils/localization';
 
 export interface CartItem {
     id: string;
-    name: string;
-    price: number;
-    image: string;
+    name?: string;
+    price?: number;
+    image?: string;
     quantity: number;
-
     stockQuantity?: number;
     purchaseOptionType?: string;
 }
@@ -16,21 +17,29 @@ export interface CartItem {
 interface CartStore {
     items: CartItem[];
     freeShipping: boolean;
-    setFreeShipping: (value: boolean) => void;
-    resetFreeShipping: () => void;
     appliedCoupon: string | null;
     setAppliedCoupon: (code: string | null) => void;
-
+    setFreeShipping: (value: boolean) => void;
+    resetFreeShipping: () => void;
     addItem: (item: CartItem) => void;
     removeItem: (id: string, purchaseOptionType?: string) => void;
     updateQuantity: (id: string, quantity: number, purchaseOptionType?: string) => void;
     clearCart: () => void;
     getTotalPrice: () => number;
-
+    validationErrors: string[];
+    priceChanges: { productId: string; oldPrice: number; newPrice: number; name?: string }[];
+    unavailableItems: { productId: string; reason: string; name?: string }[];
+    validatedPrices: Record<string, number>;
+    validateCart: (convexClient: { query: <T = any>(q: any, args: any) => Promise<T | null> }) => Promise<void>;
 }
 
 type CartPersist = {
-    items: CartItem[];
+    items: Array<{
+        id: string;
+        quantity: number;
+        purchaseOptionType?: string;
+        stockQuantity?: number;
+    }>;
     freeShipping: boolean;
 };
 
@@ -91,15 +100,25 @@ function migrateCartState(persistedState: unknown, version: number): CartPersist
     const normalizedFreeShipping =
         typeof state.freeShipping === 'boolean' ? state.freeShipping : false;
 
-    if (version < 2) {
+    if (version < 4) {
         return {
-            items: normalizedItems,
+            items: normalizedItems.map(({ id, quantity, purchaseOptionType, stockQuantity }) => ({
+                id,
+                quantity,
+                purchaseOptionType,
+                stockQuantity,
+            })),
             freeShipping: normalizedFreeShipping,
         };
     }
 
     return {
-        items: normalizedItems,
+        items: normalizedItems.map(({ id, quantity, purchaseOptionType, stockQuantity }) => ({
+            id,
+            quantity,
+            purchaseOptionType,
+            stockQuantity,
+        })),
         freeShipping: normalizedFreeShipping,
     };
 }
@@ -108,6 +127,10 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
     items: [],
     freeShipping: false,
     appliedCoupon: null,
+    validationErrors: [],
+    priceChanges: [],
+    unavailableItems: [],
+    validatedPrices: {},
     setAppliedCoupon: (code) => set({ appliedCoupon: code }),
 
     setFreeShipping: (value) => {
@@ -144,7 +167,6 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
                     ...state.items,
                     {
                         ...newItem,
-                        name: normalizeStoredName(newItem.name),
                         quantity: 1,
                     },
                 ],
@@ -176,21 +198,138 @@ const cartStoreCreator: StateCreator<CartStore, [], [], CartStore> = (set, get) 
     },
 
     clearCart: () => {
-        set({ items: [], freeShipping: false });
+        set({ items: [], freeShipping: false, validationErrors: [], priceChanges: [], unavailableItems: [], validatedPrices: {} });
     },
 
     getTotalPrice: () => {
+        const { items, validatedPrices } = get();
+        return items.reduce((total, item) => {
+            const price = validatedPrices[item.id] ?? item.price ?? 0;
+            return total + price * item.quantity;
+        }, 0);
+    },
+
+    validateCart: async (convexClient) => {
         const { items } = get();
-        return items.reduce((total, item) => total + item.price * item.quantity, 0);
+        const validationErrors: string[] = [];
+        const priceChanges: { productId: string; oldPrice: number; newPrice: number; name?: string }[] = [];
+        const unavailableItems: { productId: string; reason: string; name?: string }[] = [];
+        const validatedPrices: Record<string, number> = {};
+        const updatedItems: CartItem[] = [];
+
+        for (const item of items) {
+            try {
+                const product = await convexClient.query(api.products.getProductById, {
+                    id: item.id as any,
+                });
+
+                if (!product) {
+                    unavailableItems.push({ productId: item.id, reason: "deleted", name: item.name });
+                    validationErrors.push(`Product deleted: ${item.name || item.id}`);
+                    updatedItems.push(item);
+                    continue;
+                }
+
+                const localizedName = getLocalizedText(product.name, "en");
+                const productImage = product.imageUrl || product.image || "";
+
+                let effectivePrice: number | undefined;
+                let effectiveInStock = product.inStock;
+                let effectiveStockQuantity = product.stockQuantity;
+
+                if (item.purchaseOptionType) {
+                    const option = product.purchaseOptions?.find(
+                        (o: { type: string; price: number; inStock?: boolean; stockQuantity?: number }) => o.type === item.purchaseOptionType
+                    );
+                    if (!option) {
+                        unavailableItems.push({
+                            productId: item.id,
+                            reason: "option_not_found",
+                            name: localizedName,
+                        });
+                        validationErrors.push(`Purchase option not found: ${localizedName}`);
+                        updatedItems.push(item);
+                        continue;
+                    }
+                    effectivePrice = option.price;
+                    effectiveInStock = option.inStock ?? product.inStock;
+                    effectiveStockQuantity = option.stockQuantity ?? product.stockQuantity;
+                } else {
+                    effectivePrice = product.price;
+                }
+
+                if (!effectiveInStock) {
+                    unavailableItems.push({
+                        productId: item.id,
+                        reason: "out_of_stock",
+                        name: localizedName,
+                    });
+                    validationErrors.push(`Out of stock: ${localizedName}`);
+                } else if (
+                    effectiveStockQuantity !== undefined &&
+                    item.quantity > effectiveStockQuantity
+                ) {
+                    unavailableItems.push({
+                        productId: item.id,
+                        reason: "insufficient_stock",
+                        name: localizedName,
+                    });
+                    validationErrors.push(
+                        `Insufficient stock for ${localizedName}: requested ${item.quantity}, available ${effectiveStockQuantity}`
+                    );
+                }
+
+                if (
+                    effectivePrice !== undefined &&
+                    item.price !== undefined &&
+                    effectivePrice !== item.price
+                ) {
+                    priceChanges.push({
+                        productId: item.id,
+                        oldPrice: item.price,
+                        newPrice: effectivePrice,
+                        name: localizedName,
+                    });
+                }
+
+                if (effectivePrice !== undefined) {
+                    validatedPrices[item.id] = effectivePrice;
+                }
+
+                updatedItems.push({
+                    ...item,
+                    name: localizedName || item.name,
+                    image: productImage || item.image,
+                    price: effectivePrice ?? item.price,
+                    stockQuantity: effectiveStockQuantity ?? item.stockQuantity,
+                });
+            } catch (error) {
+                validationErrors.push(`Error validating product: ${item.id}`);
+                updatedItems.push(item);
+            }
+        }
+
+        set({
+            validationErrors,
+            priceChanges,
+            unavailableItems,
+            validatedPrices,
+            items: updatedItems,
+        });
     },
 });
 
 const cartPersistOptions: PersistOptions<CartStore, CartPersist> = {
     name: 'tcg-cart-storage',
-    version: 3,
+    version: 4,
     migrate: (persistedState, version) => migrateCartState(persistedState, version),
     partialize: (state) => ({
-        items: state.items,
+        items: state.items.map(({ id, quantity, purchaseOptionType, stockQuantity }) => ({
+            id,
+            quantity,
+            purchaseOptionType,
+            stockQuantity,
+        })),
         freeShipping: state.freeShipping,
     }),
 };

@@ -221,26 +221,26 @@ export default function OrdersPage() {
                                                 </div>
                                             </div>
 
-<div className="col-span-1">
-                                                            <div
-                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${paymentStatusColors[order.paymentStatus || "pending"] || paymentStatusColors.pending}`}
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                {order.paymentStatus || "pending"}
-                                                            </div>
-                                                        </div>
+                                            <div className="col-span-1">
+                                                <div
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${paymentStatusColors[order.paymentStatus || "pending"] || paymentStatusColors.pending}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {order.paymentStatus || "pending"}
+                                                </div>
+                                            </div>
 
-                                                        <div className="col-span-1">
-                                                            <div
-                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color ||
-                                                                    statusConfig.pending.color
-                                                                    }`}
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                <StatusIcon className="w-3.5 h-3.5" />
-                                                                {statusConfig[order.status as OrderStatus]?.label || "Pending"}
-                                                            </div>
-                                                        </div>
+                                            <div className="col-span-1">
+                                                <div
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig[order.status as OrderStatus]?.color ||
+                                                        statusConfig.pending.color
+                                                        }`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <StatusIcon className="w-3.5 h-3.5" />
+                                                    {statusConfig[order.status as OrderStatus]?.label || "Pending"}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {isExpanded && (
@@ -256,7 +256,7 @@ export default function OrdersPage() {
                                                                 <span className="text-gray-400">Order ID:</span>
                                                                 <span className="text-white font-mono text-sm">{order._id}</span>
                                                             </div>
-<div className="flex justify-between">
+                                                            <div className="flex justify-between">
                                                                 <span className="text-gray-400">Payment:</span>
                                                                 <span className={`font-medium ${order.paymentStatus === "paid" ? "text-green-400" : order.paymentStatus === "failed" ? "text-red-400" : "text-yellow-400"}`}>
                                                                     {order.paymentStatus || "pending"}
@@ -289,15 +289,13 @@ export default function OrdersPage() {
                                                                 </span>
                                                             </div>
 
+
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Email:</span>
                                                                 <span className="text-white">
-                                                                    {order.shippingAddress?.email ||
-                                                                        order.shippingAddress?.address ||
-                                                                        "N/A"}
+                                                                    {order.customerEmail || "N/A"}
                                                                 </span>
                                                             </div>
-
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Phone:</span>
                                                                 <span className="text-white">
@@ -307,6 +305,12 @@ export default function OrdersPage() {
 
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-400">Address:</span>
+                                                                <span className="text-white">
+                                                                    {order.shippingAddress?.address || "N/A"}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-400">City:</span>
                                                                 <span className="text-white">
                                                                     {order.shippingAddress?.city || "N/A"}
                                                                 </span>
@@ -378,8 +382,8 @@ export default function OrdersPage() {
                                                                 {order.paymentStatus === "paid"
                                                                     ? "Paid"
                                                                     : order.paymentStatus === "failed"
-                                                                      ? "Failed"
-                                                                      : "Pending"}
+                                                                        ? "Failed"
+                                                                        : "Pending"}
                                                             </span>
                                                             {order.paymentReference && (
                                                                 <span className="text-gray-400 text-xs font-mono">
@@ -392,7 +396,7 @@ export default function OrdersPage() {
                                                                 </span>
                                                             )}
                                                         </div>
-</div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="mt-6">
@@ -475,8 +479,8 @@ export default function OrdersPage() {
                                                                 onClick={() => handleStatusChange(order._id, status)}
                                                                 disabled={order.status === status}
                                                                 className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${order.status === status
-                                                                        ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
-                                                                        : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
+                                                                    ? `${statusConfig[status].color} cursor-not-allowed opacity-50`
+                                                                    : `${statusConfig[status].color} hover:opacity-80 cursor-pointer`
                                                                     }`}
                                                             >
                                                                 {statusConfig[status].label}

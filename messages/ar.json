@@ -17,18 +17,19 @@
     "signIn": "تسجيل الدخول"
   },
   "Actions": {
-    "addToCart": "إضافة للسلة",
+    "addToCart": "إضافة إلى السلة",
     "buyNow": "اشترِ الآن",
-    "claim": "اطلب الآن",
-    "checkout": "إتمام الشراء",
+    "claim": "احصل عليه",
+    "checkout": "الانتقال للدفع",
     "shopNow": "تسوق الآن",
     "viewDetails": "عرض التفاصيل",
-    "addedToCart": "تم إضافة {name} للسلة!",
-    "removedFromWishlist": "تم إزالة {name} من المفضلة",
-    "addedToWishlist": "تم إضافة {name} للمفضلة!",
+    "addedToCart": "تمت إضافة {name} إلى السلة!",
+    "removedFromWishlist": "تمت إزالة {name} من قائمة الرغبات",
+    "addedToWishlist": "تمت إضافة {name} إلى قائمة الرغبات!",
     "loginRequired": "يرجى تسجيل الدخول أولًا لإضافة المنتجات أو إكمال الشراء",
-    "linkCopied": "تم نسخ الرابط!",
-    "copyFailed": "فشل نسخ الرابط"
+    "linkCopied": "تم نسخ الرابط",
+    "copyFailed": "فشل نسخ الرابط",
+    "soldOut": "نفذت الكمية"
   },
   "Hero": {
     "available": "متوفر في {date}",
@@ -224,7 +225,14 @@
     "ssl": "إتمام شراء مشفر بـ SSL",
     "empty": "سلة التسوق فارغة",
     "qty": "الكمية: {count}",
-    "fillRequired": "يرجى ملء جميع الحقول المطلوبة."
+    "fillRequired": "يرجى ملء جميع الحقول المطلوبة.",
+    "pricesChanged": "تم تحديث بعض الأسعار",
+    "reviewCart": "مراجعة السلة",
+    "continueWithUpdatedPrices": "متابعة بالأسعار المحدثة",
+    "verifying": "جاري التحقق...",
+    "verifyingPrices": "جاري التحقق من الأسعار...",
+    "oldPrice": "السعر القديم: {amount}",
+    "newPrice": "السعر الجديد: {amount}"
   },
   "About": {
     "title": "من نحن",

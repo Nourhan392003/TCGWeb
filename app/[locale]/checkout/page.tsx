@@ -7,6 +7,8 @@ import {
     ShieldCheck,
     Lock,
     ChevronLeft,
+    AlertTriangle,
+    XCircle,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
@@ -19,6 +21,9 @@ import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useRequireAuth } from "@/hooks/useAuthAction";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useConvex } from "convex/react";
+import { useRouter } from "@/i18n/navigation";
+
 interface CheckoutFormData {
     firstName: string;
     lastName: string;
@@ -29,6 +34,35 @@ interface CheckoutFormData {
     zipCode: string;
 }
 
+interface PriceChange {
+    productId: string;
+    oldPrice: number;
+    newPrice: number;
+    name?: string;
+}
+
+interface UnavailableItem {
+    productId: string;
+    reason: string;
+    name?: string;
+}
+
+interface ValidatedCheckout {
+    items: Array<{
+        productId: Id<"products">;
+        name: string;
+        price: number;
+        quantity: number;
+        purchaseOptionType?: string;
+    }>;
+    subtotal: number;
+    shippingFee: number;
+    totalAmount: number;
+    freeShipping: boolean;
+    priceChanges: PriceChange[];
+    unavailableItems: UnavailableItem[];
+    hasError: boolean;
+}
 
 export default function CheckoutPage() {
     const t = useTranslations("Checkout");
@@ -38,8 +72,15 @@ export default function CheckoutPage() {
     const { user } = useUser();
     const { isLoaded, isSignedIn } = useRequireAuth();
     const createOrder = useMutation(api.orders.createOrder);
+    const convex = useConvex();
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isValidating, setIsValidating] = useState(false);
+    const [validatedCheckout, setValidatedCheckout] =
+        useState<ValidatedCheckout | null>(null);
+    const [requiresPriceConfirmation, setRequiresPriceConfirmation] =
+        useState(false);
 
     const [formData, setFormData] = useState<CheckoutFormData>({
         firstName: "",
@@ -55,23 +96,35 @@ export default function CheckoutPage() {
         setMounted(true);
     }, []);
 
-    const subtotal = items.reduce(
-        (sum, item) => sum + Number(item.price) * Number(item.quantity),
+    const subtotal = validatedCheckout?.subtotal ?? items.reduce(
+        (sum, item) =>
+            sum + Number(item.price ?? 0) * Number(item.quantity ?? 0),
         0
     );
 
+    const shipping = validatedCheckout?.shippingFee ?? freeShipping ? 0 : getShippingFee();
 
-    const shipping = freeShipping ? 0 : getShippingFee();
-
-    const grandTotal = subtotal + shipping;
+    const grandTotal = validatedCheckout?.totalAmount ?? subtotal + shipping;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
-    function getItemName(name: string | { en?: string; ar?: string }) {
-        return typeof name === "string" ? name : name?.en || name?.ar || "";
-    }
+
+    const runCheckoutValidation = async (): Promise<ValidatedCheckout | null> => {
+        const result = await convex.action(api.orders.validateCheckout, {
+            items: items.map((item) => ({
+                productId: item.id as Id<"products">,
+                quantity: Number(item.quantity ?? 0),
+                purchaseOptionType: item.purchaseOptionType,
+            })),
+            couponCode: appliedCoupon ?? undefined,
+            shippingCountry: "SA",
+        });
+
+        return result as ValidatedCheckout;
+    };
+
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -95,23 +148,64 @@ export default function CheckoutPage() {
 
         try {
             setIsLoading(true);
+            setIsValidating(true);
+
+            const validation = await runCheckoutValidation();
+            setIsValidating(false);
+
+            if (!validation) {
+                throw new Error("Checkout validation failed");
+            }
+
+            setValidatedCheckout(validation);
+
+            if (validation.hasError) {
+                setRequiresPriceConfirmation(true);
+                setIsLoading(false);
+                return;
+            }
+
+            if (validation.priceChanges.length > 0) {
+                setRequiresPriceConfirmation(true);
+                setIsLoading(false);
+                return;
+            }
+
+            await proceedWithCheckout(validation);
+        } catch (error) {
+            console.error("Payment error:", error);
+            toast.error(
+                error instanceof Error ? error.message : "Failed to initialize payment"
+            );
+            setIsLoading(false);
+            setIsValidating(false);
+        }
+    };
+
+    const proceedWithCheckout = async (validation: ValidatedCheckout) => {
+        try {
+            setIsLoading(true);
 
             const orderReference = `tcg-${Date.now()}`;
-            const storeItems = items.map((item) => ({
-                productId: item.id as Id<"products">,
-                name: getItemName(item.name),
-                price: Number(item.price),
-                quantity: Number(item.quantity),
-                ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
+
+            const storeItems = validation.items.map((item) => ({
+                productId: item.productId,
+                name: item.name,
+                quantity: item.quantity,
+                ...(item.purchaseOptionType
+                    ? { purchaseOptionType: item.purchaseOptionType }
+                    : {}),
             }));
 
             await createOrder({
-                userId: user.id,
-                totalAmount: grandTotal,
+                userId: user!.id,
+                customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+                customerEmail: formData.email,
                 status: "pending",
                 orderReference,
                 paymentStatus: "pending",
                 paymentProvider: "paymob",
+
                 shippingAddress: {
                     fullName: `${formData.firstName} ${formData.lastName}`.trim(),
                     address: formData.address,
@@ -119,9 +213,11 @@ export default function CheckoutPage() {
                     phone: formData.phone,
                     postalCode: formData.zipCode,
                 },
-                shippingFee: shipping,
+                shippingFee: validation.shippingFee,
                 shippingFeeOverride: freeShipping ? 0 : undefined,
-                shippingOverrideReason: freeShipping ? "coupon_free_shipping" : undefined,
+                shippingOverrideReason: freeShipping
+                    ? "coupon_free_shipping"
+                    : undefined,
                 couponCode: appliedCoupon ?? undefined,
                 stockDecremented: false,
                 shippingCountry: "SA",
@@ -146,17 +242,19 @@ export default function CheckoutPage() {
                         city: formData.city,
                         zipCode: formData.zipCode,
                     },
-                    items: items.map((item) => ({
-                        id: item.id,
-                        name: getItemName(item.name),
-                        price: Number(item.price),
-                        quantity: Number(item.quantity),
-                        ...(item.purchaseOptionType ? { purchaseOptionType: item.purchaseOptionType } : {}),
+                    items: validation.items.map((item) => ({
+                        id: item.productId,
+                        name: item.name,
+                        quantity: item.quantity,
+                        ...(item.purchaseOptionType
+                            ? { purchaseOptionType: item.purchaseOptionType }
+                            : {}),
                     })),
-                    shippingFee: shipping,
+                    shippingFee: validation.shippingFee,
                     shippingFeeOverride: freeShipping ? 0 : undefined,
-                    shippingOverrideReason: freeShipping ? "manual free shipping" : undefined,
-                    totalAmount: grandTotal,
+                    shippingOverrideReason: freeShipping
+                        ? "manual free shipping"
+                        : undefined,
                 }),
             });
 
@@ -167,7 +265,9 @@ export default function CheckoutPage() {
             try {
                 data = JSON.parse(text);
             } catch {
-                throw new Error(`Server returned non-JSON response: ${text.slice(0, 200)}`);
+                throw new Error(
+                    `Server returned non-JSON response: ${text.slice(0, 200)}`
+                );
             }
 
             if (!response.ok || !data?.checkoutUrl) {
@@ -184,6 +284,23 @@ export default function CheckoutPage() {
             setIsLoading(false);
         }
     };
+
+    const handleConfirmPriceChanges = async () => {
+        setRequiresPriceConfirmation(false);
+        if (!validatedCheckout) return;
+        await proceedWithCheckout(validatedCheckout);
+    };
+
+    const handleReviewCart = () => {
+        router.push("/cart");
+    };
+
+    function getItemName(
+        name?: string | { en?: string; ar?: string }
+    ): string {
+        if (typeof name === "string") return name;
+        return name?.en || name?.ar || "Product";
+    }
 
     if (!mounted) {
         return (
@@ -392,25 +509,94 @@ export default function CheckoutPage() {
                                         : "Payment method will be selected on the secure Paymob page"}
                                 </p>
 
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#eab308] via-[#facc15] to-[#eab308] text-black font-bold text-sm sm:text-lg rounded-xl shadow-lg hover:shadow-[#eab308]/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-[1.02]"
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                            <span className="text-sm sm:text-base">{t("processing")}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            <span className="text-sm sm:text-base">
-                                                {t("placeOrder", { amount: formatPriceByLocale(grandTotal, locale) })}
-                                            </span>
-                                        </>
-                                    )}
-                                </button>
+                                {requiresPriceConfirmation && validatedCheckout && (
+                                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 sm:p-6 space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-amber-400" />
+                                            <h3 className="text-sm sm:text-base font-semibold text-amber-400">
+                                                {locale === "ar"
+                                                    ? "تم تحديث بعض الأسعار"
+                                                    : "Some prices have changed"}
+                                            </h3>
+                                        </div>
+
+                                        {(validatedCheckout.priceChanges.length > 0 || validatedCheckout.unavailableItems.length > 0) && (
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {validatedCheckout.unavailableItems.map((item) => (
+                                                    <div key={item.productId} className="flex items-start gap-2 text-xs sm:text-sm text-red-300">
+                                                        <XCircle className="w-4 h-4 mt-0.5 text-red-400" />
+                                                        <span>
+                                                            {getItemName(item.name)}: {item.reason.replace(/_/g, " ")}
+                                                        </span>
+                                                    </div>
+                                                ))}
+
+                                                {validatedCheckout.priceChanges.map((change) => (
+                                                    <div key={change.productId} className="text-xs sm:text-sm text-amber-300 space-y-1">
+                                                        <p className="font-medium">{getItemName(change.name)}</p>
+                                                        <p>
+                                                            {locale === "ar"
+                                                                ? `السعر القديم: ${formatPriceByLocale(change.oldPrice, locale)}`
+                                                                : `Old price: ${formatPriceByLocale(change.oldPrice, locale)}`}
+                                                        </p>
+                                                        <p>
+                                                            {locale === "ar"
+                                                                ? `السعر الجديد: ${formatPriceByLocale(change.newPrice, locale)}`
+                                                                : `New price: ${formatPriceByLocale(change.newPrice, locale)}`}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleReviewCart}
+                                                className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 border border-[#2a2a38] text-gray-300 hover:text-white hover:border-white/30 font-medium text-sm rounded-xl transition-all"
+                                            >
+                                                {locale === "ar" ? "مراجعة السلة" : "Review Cart"}
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isLoading || isValidating}
+                                                className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-[#eab308] via-[#facc15] to-[#eab308] text-black font-bold text-sm sm:text-base rounded-xl hover:shadow-[#eab308]/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            >
+                                                {isValidating || isLoading
+                                                    ? locale === "ar"
+                                                        ? "جاري التحقق..."
+                                                        : "Verifying..."
+                                                    : locale === "ar"
+                                                        ? "متابعة بالأسعار المحدثة"
+                                                        : "Continue with Updated Prices"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!requiresPriceConfirmation && (
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading || isValidating || items.length === 0}
+                                        className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#eab308] via-[#facc15] to-[#eab308] text-black font-bold text-sm sm:text-lg rounded-xl shadow-lg hover:shadow-[#eab308]/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-[1.02]"
+                                    >
+                                        {isLoading || isValidating ? (
+                                            <>
+                                                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                                <span className="text-sm sm:text-base">
+                                                    {locale === "ar" ? "جاري التحقق من الأسعار..." : "Verifying prices..."}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                <span className="text-sm sm:text-base">
+                                                    {t("placeOrder", { amount: formatPriceByLocale(grandTotal, locale) })}
+                                                </span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </form>
                         </div>
 
@@ -422,7 +608,13 @@ export default function CheckoutPage() {
 
                                 <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#2a2a38] scrollbar-track-transparent">
                                     {items.map((item) => {
-                                        const localizedName = getLocalizedText(item.name, locale);
+                                        const localizedName = getLocalizedText(
+                                            item.name ?? { en: "Product", ar: "منتج" },
+                                            locale
+                                        );
+                                        const itemPrice = validatedCheckout
+                                            ? validatedCheckout.items.find((vi) => vi.productId === item.id)?.price ?? item.price ?? 0
+                                            : item.price ?? 0;
                                         return (
                                             <div
                                                 key={item.id}
@@ -452,7 +644,10 @@ export default function CheckoutPage() {
                                                             {t("qty", { count: item.quantity })}
                                                         </span>
                                                         <span className="text-xs sm:text-sm font-semibold text-[#eab308]">
-                                                            {formatPriceByLocale(item.price * item.quantity, locale)}
+                                                            {formatPriceByLocale(
+                                                                Number(itemPrice) * Number(item.quantity ?? 0),
+                                                                locale
+                                                            )}
                                                         </span>
                                                     </div>
                                                 </div>

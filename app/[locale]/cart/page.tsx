@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
+import { useEffect, useState, Suspense } from "react";
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, AlertTriangle, XCircle } from "lucide-react";
 import { useCartStore, CartItem } from "@/store/useCartStore";
 import { formatPriceByLocale } from "@/utils/currency";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuthAction } from "@/hooks/useAuthAction";
 import Image from "next/image";
 import { getLocalizedText } from "@/utils/localization";
@@ -13,9 +14,11 @@ import { getShippingFee } from "@/lib/shipping";
 import { api } from "@/convex/_generated/api";
 import { useConvex } from "convex/react";
 
-
-
-function CartItemCard({ item }: { item: CartItem }) {
+function CartItemCard({ item, priceChange, isUnavailable }: { 
+    item: CartItem; 
+    priceChange?: { productId: string; oldPrice: number; newPrice: number; name?: string };
+    isUnavailable?: boolean;
+}) {
   const { updateQuantity, removeItem } = useCartStore();
   const locale = useLocale();
 
@@ -37,11 +40,13 @@ function CartItemCard({ item }: { item: CartItem }) {
     removeItem(item.id, item.purchaseOptionType);
   };
 
+  const displayPrice = priceChange ? priceChange.newPrice : (item.price ?? 0);
+
   return (
-    <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-[#12121a]/80 backdrop-blur-lg border border-[#2a2a38] rounded-lg sm:rounded-xl">
+    <div className={`flex gap-3 sm:gap-4 p-3 sm:p-4 bg-[#12121a]/80 backdrop-blur-lg border rounded-lg sm:rounded-xl ${isUnavailable ? 'border-red-500/50 opacity-75' : 'border-[#2a2a38]'}`}>
       <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-[#1a1a24] rounded-md sm:rounded-lg overflow-hidden border border-[#2a2a38]">
         <Image
-          src={item.image}
+          src={item.image || "/placeholder.png"}
           alt={localizedName}
           width={80}
           height={80}
@@ -67,16 +72,34 @@ function CartItemCard({ item }: { item: CartItem }) {
           </button>
         </div>
 
+        {priceChange && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-2 mt-2">
+            <p className="text-[10px] sm:text-xs text-amber-400 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              Price changed from {formatPriceByLocale(priceChange.oldPrice, locale)} to {formatPriceByLocale(priceChange.newPrice, locale)}
+            </p>
+          </div>
+        )}
+
+        {isUnavailable && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-md p-2 mt-2">
+            <p className="text-[10px] sm:text-xs text-red-400 flex items-center gap-1">
+              <XCircle className="w-3 h-3" />
+              This item is currently unavailable
+            </p>
+          </div>
+        )}
 
         <div className="flex justify-between items-center mt-1.5 sm:mt-2">
-          <span className="text-xs sm:text-sm font-medium text-gray-300">
-            {formatPriceByLocale(item.price, locale)}
+          <span className={`text-xs sm:text-sm font-medium ${isUnavailable ? 'text-red-400' : 'text-gray-300'}`}>
+            {formatPriceByLocale(displayPrice, locale)}
           </span>
 
           <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1a1a24] rounded-md sm:rounded-lg border border-[#2a2a38]">
             <button
               onClick={handleDecrement}
-              className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-[#2a2a38] rounded-md sm:rounded-lg transition-all"
+              disabled={isUnavailable}
+              className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-[#2a2a38] rounded-md sm:rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
@@ -85,7 +108,8 @@ function CartItemCard({ item }: { item: CartItem }) {
             </span>
             <button
               onClick={handleIncrement}
-              className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-[#2a2a38] rounded-md sm:rounded-lg transition-all"
+              disabled={isUnavailable}
+              className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-[#2a2a38] rounded-md sm:rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
@@ -135,6 +159,8 @@ function OrderSummary() {
     setFreeShipping,
     appliedCoupon,
     setAppliedCoupon,
+    validationErrors,
+    unavailableItems,
   } = useCartStore();
 
   const [couponCode, setCouponCode] = useState("");
@@ -143,6 +169,7 @@ function OrderSummary() {
   const subtotal = getTotalPrice();
   const shipping = freeShipping ? 0 : getShippingFee();
   const total = subtotal + shipping;
+  const hasValidationIssues = validationErrors.length > 0 || unavailableItems.length > 0;
 
   const handleClearCart = () => {
     clearCart();
@@ -176,7 +203,6 @@ function OrderSummary() {
     }
     setFreeShipping(false);
     setAppliedCoupon(result.code ?? null);
-    couponCode: appliedCoupon ?? undefined
     setCouponStatus("Coupon applied");
   };
 
@@ -185,6 +211,26 @@ function OrderSummary() {
       <h3 className="text-base sm:text-lg font-bold text-white mb-4 sm:mb-6">
         {t("summary")}
       </h3>
+
+      {hasValidationIssues && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
+          <p className="text-xs sm:text-sm text-red-400 font-medium">
+            Please resolve the following issues before checkout:
+          </p>
+          <ul className="mt-2 space-y-1">
+            {unavailableItems.map((ui) => (
+              <li key={ui.productId} className="text-[10px] sm:text-xs text-red-300">
+                {ui.name || ui.productId}: {ui.reason.replace(/_/g, ' ')}
+              </li>
+            ))}
+            {validationErrors.map((err, idx) => (
+              <li key={idx} className="text-[10px] sm:text-xs text-red-300">
+                {err}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
         <div className="flex justify-between items-center">
@@ -256,7 +302,8 @@ function OrderSummary() {
         <button
           type="button"
           onClick={() => checkAuth(() => router.push("/checkout"), undefined, "/checkout")}
-          className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all"
+          disabled={hasValidationIssues || items.length === 0}
+          className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {tActions("checkout")}
           <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" />
@@ -266,14 +313,35 @@ function OrderSummary() {
   );
 }
 
-export default function CartPage() {
+function CartPageInner() {
   const t = useTranslations("Cart");
-  const { items } = useCartStore();
+  const { items, validateCart, priceChanges, unavailableItems } = useCartStore();
   const [mounted, setMounted] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const searchParams = useSearchParams();
+  const convex = useConvex();
+
+  const checkoutError = searchParams.get("error");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const runValidation = async () => {
+      if (items.length === 0) return;
+      setIsValidating(true);
+      await validateCart(convex);
+      setIsValidating(false);
+    };
+    runValidation();
+  }, [convex, validateCart, items.length]);
+
+  const getPriceChange = (item: CartItem) =>
+    priceChanges.find((pc) => pc.productId === item.id);
+
+  const isItemUnavailable = (item: CartItem) =>
+    unavailableItems.some((ui) => ui.productId === item.id);
 
   if (!mounted) {
     return (
@@ -295,13 +363,46 @@ export default function CartPage() {
           </p>
         </div>
 
+        {checkoutError === "validation_failed" && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm text-red-400">
+              Your cart contains items that are no longer available or have changed. Please review your cart before proceeding to checkout.
+            </p>
+          </div>
+        )}
+
+        {isValidating && items.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm text-amber-400">Validating your cart...</p>
+          </div>
+        )}
+
+        {unavailableItems.length > 0 && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+            <h3 className="text-red-400 font-bold mb-2 flex items-center gap-2">
+              <XCircle className="w-4 h-4" />
+              Unavailable Items
+            </h3>
+            {unavailableItems.map((ui) => (
+              <p key={ui.productId} className="text-sm text-red-300">
+                {ui.name || ui.productId}: {ui.reason.replace(/_/g, ' ')}
+              </p>
+            ))}
+          </div>
+        )}
+
         {items.length === 0 ? (
           <EmptyCartState />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-3 sm:space-y-4">
               {items.map((item) => (
-                <CartItemCard key={`${item.id}-${item.purchaseOptionType || ""}`} item={item} />
+                <CartItemCard
+                  key={`${item.id}-${item.purchaseOptionType || ""}`}
+                  item={item}
+                  priceChange={getPriceChange(item)}
+                  isUnavailable={isItemUnavailable(item)}
+                />
               ))}
             </div>
 
@@ -312,5 +413,17 @@ export default function CartPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <CartPageInner />
+    </Suspense>
   );
 }

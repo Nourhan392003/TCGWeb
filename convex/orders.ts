@@ -1,7 +1,8 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAdmin } from "./auth";
-import { internal } from "./_generated/api";
+import { internal, api } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 
 export const getAllOrders = query({
     args: {},
@@ -255,7 +256,6 @@ export const updatePaymentStatus = mutation({
 export const createOrder = mutation({
     args: {
         userId: v.string(),
-        totalAmount: v.number(),
         status: v.string(),
         shippingFee: v.optional(v.number()),
         shippingFeeOverride: v.optional(v.number()),
@@ -291,22 +291,77 @@ export const createOrder = mutation({
                             ar: v.optional(v.string()),
                         })
                     ),
-                    price: v.number(),
+                    price: v.optional(v.number()),
                     quantity: v.number(),
                     purchaseOptionType: v.optional(v.string()),
                 })
             )
         ),
         stockDecremented: v.optional(v.boolean()),
+        validatedPrices: v.optional(v.record(v.string(), v.number())),
     },
     handler: async (ctx, args) => {
-        console.log("createOrder args:", args);
+        const items = args.storeItems ?? [];
+        const validatedPrices = args.validatedPrices ?? {};
+        let serverCalculatedTotal = 0;
+        const enrichedItems: Array<{
+            productId: Id<"products">;
+            name: string;
+            price: number;
+            quantity: number;
+            purchaseOptionType?: string;
+        }> = [];
+
+        for (const item of items) {
+            const product = await ctx.db.get(item.productId);
+            if (!product) {
+                throw new Error(`Product not found during order creation: ${item.productId}`);
+            }
+
+            let effectivePrice = item.price ?? validatedPrices[String(item.productId)];
+            let effectiveStockQuantity = product.stockQuantity;
+
+            if (item.purchaseOptionType && Array.isArray(product.purchaseOptions)) {
+                const option = product.purchaseOptions.find(
+                    (o: { type: string; price: number; stockQuantity?: number }) => o.type === item.purchaseOptionType
+                );
+                if (option) {
+                    effectivePrice = effectivePrice ?? option.price;
+                    effectiveStockQuantity = option.stockQuantity ?? product.stockQuantity;
+                }
+            }
+
+            if (effectivePrice === undefined || effectivePrice === null) {
+                effectivePrice = product.price;
+            }
+
+            if (effectiveStockQuantity !== undefined && item.quantity > effectiveStockQuantity) {
+                throw new Error(`Insufficient stock for product ${String(item.productId)}: requested ${item.quantity}, available ${effectiveStockQuantity}`);
+            }
+
+            const itemTotal = effectivePrice * item.quantity;
+            serverCalculatedTotal += itemTotal;
+
+            const localizedName =
+                typeof product.name === "string"
+                    ? product.name
+                    : product.name?.en || product.name?.ar || "Product";
+
+            enrichedItems.push({
+                productId: product._id,
+                name: localizedName,
+                price: effectivePrice,
+                quantity: item.quantity,
+                purchaseOptionType: item.purchaseOptionType,
+            });
+        }
 
         const initialShippingFee = args.shippingFee ?? 27;
+        const finalTotal = serverCalculatedTotal + initialShippingFee;
 
         const orderId = await ctx.db.insert("orders", {
             userId: args.userId,
-            totalAmount: args.totalAmount,
+            totalAmount: finalTotal,
             status: args.status,
             customerName: args.customerName,
             customerEmail: args.customerEmail,
@@ -319,7 +374,7 @@ export const createOrder = mutation({
             paymentProvider: args.paymentProvider ?? "paymob",
             paymentRawPayload: args.paymentRawPayload,
             shippingCountry: args.shippingCountry ?? "SA",
-            storeItems: args.storeItems,
+            storeItems: enrichedItems,
             stockDecremented: args.stockDecremented ?? false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -349,5 +404,163 @@ export const getOrderByPaymobOrderId = query({
             .first();
 
         return order;
+    },
+});
+
+export const validateCheckout = action({
+    args: {
+        items: v.array(
+            v.object({
+                productId: v.id("products"),
+                quantity: v.number(),
+                purchaseOptionType: v.optional(v.string()),
+            })
+        ),
+        couponCode: v.optional(v.string()),
+        shippingCountry: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const { items, couponCode, shippingCountry } = args;
+
+        if (!items || items.length === 0) {
+            throw new Error("Cart is empty");
+        }
+
+        const products = await ctx.runQuery(api.products.getAllProducts, {});
+        const productMap = new Map<string, any>(products.map((p: any) => [String(p._id), p]));
+
+        const validatedItems: Array<{
+            productId: Id<"products">;
+            name: string;
+            price: number;
+            quantity: number;
+            purchaseOptionType?: string;
+        }> = [];
+        const priceChanges: Array<{
+            productId: string;
+            oldPrice: number;
+            newPrice: number;
+            name?: string;
+        }> = [];
+        const unavailableItems: Array<{
+            productId: string;
+            reason: string;
+            name?: string;
+        }> = [];
+        let subtotal = 0;
+        let hasError = false;
+
+        for (const item of items) {
+            const product = productMap.get(String(item.productId));
+
+            if (!product) {
+                unavailableItems.push({
+                    productId: item.productId,
+                    reason: "deleted",
+                    name: item.productId,
+                });
+                hasError = true;
+                continue;
+            }
+
+            const localizedName =
+                typeof product.name === "string"
+                    ? product.name
+                    : product.name?.en || product.name?.ar || "Product";
+
+            let effectivePrice = product.price;
+            let effectiveStockQuantity = product.stockQuantity;
+            let effectiveInStock = product.inStock;
+
+            if (item.purchaseOptionType && Array.isArray(product.purchaseOptions)) {
+                const option = product.purchaseOptions.find(
+                    (o: any) => o.type === item.purchaseOptionType
+                );
+
+                if (!option) {
+                    unavailableItems.push({
+                        productId: item.productId,
+                        reason: "option_not_found",
+                        name: localizedName,
+                    });
+                    hasError = true;
+                    continue;
+                }
+
+                effectivePrice = option.price;
+                effectiveInStock = option.inStock ?? product.inStock;
+                effectiveStockQuantity = option.stockQuantity ?? product.stockQuantity;
+            }
+
+            if (!effectiveInStock) {
+                unavailableItems.push({
+                    productId: item.productId,
+                    reason: "out_of_stock",
+                    name: localizedName,
+                });
+                hasError = true;
+            } else if (
+                effectiveStockQuantity !== undefined &&
+                item.quantity > effectiveStockQuantity
+            ) {
+                unavailableItems.push({
+                    productId: item.productId,
+                    reason: "insufficient_stock",
+                    name: localizedName,
+                });
+                hasError = true;
+            }
+
+            if (item.quantity <= 0) {
+                unavailableItems.push({
+                    productId: item.productId,
+                    reason: "invalid_quantity",
+                    name: localizedName,
+                });
+                hasError = true;
+            }
+
+            const itemTotal = effectivePrice * item.quantity;
+            subtotal += itemTotal;
+
+            validatedItems.push({
+                productId: product._id,
+                name: localizedName,
+                price: effectivePrice,
+                quantity: item.quantity,
+                purchaseOptionType: item.purchaseOptionType,
+            });
+        }
+
+        let freeShipping = false;
+
+        if (typeof couponCode === "string" && couponCode.trim() && !hasError) {
+            try {
+                const couponResult = await ctx.runQuery(api.promoCodes.validateCoupon, {
+                    code: couponCode.trim(),
+                    subtotal,
+                });
+
+                if (couponResult.valid && couponResult.type === "free_shipping") {
+                    freeShipping = true;
+                }
+            } catch (couponError) {
+                console.error("Coupon validation failed in validateCheckout:", couponError);
+            }
+        }
+
+        const shippingFee = freeShipping ? 0 : 27;
+        const totalAmount = subtotal + shippingFee;
+
+        return {
+            items: validatedItems,
+            subtotal,
+            shippingFee,
+            totalAmount,
+            freeShipping,
+            priceChanges,
+            unavailableItems,
+            hasError,
+        };
     },
 });

@@ -14,9 +14,11 @@ type LocalizedName = {
   ar?: string;
 };
 
-function getItemName(name: string | LocalizedName): string {
+function getItemName(
+  name?: string | { en?: string; ar?: string }
+): string {
   if (typeof name === "string") return name;
-  return name.en || name.ar || "Product";
+  return name?.en || name?.ar || "Product";
 }
 function getStoreItemName(name: string | { en?: string; ar?: string }) {
   return typeof name === "string" ? name : name?.en || name?.ar || "Product";
@@ -73,8 +75,8 @@ export default function CheckoutButton() {
         customerEmail: user.primaryEmailAddress?.emailAddress ?? "N/A",
         shippingAddress: {
           fullName: user.fullName || "",
-          address: "Riyadh",
-          city: "Riyadh",
+          address: "Jeddah",
+          city: "Jeddah",
           phone: user.primaryPhoneNumber?.phoneNumber || "",
           postalCode: "",
         },

@@ -10,6 +10,13 @@ const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
 
 type SessionClaimsWithRole = {
   role?: string;
+  metadata?: {
+    role?: string;
+  };
+  publicMetadata?: {
+    role?: string;
+  };
+  [key: string]: any;
 };
 
 export default clerkMiddleware(async (auth, req) => {
@@ -28,7 +35,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (MAINTENANCE_MODE) {
     if (
       pathname.startsWith("/_next") ||
-      /\.(css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2|ttf|eot|json|txt|xml|csv|zip|webmanifest)$/.test(pathname)
+      /\.(css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2?|ttf|eot|json|txt|xml|csv|zip|webmanifest)$/.test(pathname)
     ) {
       return NextResponse.next();
     }
@@ -37,7 +44,7 @@ export default clerkMiddleware(async (auth, req) => {
 
     return NextResponse.redirect(
       new URL(locale ? `/${locale}/maintenance` : "/maintenance", req.url)
-    ); return NextResponse.redirect(new URL("/maintenance", req.url));
+    );
   }
 
   console.log("MIDDLEWARE RUNNING:", req.nextUrl.pathname);
@@ -46,15 +53,39 @@ export default clerkMiddleware(async (auth, req) => {
     const session = await auth();
 
     if (!session.userId) {
+      console.log("ADMIN AUTH CHECK: no userId, redirecting to sign-in");
       return session.redirectToSignIn();
     }
 
-    const role = (session.sessionClaims as SessionClaimsWithRole | undefined)?.role;
+    const claims = session.sessionClaims as SessionClaimsWithRole | undefined;
+
+    const role =
+      claims?.role ??
+      claims?.metadata?.role ??
+      claims?.publicMetadata?.role;
+
+    console.log("ADMIN AUTH CHECK:", {
+      pathname,
+      userId: session.userId,
+      resolvedRole: role,
+      roleSource: role
+        ? claims?.role
+          ? "claims.role"
+          : claims?.metadata?.role
+            ? "claims.metadata.role"
+            : "claims.publicMetadata.role"
+        : "none",
+      allowed: role === "admin",
+      claimsKeys: claims ? Object.keys(claims) : [],
+      publicMetadata: claims?.publicMetadata,
+    });
 
     if (role !== "admin") {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }
+
+  return NextResponse.next();
 });
 
 export const config = {

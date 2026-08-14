@@ -21,7 +21,6 @@ interface CartDrawerProps {
 
 
 
-
 /**
  * Individual Cart Item Component
  */
@@ -29,7 +28,6 @@ function CartItemRow({ item }: { item: CartItem }) {
     const { updateQuantity, removeItem } = useCartStore();
     const locale = useLocale();
 
-    // Safe localized name using centralized utility
     const localizedName = getLocalizedText(item.name, locale);
 
     return (
@@ -37,7 +35,7 @@ function CartItemRow({ item }: { item: CartItem }) {
             {/* Item Image */}
             <div className="w-20 h-20 flex-shrink-0 bg-black/20 rounded-md overflow-hidden">
                 <img
-                    src={item.image}
+                    src={item.image || "/placeholder.png"}
                     alt={localizedName}
                     className="w-full h-full object-cover"
                 />
@@ -89,7 +87,7 @@ function CartItemRow({ item }: { item: CartItem }) {
 
                     {/* Price */}
                     <span className="text-sm font-bold text-amber-400">
-                        {formatPriceByLocale(item.price * item.quantity, locale)}
+                        {formatPriceByLocale((item.price ?? 0) * item.quantity, locale)}
                     </span>
                 </div>
             </div>
@@ -107,7 +105,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const isRTL = locale === 'ar';
 
     const { checkAuth } = useAuthAction();
-    const { items, getTotalPrice, clearCart } = useCartStore();
+    const { items, getTotalPrice, clearCart, validationErrors, unavailableItems } = useCartStore();
     const [isHydrated, setIsHydrated] = useState(false);
     const router = useRouter();
 
@@ -127,6 +125,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }, [onClose]);
 
     const totalPrice = getTotalPrice();
+    const hasValidationIssues = validationErrors.length > 0 || unavailableItems.length > 0;
 
     return (
         <AnimatePresence>
@@ -224,6 +223,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 <button
                                     onClick={() => {
                                         checkAuth(() => {
+                                            if (hasValidationIssues) {
+                                                toast.error("Please resolve cart issues before checkout");
+                                                return;
+                                            }
                                             router.push("/checkout");
                                             onClose();
                                         }, undefined, "/checkout");
