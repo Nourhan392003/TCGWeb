@@ -171,6 +171,32 @@ export const markEmailSent = internalMutation({
     },
 });
 
+export const recordConfirmationEmailSent = internalMutation({
+    args: {
+        orderId: v.id("orders"),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.orderId, {
+            confirmationEmailSentAt: Date.now(),
+            confirmationEmailLastError: undefined,
+            updatedAt: Date.now(),
+        });
+    },
+});
+
+export const recordConfirmationEmailError = internalMutation({
+    args: {
+        orderId: v.id("orders"),
+        error: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.orderId, {
+            confirmationEmailLastError: args.error,
+            updatedAt: Date.now(),
+        });
+    },
+});
+
 export const markEmailFailed = internalMutation({
     args: {
         orderId: v.id("orders"),

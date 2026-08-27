@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
     Loader2,
@@ -53,9 +53,11 @@ export default function OrdersPage() {
 
     const updateStatus = useMutation(api.orders.updateOrderStatus);
     const updateShippingOverride = useMutation(api.orders.setOrderShippingOverride);
+    const resendConfirmation = useAction(api.emails.resendPaymentConfirmation);
 
     const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
     const [updatingShippingId, setUpdatingShippingId] = useState<string | null>(null);
+    const [resendingId, setResendingId] = useState<string | null>(null);
 
     const handleShippingOverride = async (
         e: React.MouseEvent,
@@ -94,6 +96,28 @@ export default function OrdersPage() {
             console.log("Order status updated successfully");
         } catch (error) {
             console.error("Failed to update order status:", error);
+        }
+    };
+
+    const handleResendConfirmation = async (
+        e: React.MouseEvent,
+        orderId: string
+    ) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (resendingId === orderId) return;
+
+        try {
+            setResendingId(orderId);
+            const result = await resendConfirmation({
+                orderId: orderId as any,
+            });
+            console.log("Confirmation email resent:", result);
+        } catch (error) {
+            console.error("Failed to resend confirmation:", error);
+        } finally {
+            setResendingId(null);
         }
     };
 
@@ -395,6 +419,56 @@ export default function OrdersPage() {
                                                                     Paymob: {order.paymobOrderId}
                                                                 </span>
                                                             )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-6">
+                                                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                                                        <Mail className="w-5 h-5" />
+                                                        Payment Confirmation Email
+                                                    </h3>
+
+                                                    <div className="bg-[#12121a] rounded-lg border border-gray-700 p-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                {order.confirmationEmailSentAt ? (
+                                                                    <span className="text-gray-300 text-sm">
+                                                                        Last sent: {formatDate(order.confirmationEmailSentAt)}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-gray-400 text-sm">
+                                                                        Not sent yet
+                                                                    </span>
+                                                                )}
+                                                                {order.confirmationEmailLastError && (
+                                                                    <p className="text-red-400 text-xs mt-1">
+                                                                        Error: {order.confirmationEmailLastError}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    resendingId === order._id ||
+                                                                    order.paymentStatus !== "paid"
+                                                                }
+                                                                onClick={(e) =>
+                                                                    handleResendConfirmation(
+                                                                        e,
+                                                                        order._id
+                                                                    )
+                                                                }
+                                                                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                                                    order.paymentStatus === "paid"
+                                                                        ? "border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        : "border-gray-500/30 bg-gray-500/10 text-gray-500 cursor-not-allowed"
+                                                                }`}
+                                                            >
+                                                                {resendingId === order._id
+                                                                    ? "Sending..."
+                                                                    : "Resend payment confirmation"}
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
