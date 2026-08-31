@@ -459,7 +459,7 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder={locale === "ar" ? "الرياض" : "Riyadh"}
+                                                placeholder={locale === "ar" ? "جدة" : "Jeddah"}
                                             />
                                         </div>
 
