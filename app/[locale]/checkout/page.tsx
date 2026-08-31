@@ -64,6 +64,35 @@ interface ValidatedCheckout {
     hasError: boolean;
 }
 
+const EMAIL_TYPO_MAP: Record<string, string> = {
+    "gmil.com": "gmail.com",
+    "gmai.com": "gmail.com",
+    "gmail.con": "gmail.com",
+    "gmail.co": "gmail.com",
+    "hotmial.com": "hotmail.com",
+    "hotmal.com": "hotmail.com",
+    "outlok.com": "outlook.com",
+    "outlook.con": "outlook.com",
+    "yaho.com": "yahoo.com",
+    "yahoo.con": "yahoo.com",
+};
+
+function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function getSuggestedEmail(email: string): string | null {
+    const trimmed = email.trim();
+    if (!trimmed) return null;
+    const atIndex = trimmed.lastIndexOf("@");
+    if (atIndex <= 0) return null;
+    const local = trimmed.slice(0, atIndex);
+    const domain = trimmed.slice(atIndex + 1).toLowerCase();
+    const corrected = EMAIL_TYPO_MAP[domain];
+    if (!corrected) return null;
+    return `${local}@${corrected}`;
+}
+
 export default function CheckoutPage() {
     const t = useTranslations("Checkout");
     const locale = useLocale();
@@ -92,6 +121,9 @@ export default function CheckoutPage() {
         zipCode: "",
     });
 
+    const [confirmEmail, setConfirmEmail] = useState("");
+    const [emailError, setEmailError] = useState("");
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -111,6 +143,29 @@ export default function CheckoutPage() {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const suggestedEmail = formData.email
+        ? getSuggestedEmail(formData.email)
+        : null;
+
+    useEffect(() => {
+        let error = "";
+        if (formData.email.trim() && !isValidEmail(formData.email)) {
+            error = t("emailInvalid");
+        } else if (suggestedEmail) {
+            error =
+                locale === "ar"
+                    ? "من فضلك صحح البريد الإلكتروني قبل المتابعة."
+                    : "Please correct the email address before continuing.";
+        } else if (
+            confirmEmail &&
+            formData.email.trim().toLowerCase() !==
+                confirmEmail.trim().toLowerCase()
+        ) {
+            error = t("emailsMismatch");
+        }
+        setEmailError(error);
+    }, [formData.email, confirmEmail, suggestedEmail, locale, t]);
+
     const runCheckoutValidation = async (): Promise<ValidatedCheckout | null> => {
         const result = await convex.action(api.orders.validateCheckout, {
             items: items.map((item) => ({
@@ -127,6 +182,33 @@ export default function CheckoutPage() {
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (suggestedEmail) {
+            setEmailError(
+                locale === "ar"
+                    ? "من فضلك صحح البريد الإلكتروني قبل المتابعة."
+                    : "Please correct the email address before continuing."
+            );
+            return;
+        }
+
+        if (formData.email && !isValidEmail(formData.email)) {
+            setEmailError(t("emailInvalid"));
+            return;
+        }
+
+        if (formData.email) {
+            const primaryNorm = formData.email.trim().toLowerCase();
+            if (
+                !confirmEmail ||
+                primaryNorm !== confirmEmail.trim().toLowerCase()
+            ) {
+                setEmailError(t("emailsMismatch"));
+                return;
+            }
+        }
+
+        setEmailError("");
 
         if (
             !formData.firstName ||
@@ -200,7 +282,7 @@ export default function CheckoutPage() {
             await createOrder({
                 userId: user!.id,
                 customerName: `${formData.firstName} ${formData.lastName}`.trim(),
-                customerEmail: formData.email,
+                customerEmail: formData.email.trim().toLowerCase(),
                 status: "pending",
                 orderReference,
                 paymentStatus: "pending",
@@ -414,13 +496,54 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder="example@mail.com"
-                                            />
-                                        </div>
+                                                 placeholder="example@mail.com"
+                                             />
+                                         </div>
 
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
-                                                {t("phone")} <span className="text-red-500">*</span>
+                                         {suggestedEmail && (
+                                             <div className="sm:col-span-2">
+                                                 <button
+                                                     type="button"
+                                                     onClick={() => {
+                                                         setFormData((prev) => ({
+                                                             ...prev,
+                                                             email: suggestedEmail,
+                                                         }));
+                                                     }}
+                                                     className="text-xs sm:text-sm text-[#eab308] hover:underline text-left"
+                                                 >
+                                                     {t("emailSuggestion", {
+                                                         email: suggestedEmail,
+                                                     })}
+                                                 </button>
+                                             </div>
+                                         )}
+
+                                         <div className="sm:col-span-2">
+                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
+                                                 {t("confirmEmail")} <span className="text-red-500">*</span>
+                                             </label>
+                                             <input
+                                                 type="email"
+                                                 name="confirmEmail"
+                                                 value={confirmEmail}
+                                                 onChange={(e) => setConfirmEmail(e.target.value)}
+                                                 required
+                                                 inputMode="email"
+                                                 autoComplete="email"
+                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
+                                                 placeholder="example@mail.com"
+                                             />
+                                             {emailError && (
+                                                 <p className="mt-1.5 text-xs sm:text-sm text-red-400">
+                                                     {emailError}
+                                                 </p>
+                                             )}
+                                         </div>
+
+                                         <div className="sm:col-span-2">
+                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
+                                                 {t("phone")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="tel"
@@ -577,7 +700,16 @@ export default function CheckoutPage() {
                                 {!requiresPriceConfirmation && (
                                     <button
                                         type="submit"
-                                        disabled={isLoading || isValidating || items.length === 0}
+                                        disabled={
+                                            isLoading ||
+                                            isValidating ||
+                                            items.length === 0 ||
+                                            !formData.email ||
+                                            !confirmEmail ||
+                                            !!suggestedEmail ||
+                                            formData.email.trim().toLowerCase() !==
+                                                confirmEmail.trim().toLowerCase()
+                                        }
                                         className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#eab308] via-[#facc15] to-[#eab308] text-black font-bold text-sm sm:text-lg rounded-xl shadow-lg hover:shadow-[#eab308]/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-[1.02]"
                                     >
                                         {isLoading || isValidating ? (
