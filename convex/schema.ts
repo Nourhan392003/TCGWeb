@@ -133,4 +133,17 @@ export default defineSchema({
         usedCount: v.optional(v.number()),
         createdAt: v.optional(v.number()),
     }).index("by_code", ["code"]),
+
+    checkoutProfiles: defineTable({
+        userId: v.string(),
+        firstName: v.string(),
+        lastName: v.string(),
+        email: v.string(),
+        phone: v.string(),
+        address: v.string(),
+        city: v.string(),
+        zipCode: v.string(),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+    }).index("by_user", ["userId"]),
 });

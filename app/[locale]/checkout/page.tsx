@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import {
     CreditCard,
@@ -16,7 +16,7 @@ import { formatPrice, formatPriceByLocale } from "@/utils/currency";
 import { getShippingFee } from "@/lib/shipping";
 import { useTranslations, useLocale } from "next-intl";
 import { getLocalizedText } from "@/utils/localization";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useRequireAuth } from "@/hooks/useAuthAction";
@@ -124,6 +124,17 @@ export default function CheckoutPage() {
     const [confirmEmail, setConfirmEmail] = useState("");
     const [emailError, setEmailError] = useState("");
 
+    const [showSavedInfo, setShowSavedInfo] = useState(false);
+    const [isSavingInfo, setIsSavingInfo] = useState(false);
+    const prefilledRef = useRef(false);
+    const firstNameRef = useRef<HTMLInputElement>(null);
+
+    const savedProfile = useQuery(
+        api.checkoutProfiles.getCheckoutProfile,
+        isLoaded && isSignedIn ? undefined : "skip"
+    );
+    const saveCheckoutProfile = useMutation(api.checkoutProfiles.saveCheckoutProfile);
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -165,6 +176,81 @@ export default function CheckoutPage() {
         }
         setEmailError(error);
     }, [formData.email, confirmEmail, suggestedEmail, locale, t]);
+
+    useEffect(() => {
+        if (prefilledRef.current) return;
+        if (!savedProfile) return;
+
+        setFormData((prev) => ({
+            firstName: prev.firstName || savedProfile.firstName,
+            lastName: prev.lastName || savedProfile.lastName,
+            email: prev.email || savedProfile.email,
+            phone: prev.phone || savedProfile.phone,
+            address: prev.address || savedProfile.address,
+            city: prev.city || savedProfile.city,
+            zipCode: prev.zipCode || savedProfile.zipCode,
+        }));
+        setShowSavedInfo(true);
+        prefilledRef.current = true;
+    }, [savedProfile]);
+
+    const isProfileLoading = isLoaded && isSignedIn && savedProfile === undefined;
+
+    const handleUseAnotherAddress = () => {
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
+            address: "",
+            city: "",
+            zipCode: "",
+        });
+        setConfirmEmail("");
+        setShowSavedInfo(false);
+        firstNameRef.current?.focus();
+    };
+
+    const handleSaveInformation = async () => {
+        if (
+            !formData.firstName ||
+            !formData.lastName ||
+            !formData.email ||
+            !formData.phone ||
+            !formData.address ||
+            !formData.city ||
+            !formData.zipCode
+        ) {
+            toast.error(t("fillRequired"));
+            return;
+        }
+
+        if (formData.email && !isValidEmail(formData.email)) {
+            setEmailError(t("emailInvalid"));
+            return;
+        }
+
+        try {
+            setIsSavingInfo(true);
+            await saveCheckoutProfile({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                zipCode: formData.zipCode,
+            });
+            toast.success(t("informationSaved"));
+        } catch (error) {
+            console.error("Save information error:", error);
+            toast.error(
+                error instanceof Error ? error.message : "Failed to save information"
+            );
+        } finally {
+            setIsSavingInfo(false);
+        }
+    };
 
     const runCheckoutValidation = async (): Promise<ValidatedCheckout | null> => {
         const result = await convex.action(api.orders.validateCheckout, {
@@ -454,12 +540,44 @@ export default function CheckoutPage() {
                                         </h2>
                                     </div>
 
+                                    {isProfileLoading && (
+                                        <div className="flex items-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm text-[#a0a0b0]">
+                                            <div className="w-3.5 h-3.5 border-2 border-[#2a2a38] border-t-[#eab308] rounded-full animate-spin"></div>
+                                            <span>{t("loadingSavedInfo")}</span>
+                                        </div>
+                                    )}
+
+                                    {showSavedInfo && !isProfileLoading && (
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-6 p-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-xs sm:text-sm">
+                                            <span className="text-[#a0a0b0]">{t("usingSavedInfo")}</span>
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        firstNameRef.current?.focus();
+                                                    }}
+                                                    className="text-[#eab308] hover:underline"
+                                                >
+                                                    {t("editInformation")}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleUseAnotherAddress}
+                                                    className="text-[#a0a0b0] hover:text-[#f0f0f5] underline"
+                                                >
+                                                    {t("useAnotherAddress")}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-xs sm:text-sm font-medium text-[#a0a0b0] mb-1.5 sm:mb-2">
                                                 {t("firstName")} <span className="text-red-500">*</span>
                                             </label>
                                             <input
+                                                ref={firstNameRef}
                                                 type="text"
                                                 name="firstName"
                                                 value={formData.firstName}
@@ -597,10 +715,21 @@ export default function CheckoutPage() {
                                                 onChange={handleChange}
                                                 required
                                                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1a1a24] border border-[#2a2a38] rounded-lg text-[#f0f0f5] placeholder-[#4a4a5a] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/50 outline-none transition-all text-sm"
-                                                placeholder="11564"
+                                                 placeholder="11564"
                                             />
                                         </div>
                                     </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveInformation}
+                                        disabled={isSavingInfo || isProfileLoading}
+                                        className="mt-4 w-full py-2.5 px-4 border border-[#2a2a38] text-[#a0a0b0] hover:text-[#f0f0f5] hover:border-[#4a4a5a] rounded-lg text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSavingInfo
+                                            ? t("savingInformation")
+                                            : t("saveInformation")}
+                                    </button>
                                 </div>
 
                                 <div className="space-y-2">

@@ -194,11 +194,18 @@
   "ProductGallery": {
     "title": "Product Gallery"
   },
-  "Checkout": {
-    "title": "Checkout",
-    "back": "Back to Cart",
-    "secure": "Secure Checkout",
-    "orderSummary": "Order Summary",
+    "Checkout": {
+        "title": "Checkout",
+        "back": "Back to Cart",
+        "secure": "Secure Checkout",
+        "loadingSavedInfo": "Loading your saved information...",
+        "usingSavedInfo": "We've filled in your saved information.",
+        "editInformation": "Edit information",
+        "useAnotherAddress": "Use another address",
+        "saveInformation": "Save information",
+        "savingInformation": "Saving...",
+        "informationSaved": "Your information has been saved.",
+        "orderSummary": "Order Summary",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
     "free": "Free",
