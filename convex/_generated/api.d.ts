@@ -14,6 +14,7 @@ import type * as checkoutProfiles from "../checkoutProfiles.js";
 import type * as contact from "../contact.js";
 import type * as emailData from "../emailData.js";
 import type * as emails from "../emails.js";
+import type * as internal_orders from "../internal_orders.js";
 import type * as orders from "../orders.js";
 import type * as products from "../products.js";
 import type * as promoCodes from "../promoCodes.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   contact: typeof contact;
   emailData: typeof emailData;
   emails: typeof emails;
+  internal_orders: typeof internal_orders;
   orders: typeof orders;
   products: typeof products;
   promoCodes: typeof promoCodes;
