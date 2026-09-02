@@ -61,6 +61,7 @@ export const addProduct = mutation({
         isFeatured: v.optional(v.boolean()),
         isGraded: v.optional(v.boolean()),
         isPreorder: v.optional(v.boolean()),
+        maxPerCustomer: v.optional(v.number()),
         purchaseOptions: v.optional(
             v.array(
                 v.object({
@@ -80,6 +81,16 @@ export const addProduct = mutation({
             const storageUrl = await ctx.storage.getUrl(args.imageId);
             if (storageUrl) {
                 resolvedImageUrl = storageUrl;
+            }
+        }
+
+        if (args.maxPerCustomer !== undefined) {
+            if (
+                !Number.isInteger(args.maxPerCustomer) ||
+                args.maxPerCustomer <= 0 ||
+                !Number.isFinite(args.maxPerCustomer)
+            ) {
+                throw new Error("maxPerCustomer must be a positive whole number");
             }
         }
 
@@ -183,6 +194,7 @@ export const updateCard = mutation({
         isFeatured: v.optional(v.boolean()),
         isPreorder: v.optional(v.boolean()),
         type: v.optional(v.string()),
+        maxPerCustomer: v.optional(v.number()),
         purchaseOptions: v.optional(
             v.array(
                 v.object({
@@ -203,6 +215,16 @@ export const updateCard = mutation({
             const storageUrl = await ctx.storage.getUrl(updates.imageId);
             if (storageUrl) {
                 resolvedImageUrl = storageUrl;
+            }
+        }
+
+        if (updates.maxPerCustomer !== undefined) {
+            if (
+                !Number.isInteger(updates.maxPerCustomer) ||
+                updates.maxPerCustomer <= 0 ||
+                !Number.isFinite(updates.maxPerCustomer)
+            ) {
+                throw new Error("maxPerCustomer must be a positive whole number");
             }
         }
 

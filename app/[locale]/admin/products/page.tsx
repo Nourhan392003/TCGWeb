@@ -40,6 +40,7 @@ export default function ProductsPage() {
     const [editCasePrice, setEditCasePrice] = useState("");
     const [editCaseInStock, setEditCaseInStock] = useState(true);
     const [editCaseStockQty, setEditCaseStockQty] = useState(0);
+    const [editMaxPerCustomer, setEditMaxPerCustomer] = useState("");
     const generateUploadUrl = useMutation(api.products.generateUploadUrl);
 
     const handleEdit = (product: any) => {
@@ -69,6 +70,11 @@ export default function ProductsPage() {
         setEditCasePrice(caseOpt?.price !== undefined ? String(caseOpt.price) : "");
         setEditCaseInStock(caseOpt?.inStock ?? true);
         setEditCaseStockQty(caseOpt?.stockQuantity ?? 0);
+        setEditMaxPerCustomer(
+            product.maxPerCustomer !== undefined && product.maxPerCustomer !== null
+                ? String(product.maxPerCustomer)
+                : ""
+        );
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -77,6 +83,15 @@ export default function ProductsPage() {
 
         setIsUploading(true);
         try {
+            if (editMaxPerCustomer.trim() !== "") {
+                const parsed = Number(editMaxPerCustomer);
+                if (!Number.isInteger(parsed) || parsed <= 0) {
+                    toast.error(t('maxPerCustomerInvalid'));
+                    setIsUploading(false);
+                    return;
+                }
+            }
+
             let imageId = editingProduct.imageId;
 
             if (selectedImage) {
@@ -126,6 +141,10 @@ export default function ProductsPage() {
                     : undefined,
                 ...(editHasPurchaseOptions ? { purchaseOptions } : {}),
                 imageId,
+                maxPerCustomer:
+                    editMaxPerCustomer.trim() === ""
+                        ? undefined
+                        : Number(editMaxPerCustomer),
             });
             setEditingProduct(null);
             setSelectedImage(null);
@@ -383,10 +402,29 @@ export default function ProductsPage() {
                                         });
                                     }}
                                     className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
-                                />
-                            </div>
+                                 />
+                             </div>
 
-                            {/* Game */}
+                             {/* Max Per Customer */}
+                             <div>
+                                 <label className="block text-sm font-medium text-gray-400 mb-1">
+                                     {t('maxPerCustomer')}
+                                 </label>
+                                 <input
+                                     type="number"
+                                     min="1"
+                                     step="1"
+                                     placeholder="No limit"
+                                     value={editMaxPerCustomer}
+                                     onChange={(e) => setEditMaxPerCustomer(e.target.value)}
+                                     className="w-full px-4 py-2 bg-[#1a1a24] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
+                                 />
+                                 <p className="text-xs text-gray-500 mt-1">
+                                     {t('maxPerCustomerHelper')}
+                                 </p>
+                             </div>
+
+                             {/* Game */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">{t('game')}</label>

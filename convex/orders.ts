@@ -1,4 +1,4 @@
-import { query, mutation, action } from "./_generated/server";
+import { query, mutation, action, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAdmin } from "./auth";
 import { internal, api } from "./_generated/api";
@@ -301,6 +301,15 @@ export const createOrder = mutation({
         validatedPrices: v.optional(v.record(v.string(), v.number())),
     },
     handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) {
+            throw new Error("You must be signed in to checkout");
+        }
+
+        if (args.userId !== identity.subject) {
+            throw new Error("Unauthorized: user ID does not match authenticated user");
+        }
+
         const items = args.storeItems ?? [];
         const validatedPrices = args.validatedPrices ?? {};
         let serverCalculatedTotal = 0;
@@ -311,6 +320,35 @@ export const createOrder = mutation({
             quantity: number;
             purchaseOptionType?: string;
         }> = [];
+
+        const purchaseLimitErrors: Array<{
+            productId: string;
+            name: string;
+            limit: number;
+            purchased: number;
+            requested: number;
+            remaining: number;
+        }> = await ctx.runQuery(
+            internal.internal_orders.getPurchaseLimitErrors,
+            {
+                userId: args.userId,
+                items: items.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    purchaseOptionType: item.purchaseOptionType,
+                })),
+            }
+        );
+
+        if (purchaseLimitErrors.length > 0) {
+            const messages = purchaseLimitErrors
+                .map(
+                    (e: any) =>
+                        `Purchase limit exceeded for ${e.name}: limit ${e.limit}, already purchased ${e.purchased}, requested ${e.requested}`
+                )
+                .join("; ");
+            throw new Error(messages);
+        }
 
         for (const item of items) {
             const product = await ctx.db.get(item.productId);
@@ -419,11 +457,48 @@ export const validateCheckout = action({
         couponCode: v.optional(v.string()),
         shippingCountry: v.optional(v.string()),
     },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args): Promise<{
+        items: Array<{
+            productId: Id<"products">;
+            name: string;
+            price: number;
+            quantity: number;
+            purchaseOptionType?: string;
+        }>;
+        subtotal: number;
+        shippingFee: number;
+        totalAmount: number;
+        freeShipping: boolean;
+        priceChanges: Array<{
+            productId: string;
+            oldPrice: number;
+            newPrice: number;
+            name?: string;
+        }>;
+        unavailableItems: Array<{
+            productId: string;
+            reason: string;
+            name?: string;
+        }>;
+        hasError: boolean;
+        purchaseLimitErrors: Array<{
+            productId: string;
+            name: string;
+            limit: number;
+            purchased: number;
+            requested: number;
+            remaining: number;
+        }>;
+    }> => {
         const { items, couponCode, shippingCountry } = args;
 
         if (!items || items.length === 0) {
             throw new Error("Cart is empty");
+        }
+
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) {
+            throw new Error("You must be signed in to checkout");
         }
 
         const products = await ctx.runQuery(api.products.getAllProducts, {});
@@ -549,6 +624,22 @@ export const validateCheckout = action({
             }
         }
 
+        const purchaseLimitErrors = await ctx.runQuery(
+            internal.internal_orders.getPurchaseLimitErrors,
+            {
+                userId: identity.subject,
+                items: items.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    purchaseOptionType: item.purchaseOptionType,
+                })),
+            }
+        );
+
+        if (purchaseLimitErrors.length > 0) {
+            hasError = true;
+        }
+
         const shippingFee = freeShipping ? 0 : 27;
         const totalAmount = subtotal + shippingFee;
 
@@ -561,6 +652,7 @@ export const validateCheckout = action({
             priceChanges,
             unavailableItems,
             hasError,
+            purchaseLimitErrors,
         };
     },
 });

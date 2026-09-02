@@ -29,6 +29,7 @@ export default function AddProductForm() {
     const [casePrice, setCasePrice] = useState("");
     const [caseInStock, setCaseInStock] = useState(true);
     const [caseStockQty, setCaseStockQty] = useState(0);
+    const [maxPerCustomer, setMaxPerCustomer] = useState("");
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -85,7 +86,16 @@ export default function AddProductForm() {
                 });
             }
 
-            await addProduct({
+            if (maxPerCustomer.trim() !== "") {
+                const parsed = Number(maxPerCustomer);
+                if (!Number.isInteger(parsed) || parsed <= 0) {
+                    toast.error(t('maxPerCustomerInvalid'));
+                    setIsUploading(false);
+                    return;
+                }
+            }
+
+            const productPayload = {
                 name: { en: nameEn, ar: nameAr || undefined },
                 price: parseFloat(price),
                 description: descriptionEn
@@ -97,9 +107,12 @@ export default function AddProductForm() {
                 inStock,
                 stockQuantity,
                 isPreorder,
+                maxPerCustomer: maxPerCustomer.trim() === "" ? undefined : Number(maxPerCustomer),
                 ...(purchaseOptions.length > 0 ? { purchaseOptions } : {}),
                 imageId: storageId,
-            });
+            };
+
+            await addProduct(productPayload);
 
             toast.success(t('successAdd'));
 
@@ -107,6 +120,7 @@ export default function AddProductForm() {
             setNameAr("");
             setPrice("");
             setStockQuantity(0);
+            setMaxPerCustomer("");
             setDescriptionEn("");
             setDescriptionAr("");
             setGame(GAME_OPTIONS[0].value);
@@ -213,6 +227,21 @@ export default function AddProductForm() {
                             className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
                             required
                         />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-300">{t('maxPerCustomer')}</label>
+                        <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="No limit"
+                            value={maxPerCustomer}
+                            onChange={(e) => setMaxPerCustomer(e.target.value)}
+                            className="border border-gray-600 bg-[#0f0f16] p-2.5 rounded focus:border-amber-500 outline-none"
+                        />
+                        <p className="text-xs text-gray-500">
+                            {t('maxPerCustomerHelper')}
+                        </p>
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-300">{t('condition')}</label>

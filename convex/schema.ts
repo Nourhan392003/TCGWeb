@@ -33,6 +33,7 @@ export default defineSchema({
         isFeatured: v.optional(v.boolean()),
         isPreorder: v.optional(v.boolean()),
         createdAt: v.optional(v.number()),
+        maxPerCustomer: v.optional(v.number()),
         isGraded: v.optional(v.boolean()),
         purchaseOptions: v.optional(
             v.array(
