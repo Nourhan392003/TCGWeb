@@ -61,6 +61,14 @@ interface ValidatedCheckout {
     freeShipping: boolean;
     priceChanges: PriceChange[];
     unavailableItems: UnavailableItem[];
+    purchaseLimitErrors: Array<{
+        productId: string;
+        name: string;
+        limit: number;
+        purchased: number;
+        requested: number;
+        remaining: number;
+    }>;
     hasError: boolean;
 }
 
@@ -772,7 +780,7 @@ export default function CheckoutPage() {
                                             </h3>
                                         </div>
 
-                                        {(validatedCheckout.priceChanges.length > 0 || validatedCheckout.unavailableItems.length > 0) && (
+                                        {(validatedCheckout.priceChanges.length > 0 || validatedCheckout.unavailableItems.length > 0 || validatedCheckout.purchaseLimitErrors.length > 0) && (
                                             <div className="space-y-2 max-h-60 overflow-y-auto">
                                                 {validatedCheckout.unavailableItems.map((item) => (
                                                     <div key={item.productId} className="flex items-start gap-2 text-xs sm:text-sm text-red-300">
@@ -798,6 +806,16 @@ export default function CheckoutPage() {
                                                         </p>
                                                     </div>
                                                 ))}
+
+                                                {validatedCheckout.purchaseLimitErrors.map((error) => (
+                                                    <div key={error.productId} className="text-xs sm:text-sm text-red-300 space-y-1">
+                                                        <p className="font-medium">
+                                                            {locale === "ar"
+                                                                ? `تم الوصول إلى الحد المسموح لمنتج ${getItemName(error.name)}. الحد الأقصى هو ${error.limit} لكل عميل. لقد اشتريت بالفعل ${error.purchased} وتحاول شراء ${error.requested}.`
+                                                                : `Purchase limit reached for ${getItemName(error.name)}. The maximum is ${error.limit} per customer. You have already purchased ${error.purchased} and are trying to buy ${error.requested}.`}
+                                                        </p>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
 
@@ -810,7 +828,8 @@ export default function CheckoutPage() {
                                                 {locale === "ar" ? "مراجعة السلة" : "Review Cart"}
                                             </button>
                                             <button
-                                                type="submit"
+                                                type="button"
+                                                onClick={handleConfirmPriceChanges}
                                                 disabled={isLoading || isValidating}
                                                 className="flex-1 py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-[#eab308] via-[#facc15] to-[#eab308] text-black font-bold text-sm sm:text-base rounded-xl hover:shadow-[#eab308]/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                             >
